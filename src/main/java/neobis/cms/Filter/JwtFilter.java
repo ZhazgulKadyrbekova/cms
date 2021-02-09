@@ -1,6 +1,6 @@
 package neobis.cms.Filter;
 
-import neobis.cms.Service.MyUserDetailsService;
+import neobis.cms.Service.Bishkek.MyUserDetailsService;
 import neobis.cms.Util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -33,7 +33,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
-            username = jwtUtil.getUsernameFromToken(token);
+            username = jwtUtil.extractUsername(token);
 
         }
 

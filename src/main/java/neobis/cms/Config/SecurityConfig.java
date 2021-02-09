@@ -2,7 +2,7 @@ package neobis.cms.Config;
 
 
 import neobis.cms.Filter.JwtFilter;
-import neobis.cms.Service.MyUserDetailsService;
+import neobis.cms.Service.Bishkek.MyUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,6 +33,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable().authorizeRequests()
                 .antMatchers("/user/**").permitAll()
+                .antMatchers("/bishkek/*").hasAnyRole("ADMIN", "BISHKEK_SALE", "BISHKEK_MARKET")
+                .antMatchers("/osh/*").hasAnyRole("ADMIN", "OSH_SALE", "OSH_MARKET")
+
 
                 .anyRequest().permitAll()
                 .and().exceptionHandling()
