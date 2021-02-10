@@ -9,8 +9,10 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class UserSaveDTO {
+public class UserDTO {
     private String email;
+    private String position;
+    private String city;
     private String name;
     private String phoneNo;
     private String password;

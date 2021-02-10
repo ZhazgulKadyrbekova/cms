@@ -1,8 +1,9 @@
 package neobis.cms.Service.Bishkek;
 
-import neobis.cms.Dto.UserPositionCityDTO;
-import neobis.cms.Dto.UserPositionDTO;
-import neobis.cms.Dto.UserSaveDTO;
+import neobis.cms.Dto.UserAuthDTO;
+import neobis.cms.Dto.UserDTO;
+import neobis.cms.Dto.UserPasswordsDTO;
+import neobis.cms.Dto.UserRejectDTO;
 import neobis.cms.Entity.Bishkek.Role;
 import neobis.cms.Entity.Bishkek.User;
 import neobis.cms.Exception.IllegalArgumentException;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
 
@@ -51,52 +53,49 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String sendActivationToUser(UserPositionCityDTO userPositionDTO) {
+    public List<User> getListOfUserToConfirm() {
+        return userRepo.findAllByIsConfirmed(false);
+    }
+
+    @Override
+    public String createUser(UserDTO userDTO) {
         User user = new User();
-        String email = userPositionDTO.getEmail();
+        String email = userDTO.getEmail();
         if (email.startsWith("@") || email.endsWith("@") || !email.contains("@"))
             throw new IllegalArgumentException("Invalid email address");
         user.setEmail(email);
-        user.setPosition(userPositionDTO.getPosition());
-        user.setCity(userPositionDTO.getCity());
-        String roleName = "ROLE_" + userPositionDTO.getCity().toUpperCase();
-        roleName += (userPositionDTO.getPosition().equals("marketing")) ? "_MARKET" : "_SALE";
+        user.setPosition(userDTO.getPosition());
+        user.setCity(userDTO.getCity());
+        user.setName(userDTO.getName());
+        user.setPhoneNo(userDTO.getPhoneNo());
+        user.setPassword(encoder.encode(userDTO.getPassword()));
+        user.setActivationCode(null);
         user.setActive(false);
-        user.setActivationCode(UUID.randomUUID().toString());
+        user.setConfirmed(false);
+        String roleName = "ROLE_" + userDTO.getCity().toUpperCase();
+        roleName += (userDTO.getPosition().equals("marketing")) ? "_MARKET" : "_SALE";
         Role role = roleRepo.findByNameContainingIgnoringCase(roleName);
         if (role == null) {
             role = roleRepo.save(new Role(roleName));
         }
         user.setRole(role);
-
-        String message = "To activate your account visit link: /register/activate/" + user.getActivationCode();
-        if (mailService.send(user.getEmail(), "Activation Code", message)) {
-            userRepo.save(user);
-            return "Activation code has been successfully sent!";
-        }
-        return "We could not send activation code.";
+        userRepo.save(user);
+        return "Profile info has been saved. After Admin confirmation you will get activation code to your email";
     }
 
     @Override
-    public String sendActivationToAdmin(UserPositionDTO userPositionDTO) {
-        User user = new User();
-        String email = userPositionDTO.getEmail();
-        if (email.startsWith("@") || email.endsWith("@") || !email.contains("@"))
-            throw new IllegalArgumentException("Invalid email address");
-        user.setEmail(email);
-        user.setPosition(userPositionDTO.getPosition());
-        user.setActive(false);
+    public String confirm(Long id) {
+        User user = userRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User id " + id + " is not found"));
+        user.setConfirmed(true);
+
+        user.setConfirmed(true);
         user.setActivationCode(UUID.randomUUID().toString());
-        Role role = roleRepo.findByNameContainingIgnoringCase("ROLE_ADMIN");
-        if (role == null) {
-            role = roleRepo.save(new Role("ROLE_ADMIN"));
-        }
-        user.setRole(role);
 
         String message = "To activate your account visit link: /register/activate/" + user.getActivationCode();
         if (mailService.send(user.getEmail(), "Activation Code", message)) {
             userRepo.save(user);
-            return "Activation code has been successfully sent!";
+            return "Activation code has been successfully sent to user's email!";
         }
         return "We could not send activation code.";
     }
@@ -115,17 +114,51 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User saveUser(UserSaveDTO userDTO) {
-        User user = userRepo.findByEmailAndIsActive(userDTO.getEmail(), true);
-        user.setName(userDTO.getName());
-        String phoneNo = userDTO.getPhoneNo();
-        if (!phoneNo.startsWith("+996"))
-            throw new IllegalArgumentException("Phone number must start with +996");
-        user.setPhoneNo(phoneNo);
-        user.setPassword(encoder.encode(userDTO.getPassword()));
-
+    public String changePassword(UserPasswordsDTO userPasswordDTO) {
+        User user = userRepo.findByEmailAndIsActive(userPasswordDTO.getEmail(), true);
+        if (user == null)
+            throw new ResourceNotFoundException("User with email " + userPasswordDTO.getEmail() + " not found");
+        if (!encoder.matches(user.getPassword(), userPasswordDTO.getOldPassword()))
+            return "Old password did not match with your current password";
+        user.setPassword(encoder.encode(userPasswordDTO.getNewPassword()));
         userRepo.save(user);
-        return user;
+        return "You have successfully changed your password";
+    }
+
+    @Override
+    public String forgotPassword(String email) {
+        User user = userRepo.findByEmailAndIsActive(email, true);
+        user.setActive(false);
+        user.setPassword(null);
+        user.setActivationCode(UUID.randomUUID().toString());
+
+        String message = "To restore your account visit link: /register/restore/" + user.getActivationCode();
+        if (mailService.send(user.getEmail(), "Restoration Code", message)) {
+            userRepo.save(user);
+            return "Restoration code has been successfully sent to your email!";
+        }
+        return "We could not send activation code.";
+    }
+
+    @Override
+    public String setPassword(UserAuthDTO userAuthDTO) {
+        User user = userRepo.findByEmailAndIsActive(userAuthDTO.getEmail(), true);
+        if (user == null)
+            throw new ResourceNotFoundException("User with email " + userAuthDTO.getEmail() + " not found");
+        user.setPassword(encoder.encode(userAuthDTO.getPassword()));
+        userRepo.save(user);
+        return "You have successfully changed your password";
+    }
+
+    @Transactional
+    @Override
+    public String reject(UserRejectDTO userRejectDTO) {
+        userRepo.deleteByEmail(userRejectDTO.getEmail());
+        String message = "Your registration request for email " + userRejectDTO.getEmail() + " was rejected by admin.\n Comment from admin: " + userRejectDTO.getDescription();
+        if (mailService.send(userRejectDTO.getEmail(), "Rejected registration request", message)) {
+            return "Rejected registration request has been successfully sent to user's email!";
+        }
+        return "We could not send rejected registration request to user's email.";
     }
 }
 

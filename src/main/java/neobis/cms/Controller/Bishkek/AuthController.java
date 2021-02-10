@@ -1,9 +1,9 @@
 package neobis.cms.Controller.Bishkek;
 
 import neobis.cms.Dto.UserAuthDTO;
-import neobis.cms.Dto.UserPositionCityDTO;
-import neobis.cms.Dto.UserSaveDTO;
-import neobis.cms.Dto.UserPositionDTO;
+import neobis.cms.Dto.UserDTO;
+import neobis.cms.Dto.UserPasswordsDTO;
+import neobis.cms.Dto.UserRejectDTO;
 import neobis.cms.Entity.Bishkek.User;
 import neobis.cms.Service.Bishkek.UserService;
 import neobis.cms.Util.JwtUtil;
@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @CrossOrigin
 @RestController
@@ -24,24 +26,41 @@ public class AuthController {
     private UserService userService;
 
     @PostMapping("/user")
-    public String createUser(@RequestBody UserPositionCityDTO userPositionDTO) {
-        return userService.sendActivationToUser(userPositionDTO);
+    public String createUser(@RequestBody UserDTO userDTO) {
+        return userService.createUser(userDTO);
     }
 
-    @PostMapping("/admin")
-    public String createAdmin(@RequestBody UserPositionDTO userPositionDTO) {
+    @GetMapping("/toConfirm")
+    public List<User> getListOfUserToConfirm() {
+        return userService.getListOfUserToConfirm();
+    }
 
-            return userService.sendActivationToAdmin(userPositionDTO);
+    @PostMapping("/confirm/{id}")
+    public String confirmAndSendActivation(@PathVariable Long id) {
+        return userService.confirm(id);
+    }
+
+    @PostMapping("/reject")
+    public String rejectAndSendEmail(@RequestBody UserRejectDTO userRejectDTO) {
+        return userService.reject(userRejectDTO);
     }
 
     @GetMapping("/activate/{code}")
     public String activate(@PathVariable("code") String code) {
-            return userService.activate(code);
+        return userService.activate(code);
     }
 
-    @PostMapping("/save")
-    public User save(@RequestBody UserSaveDTO userDTO) {
-            return userService.saveUser(userDTO);
+    @GetMapping("/restore/{code}")
+    public String restore(@PathVariable("code") String code) {
+        String message = userService.activate(code);
+        if (message.equals("Account has been activated"))
+            return message + "\n To set password visit link: /register/setPassword";
+        return "Something went wrong";
+    }
+
+    @PostMapping("/setPassword")
+    public String setPassword(@RequestBody UserAuthDTO userAuthDTO) {
+        return userService.setPassword(userAuthDTO);
     }
 
     @PostMapping("/auth")
@@ -53,5 +72,15 @@ public class AuthController {
             throw new Exception("Auth failed");
         }
         return jwtUtil.generateToken(userAuthDTO.getEmail());
+    }
+
+    @PostMapping("/changePassword")
+    public String changePassword(@RequestBody UserPasswordsDTO userPasswordDTO) {
+        return userService.changePassword(userPasswordDTO);
+    }
+
+    @PostMapping("/forgotPassword/{email}")
+    public String forgotPassword(@PathVariable String email) {
+        return userService.forgotPassword(email);
     }
 }

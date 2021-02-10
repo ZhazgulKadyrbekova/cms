@@ -13,12 +13,12 @@ public class Base {
     private LocalDateTime dateUpdated;
 
     @PrePersist
-    public void persistCreate() {
+    public void onPrePersist() {
         this.dateCreated = LocalDateTime.now();
     }
 
     @PreUpdate
-    public void persistUpdate() {
+    public void onPreUpdate() {
         this.dateUpdated = LocalDateTime.now();
     }
 }

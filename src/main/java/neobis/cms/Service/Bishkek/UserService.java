@@ -1,8 +1,9 @@
 package neobis.cms.Service.Bishkek;
 
-import neobis.cms.Dto.UserPositionCityDTO;
-import neobis.cms.Dto.UserPositionDTO;
-import neobis.cms.Dto.UserSaveDTO;
+import neobis.cms.Dto.UserAuthDTO;
+import neobis.cms.Dto.UserDTO;
+import neobis.cms.Dto.UserPasswordsDTO;
+import neobis.cms.Dto.UserRejectDTO;
 import neobis.cms.Entity.Bishkek.User;
 
 import java.util.List;
@@ -12,8 +13,12 @@ public interface UserService {
     User findById(long id);
     User findByEmail(String email);
     void createAdmin(User user);
-    String sendActivationToUser(UserPositionCityDTO userPositionDTO);
-    String sendActivationToAdmin(UserPositionDTO userPositionDTO);
+    String createUser(UserDTO userDTO);
+    List<User> getListOfUserToConfirm();
+    String confirm(Long id);
     String activate(String activationCode);
-    User saveUser(UserSaveDTO userDTO);
+    String changePassword(UserPasswordsDTO userPasswordDTO);
+    String forgotPassword(String email);
+    String setPassword(UserAuthDTO userAuthDTO);
+    String reject(UserRejectDTO userRejectDTO);
 }

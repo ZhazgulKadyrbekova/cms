@@ -35,6 +35,9 @@ public class User extends Base {
     @Column(name = "city")
     private String city;
 
+    @Column(name = "is_confirmed")
+    private boolean isConfirmed;
+
     @Column(name = "activation_code")
     private String activationCode;
 

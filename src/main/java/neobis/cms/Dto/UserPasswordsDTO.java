@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 
-public class UserPositionCityDTO {
+public class UserPasswordsDTO {
     private String email;
-    private String position;
-    private String city;
+    private String oldPassword;
+    private String newPassword;
 }
