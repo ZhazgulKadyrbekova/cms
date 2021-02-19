@@ -1,10 +1,10 @@
 package neobis.cms.Service.Bishkek;
 
-import neobis.cms.Entity.Bishkek.Student;
+import neobis.cms.Entity.Bishkek.BishStudent;
 
 import java.util.List;
 
 public interface BishStudentService {
-    List<Student> findAll();
-    Student save(Student student);
+    List<BishStudent> findAll();
+    BishStudent save(BishStudent bishStudent);
 }

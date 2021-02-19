@@ -1,6 +1,6 @@
 package neobis.cms.Service.Bishkek;
 
-import neobis.cms.Entity.Bishkek.Student;
+import neobis.cms.Entity.Bishkek.BishStudent;
 import neobis.cms.Repo.Bishkek.BishStudentRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,12 +13,12 @@ public class BishStudentServiceImpl implements BishStudentService {
     private BishStudentRepo studentRepo;
 
     @Override
-    public List<Student> findAll() {
+    public List<BishStudent> findAll() {
         return studentRepo.findAll();
     }
 
     @Override
-    public Student save(Student student) {
-        return studentRepo.save(student);
+    public BishStudent save(BishStudent bishStudent) {
+        return studentRepo.save(bishStudent);
     }
 }

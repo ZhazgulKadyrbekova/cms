@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import neobis.cms.Entity.Base;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -51,4 +51,5 @@ public class User extends Base {
     @ManyToOne//(cascade = {CascadeType.ALL})
     @JoinColumn(name = "role_id")
     private Role role;
+
 }

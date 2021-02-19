@@ -1,9 +1,8 @@
-package neobis.cms.Entity.Bishkek;
+package neobis.cms.Entity.Osh;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import neobis.cms.Entity.Base;
 
 import javax.persistence.*;
 
@@ -13,7 +12,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "students")
-public class Student extends Base {
+public class OshStudent extends Base {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "student_id")

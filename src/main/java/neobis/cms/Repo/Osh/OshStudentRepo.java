@@ -1,9 +1,9 @@
 package neobis.cms.Repo.Osh;
 
-import neobis.cms.Entity.Osh.Student;
+import neobis.cms.Entity.Osh.OshStudent;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface OshStudentRepo extends JpaRepository<Student, Long> {
+public interface OshStudentRepo extends JpaRepository<OshStudent, Long> {
 }
