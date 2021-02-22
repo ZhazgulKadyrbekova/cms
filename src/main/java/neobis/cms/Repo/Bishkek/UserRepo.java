@@ -8,8 +8,8 @@ import java.util.List;
 
 @Repository
 public interface UserRepo extends JpaRepository<User, Long> {
-    User findByEmailAndIsActive(String email, boolean isActive);
-    User findByEmailIgnoringCase(String email);
+    User findByEmailIgnoringCaseAndIsActive(String email, boolean isActive);
+//    User findByEmailIgnoringCase(String email);
     User findByActivationCode(String activationCode);
     List<User> findAllByIsConfirmed(boolean isConfirmed);
     void deleteByEmail(String email);

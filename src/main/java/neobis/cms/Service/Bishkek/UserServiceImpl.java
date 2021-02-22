@@ -43,7 +43,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findByEmail(String email) {
-        return userRepo.findByEmailIgnoringCase(email);
+        return userRepo.findByEmailIgnoringCaseAndIsActive(email, true);
     }
 
     @Override
@@ -115,7 +115,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String changePassword(UserPasswordsDTO userPasswordDTO) {
-        User user = userRepo.findByEmailAndIsActive(userPasswordDTO.getEmail(), true);
+        User user = userRepo.findByEmailIgnoringCaseAndIsActive(userPasswordDTO.getEmail(), true);
         if (user == null)
             throw new ResourceNotFoundException("User with email " + userPasswordDTO.getEmail() + " not found");
         if (!encoder.matches(user.getPassword(), userPasswordDTO.getOldPassword()))
@@ -127,7 +127,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String forgotPassword(String email) {
-        User user = userRepo.findByEmailAndIsActive(email, true);
+        User user = userRepo.findByEmailIgnoringCaseAndIsActive(email, true);
         user.setActive(false);
         user.setPassword(null);
         user.setActivationCode(UUID.randomUUID().toString());
@@ -142,7 +142,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String setPassword(UserAuthDTO userAuthDTO) {
-        User user = userRepo.findByEmailAndIsActive(userAuthDTO.getEmail(), true);
+        User user = userRepo.findByEmailIgnoringCaseAndIsActive(userAuthDTO.getEmail(), true);
         if (user == null)
             throw new ResourceNotFoundException("User with email " + userAuthDTO.getEmail() + " not found");
         user.setPassword(encoder.encode(userAuthDTO.getPassword()));

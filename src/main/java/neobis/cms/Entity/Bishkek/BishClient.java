@@ -53,7 +53,9 @@ public class BishClient {
     @Column(name = "laptop")
     private boolean laptop;
 
-    //Course_id
+    @ManyToOne
+    @JoinColumn(name = "course_id", referencedColumnName = "course_id")
+    private BishCourses course;
 
     @Column(name = "utm")
     private String utm;

@@ -1,9 +1,6 @@
 package neobis.cms.Controller.Bishkek;
 
-import neobis.cms.Dto.UserAuthDTO;
-import neobis.cms.Dto.UserDTO;
-import neobis.cms.Dto.UserPasswordsDTO;
-import neobis.cms.Dto.UserRejectDTO;
+import neobis.cms.Dto.*;
 import neobis.cms.Entity.Bishkek.User;
 import neobis.cms.Service.Bishkek.UserService;
 import neobis.cms.Util.JwtUtil;
@@ -64,14 +61,14 @@ public class AuthController {
     }
 
     @PostMapping("/auth")
-    public String getToken(@RequestBody UserAuthDTO userAuthDTO) throws Exception {
+    public TokenDTO getToken(@RequestBody UserAuthDTO userAuthDTO) throws Exception {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(userAuthDTO.getEmail(), userAuthDTO.getPassword()));
         } catch (Exception e) {
             throw new Exception("Auth failed");
         }
-        return jwtUtil.generateToken(userAuthDTO.getEmail());
+        return new TokenDTO(jwtUtil.generateToken(userAuthDTO.getEmail()));
     }
 
     @PostMapping("/changePassword")

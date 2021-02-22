@@ -22,6 +22,12 @@ public class BishClientServiceImpl implements BishClientService {
     @Autowired
     private BishClientRepo clientRepo;
 
+    @Autowired
+    private BishCoursesService coursesService;
+
+    private final String dataResourceUrl
+            = "https://neolabs.dev/mod/api/?api_key=e539509b630b27e47ac594d0dbba4e69&method=getLeads";
+
     @Override
     public LocalDateTime getDateOfLastClient(List<BishClient> clients) {
         if (clients.isEmpty())
@@ -36,9 +42,7 @@ public class BishClientServiceImpl implements BishClientService {
         org.springframework.http.HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MediaType.APPLICATION_OCTET_STREAM));
         long epoch = dateTime.atZone(ZoneId.systemDefault()).toEpochSecond();// + 1L;
-        String fooResourceUrl
-                = "https://neolabs.dev/mod/api/?api_key=e539509b630b27e47ac594d0dbba4e69&method=getLeads&date_from=" + epoch;
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(fooResourceUrl);
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(dataResourceUrl + "&date_from=" + epoch);
         HttpEntity<String> httpEntity = new HttpEntity<>("", httpHeaders);
         ResponseEntity<String> response = restTemplate.exchange(builder.build().toUri(), HttpMethod.GET, httpEntity, String.class);
         return response.getBody();
@@ -49,9 +53,7 @@ public class BishClientServiceImpl implements BishClientService {
         RestTemplate restTemplate = new RestTemplate();
         org.springframework.http.HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MediaType.APPLICATION_OCTET_STREAM));
-        String fooResourceUrl
-                = "https://neolabs.dev/mod/api/?api_key=e539509b630b27e47ac594d0dbba4e69&method=getLeads";
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(fooResourceUrl);
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(dataResourceUrl);
         HttpEntity<String> httpEntity = new HttpEntity<>("", httpHeaders);
         ResponseEntity<String> response = restTemplate.exchange(builder.build().toUri(), HttpMethod.GET, httpEntity, String.class);
         return response.getBody();
@@ -83,37 +85,45 @@ public class BishClientServiceImpl implements BishClientService {
                         boolean target;
                         boolean occupation;
                         boolean experience;
-                        if (key.equals("phone")){
-                            client.setPhoneNo(data.getString(key));
-                        } else if (key.equals("url") && !data.getString(key).equals("neolabs.dev/")){
-                            client.setUtm(data.getString(key));
-                        } else if (key.equals("value")) {
-                            target = (data.getString(key).equals("Освоить профессию программиста") ||
-                                    data.getString(key).equals("Подготовиться к университету") ||
-                                    data.getString(key).equals("Участвовать в олимпиадах") ||
-                                    data.getString(key).equals("Повышение квалификации"));
-                            occupation = (data.getString(key).equals("Студент") || data.getString(key).equals("Школьник") ||
-                                    data.getString(key).equals("Временно безработный") || data.getString(key).equals("Работающий") ||
-                                    data.getString(key).equals("Предприниматель"));
-                            experience = data.getString(key).equals("Да");
-                            if (target) {
-                                client.setTarget(data.getString(key));
-                            }
-                            if (occupation) {
-                                client.setOccupation(data.getString(key));
-                            }
-                            if (experience) {
-                                client.setExperience(experience);
-                            }
-                        } else if (key.equals("form_name")) {
-                            client.setFormName(data.getString(key));
-                        } else if (key.equals("time")) {
-                            long time = Long.parseLong(data.getString(key));
-                            LocalDateTime date =
-                                    LocalDateTime.ofInstant(Instant.ofEpochSecond(time), ZoneId.systemDefault());
-                            client.setDateCreated(date);
+                        switch (key) {
+                            case "phone" :
+                                client.setPhoneNo(data.getString(key));
+                                break;
+                            case "url" :
+                                if (!data.getString(key).equals("neolabs.dev/"))
+                                    client.setUtm(data.getString(key));
+                                break;
+                            case "value" :
+                                target = (data.getString(key).equals("Освоить профессию программиста") ||
+                                        data.getString(key).equals("Подготовиться к университету") ||
+                                        data.getString(key).equals("Участвовать в олимпиадах") ||
+                                        data.getString(key).equals("Повышение квалификации"));
+                                occupation = (data.getString(key).equals("Студент") || data.getString(key).equals("Школьник") ||
+                                        data.getString(key).equals("Временно безработный") || data.getString(key).equals("Работающий") ||
+                                        data.getString(key).equals("Предприниматель"));
+                                experience = data.getString(key).equals("Да");
+                                if (target) {
+                                    client.setTarget(data.getString(key));
+                                }
+                                if (occupation) {
+                                    client.setOccupation(data.getString(key));
+                                }
+                                if (experience) {
+                                    client.setExperience(experience);
+                                }
+                                break;
+                            case "form_name" :
+                                String formName = data.getString(key);
+                                client.setFormName(formName);
+                                client.setCourse(coursesService.findCourseByFormName(formName));
+                                break;
+                            case "time" :
+                                long time = Long.parseLong(data.getString(key));
+                                LocalDateTime date =
+                                        LocalDateTime.ofInstant(Instant.ofEpochSecond(time), ZoneId.systemDefault());
+                                client.setDateCreated(date);
+                                break;
                         }
-
 
                     }
                 } catch (Throwable e) {
@@ -121,8 +131,6 @@ public class BishClientServiceImpl implements BishClientService {
 
                 }
             }
-        } else {
-            //
         }
         return client;
     }
@@ -198,6 +206,7 @@ public class BishClientServiceImpl implements BishClientService {
         client.setLaptop(clientDTO.isLaptop());
         client.setDescription(clientDTO.getDescription());
         client.setCity(clientDTO.getCity());
+        client.setCourse(coursesService.findCourseById(clientDTO.getCourse()));
         return clientRepo.save(client);
     }
 
