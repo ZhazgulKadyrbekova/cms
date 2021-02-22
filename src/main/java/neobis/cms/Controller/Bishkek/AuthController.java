@@ -23,8 +23,8 @@ public class AuthController {
     private UserService userService;
 
     @PostMapping("/user")
-    public String createUser(@RequestBody UserDTO userDTO) {
-        return userService.createUser(userDTO);
+    public ResponseMessage createUser(@RequestBody UserDTO userDTO) {
+        return new ResponseMessage(userService.createUser(userDTO));
     }
 
     @GetMapping("/toConfirm")
@@ -33,31 +33,31 @@ public class AuthController {
     }
 
     @PostMapping("/confirm/{id}")
-    public String confirmAndSendActivation(@PathVariable Long id) {
-        return userService.confirm(id);
+    public ResponseMessage confirmAndSendActivation(@PathVariable Long id) {
+        return new ResponseMessage(userService.confirm(id));
     }
 
     @PostMapping("/reject")
-    public String rejectAndSendEmail(@RequestBody UserRejectDTO userRejectDTO) {
-        return userService.reject(userRejectDTO);
+    public ResponseMessage rejectAndSendEmail(@RequestBody UserRejectDTO userRejectDTO) {
+        return new ResponseMessage(userService.reject(userRejectDTO));
     }
 
     @GetMapping("/activate/{code}")
-    public String activate(@PathVariable("code") String code) {
-        return userService.activate(code);
+    public ResponseMessage activate(@PathVariable("code") String code) {
+        return new ResponseMessage(userService.activate(code));
     }
 
     @GetMapping("/restore/{code}")
-    public String restore(@PathVariable("code") String code) {
+    public ResponseMessage restore(@PathVariable("code") String code) {
         String message = userService.activate(code);
         if (message.equals("Account has been activated"))
-            return message + "\n To set password visit link: /register/setPassword";
-        return "Something went wrong";
+            return new ResponseMessage(message + "\n To set password visit link: /register/setPassword");
+        return new ResponseMessage("Something went wrong");
     }
 
     @PostMapping("/setPassword")
-    public String setPassword(@RequestBody UserAuthDTO userAuthDTO) {
-        return userService.setPassword(userAuthDTO);
+    public ResponseMessage setPassword(@RequestBody UserAuthDTO userAuthDTO) {
+        return new ResponseMessage(userService.setPassword(userAuthDTO));
     }
 
     @PostMapping("/auth")
@@ -72,12 +72,13 @@ public class AuthController {
     }
 
     @PostMapping("/changePassword")
-    public String changePassword(@RequestBody UserPasswordsDTO userPasswordDTO) {
-        return userService.changePassword(userPasswordDTO);
+    public ResponseMessage changePassword(@RequestBody UserPasswordsDTO userPasswordDTO) {
+        return new ResponseMessage(userService.changePassword(userPasswordDTO));
     }
 
     @PostMapping("/forgotPassword/{email}")
-    public String forgotPassword(@PathVariable String email) {
-        return userService.forgotPassword(email);
+    public ResponseMessage forgotPassword(@PathVariable String email) {
+        return new ResponseMessage(userService.forgotPassword(email));
     }
 }
+
