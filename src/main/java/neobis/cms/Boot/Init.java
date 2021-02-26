@@ -20,7 +20,7 @@ public class Init implements CommandLineRunner {
     @Override
     public void run(String... args) {
 
-//        Role role = roleRepo.findByNameContainingIgnoringCase("ROLE_ADMIN");
+//        Role role = roleRepo.findByNameContainingIgnoringCaseAndDeleted("ROLE_ADMIN", false);
 //        if (role == null)
 //            role = roleRepo.save(new Role("ROLE_ADMIN"));
 //        service.createAdmin(new User(0, "admin@gmail.com", "+996100100100", "Admin Admin",

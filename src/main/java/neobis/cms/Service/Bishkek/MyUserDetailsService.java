@@ -19,7 +19,7 @@ public class MyUserDetailsService  implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        neobis.cms.Entity.Bishkek.User userAccount = userAccountRepository.findByEmailIgnoringCaseAndIsActive(email, true);
+        neobis.cms.Entity.Bishkek.User userAccount = userAccountRepository.findByEmailIgnoringCaseAndActive(email, true);
         List<Role> roles = new ArrayList<>();
         roles.add(userAccount.getRole());
         return new User(userAccount.getEmail(), userAccount.getPassword(), roles);

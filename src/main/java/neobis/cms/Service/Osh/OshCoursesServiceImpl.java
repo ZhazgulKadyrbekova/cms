@@ -1,24 +1,24 @@
-package neobis.cms.Service.Bishkek;
+package neobis.cms.Service.Osh;
 
 import neobis.cms.Dto.CoursesDTO;
-import neobis.cms.Entity.Bishkek.BishCourses;
+import neobis.cms.Entity.Osh.OshCourses;
 import neobis.cms.Exception.ResourceNotFoundException;
-import neobis.cms.Repo.Bishkek.BishCoursesRepo;
+import neobis.cms.Repo.Osh.OshCoursesRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class BishCoursesServiceImpl implements BishCoursesService{
+public class OshCoursesServiceImpl implements OshCoursesService {
     @Autowired
-    private BishCoursesRepo coursesRepo;
+    private OshCoursesRepo coursesRepo;
 
     @Autowired
-    private BishTeacherService teacherService;
+    private OshTeacherService teacherService;
 
     @Override
-    public BishCourses findCourseByFormName(String formName) {
+    public OshCourses findCourseByFormName(String formName) {
         if (formName.equals("Заявка с quiz"))
             return null;
         formName = formName.substring(7);
@@ -38,27 +38,27 @@ public class BishCoursesServiceImpl implements BishCoursesService{
     }
 
     @Override
-    public BishCourses findCourseById(long id) {
+    public OshCourses findCourseById(long id) {
         return coursesRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Course id " + id + " was not found"));
     }
 
     @Override
-    public List<BishCourses> findAll() {
+    public List<OshCourses> findAll() {
         return coursesRepo.findAllByDeleted(false);
     }
 
     @Override
-    public List<BishCourses> findCourseByName(String name) {
-        List<BishCourses> courses = coursesRepo.findAllByNameContainingIgnoringCaseAndDeleted(name, false);
-        if (courses.isEmpty())
+    public OshCourses findCourseByName(String name) {
+        OshCourses course = coursesRepo.findByNameContainingIgnoringCaseAndDeleted(name, false);
+        if (course == null)
             throw new ResourceNotFoundException("Course with name " + name + " has not found");
-        return courses;
+        return course;
     }
 
     @Override
-    public BishCourses addCourse(CoursesDTO courseDTO) {
-        BishCourses course = new BishCourses();
+    public OshCourses addCourse(CoursesDTO courseDTO) {
+        OshCourses course = new OshCourses();
         course.setName(courseDTO.getName());
         course.setPrice(courseDTO.getPrice());
         course.setDescription(courseDTO.getDescription());
@@ -67,8 +67,8 @@ public class BishCoursesServiceImpl implements BishCoursesService{
     }
 
     @Override
-    public BishCourses updateCourse(long id, CoursesDTO courseDTO) {
-        BishCourses course = coursesRepo.findById(id)
+    public OshCourses updateCourse(long id, CoursesDTO courseDTO) {
+        OshCourses course = coursesRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Course with id " + id + " has not found"));
         course.setName(courseDTO.getName());
         course.setPrice(courseDTO.getPrice());
@@ -79,7 +79,7 @@ public class BishCoursesServiceImpl implements BishCoursesService{
 
     @Override
     public String deleteCourse(long id) {
-        BishCourses course = coursesRepo.findById(id)
+        OshCourses course = coursesRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Course with id " + id + " has not found"));
         course.setDeleted(true);
         coursesRepo.save(course);

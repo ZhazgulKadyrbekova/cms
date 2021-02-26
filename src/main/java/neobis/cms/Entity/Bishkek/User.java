@@ -36,13 +36,13 @@ public class User extends Base {
     private String city;
 
     @Column(name = "is_confirmed")
-    private boolean isConfirmed;
+    private boolean confirmed;
 
     @Column(name = "activation_code")
     private String activationCode;
 
     @Column(name = "is_active")
-    private boolean isActive;
+    private boolean active;
 
     @JsonIgnore
     @Column(name = "password")

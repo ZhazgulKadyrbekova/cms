@@ -1,4 +1,4 @@
-package neobis.cms.Entity.Bishkek;
+package neobis.cms.Entity.Osh;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "Client")
-public class BishClient {
+public class OshClient {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "client_id")
@@ -23,6 +23,7 @@ public class BishClient {
 
     private LocalDateTime dateCreated;
     private LocalDateTime dateUpdated;
+
     @Column(name = "is_deleted", precision = 0, nullable = false)
     private boolean deleted;
 
@@ -57,7 +58,7 @@ public class BishClient {
 
     @ManyToOne
     @JoinColumn(name = "course_id", referencedColumnName = "course_id")
-    private BishCourses course;
+    private OshCourses course;
 
     @Column(name = "utm")
     private String utm;

@@ -11,13 +11,15 @@ import javax.persistence.*;
 @AllArgsConstructor
 
 @Entity
-@Table(name = "students")
-public class OshStudent extends Base {
+@Table(name = "Teachers")
+public class OshTeachers extends Base {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "student_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "teacher_id")
     private long ID;
 
     @Column(name = "name")
     private String name;
+
 }

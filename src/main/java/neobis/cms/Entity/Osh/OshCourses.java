@@ -1,4 +1,4 @@
-package neobis.cms.Entity.Bishkek;
+package neobis.cms.Entity.Osh;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 
 @Entity
 @Table(name = "Courses")
-public class BishCourses extends Base{
+public class OshCourses extends Base {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,5 +31,5 @@ public class BishCourses extends Base{
 
     @ManyToOne
     @JoinColumn(name = "teacher_id", referencedColumnName = "teacher_id")
-    private BishTeachers teacher;
+    private OshTeachers teacher;
 }

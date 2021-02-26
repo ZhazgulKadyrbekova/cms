@@ -1,6 +1,9 @@
 package neobis.cms.Controller.Bishkek;
 
-import neobis.cms.Entity.Bishkek.BishStudent;
+import neobis.cms.Dto.PaymentDTO;
+import neobis.cms.Dto.StudentDTO;
+import neobis.cms.Dto.StudentShowDTO;
+import neobis.cms.Service.Bishkek.BishPaymentService;
 import neobis.cms.Service.Bishkek.BishStudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -11,16 +14,29 @@ import java.util.List;
 @RestController
 @RequestMapping("/bishkek/student")
 public class BishkekStudentController {
+
     @Autowired
     private BishStudentService studentService;
 
-    @GetMapping
-    public List<BishStudent> findAll() {
-        return studentService.findAll();
+    @Autowired
+    private BishPaymentService paymentService;
+
+    @GetMapping("/getAll")
+    public List<StudentShowDTO> getAll() {
+        return studentService.getAll();
     }
 
-    @PostMapping
-    public BishStudent add(@RequestBody BishStudent bishStudent) {
-        return studentService.save(bishStudent);
+    @PostMapping("/add")
+    public StudentShowDTO create(@RequestBody StudentDTO studentDTO) {
+        return studentService.create(studentDTO);
     }
+
+    @PostMapping("/addPayment")
+    public StudentShowDTO addPayment(@RequestBody PaymentDTO paymentDTO) {
+        StudentShowDTO student = studentService.getStudentByClientID(paymentDTO.getClient());
+        paymentService.create(paymentDTO);
+        student.setPayments(paymentService.getAllByClient(paymentDTO.getClient()));
+        return student;
+    }
+
 }

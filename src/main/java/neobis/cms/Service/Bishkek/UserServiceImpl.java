@@ -32,7 +32,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> findAll() {
-        return userRepo.findAll();
+        return userRepo.findAllByConfirmed(true);
     }
 
     @Override
@@ -43,7 +43,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findByEmail(String email) {
-        return userRepo.findByEmailIgnoringCaseAndIsActive(email, true);
+        return userRepo.findByEmailIgnoringCaseAndActive(email, true);
     }
 
     @Override
@@ -54,7 +54,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getListOfUserToConfirm() {
-        return userRepo.findAllByIsConfirmed(false);
+        return userRepo.findAllByConfirmed(false);
     }
 
     @Override
@@ -74,7 +74,7 @@ public class UserServiceImpl implements UserService {
         user.setConfirmed(false);
         String roleName = "ROLE_" + userDTO.getCity().toUpperCase();
         roleName += (userDTO.getPosition().equals("marketing")) ? "_MARKET" : "_SALE";
-        Role role = roleRepo.findByNameContainingIgnoringCase(roleName);
+        Role role = roleRepo.findByNameContainingIgnoringCaseAndDeleted(roleName, false);
         if (role == null) {
             role = roleRepo.save(new Role(roleName));
         }
@@ -115,7 +115,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String changePassword(UserPasswordsDTO userPasswordDTO) {
-        User user = userRepo.findByEmailIgnoringCaseAndIsActive(userPasswordDTO.getEmail(), true);
+        User user = userRepo.findByEmailIgnoringCaseAndActive(userPasswordDTO.getEmail(), true);
         if (user == null)
             throw new ResourceNotFoundException("User with email " + userPasswordDTO.getEmail() + " not found");
         if (!encoder.matches(user.getPassword(), userPasswordDTO.getOldPassword()))
@@ -127,7 +127,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String forgotPassword(String email) {
-        User user = userRepo.findByEmailIgnoringCaseAndIsActive(email, true);
+        User user = userRepo.findByEmailIgnoringCaseAndActive(email, true);
         user.setActive(false);
         user.setPassword(null);
         user.setActivationCode(UUID.randomUUID().toString());
@@ -142,7 +142,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String setPassword(UserAuthDTO userAuthDTO) {
-        User user = userRepo.findByEmailIgnoringCaseAndIsActive(userAuthDTO.getEmail(), true);
+        User user = userRepo.findByEmailIgnoringCaseAndActive(userAuthDTO.getEmail(), true);
         if (user == null)
             throw new ResourceNotFoundException("User with email " + userAuthDTO.getEmail() + " not found");
         user.setPassword(encoder.encode(userAuthDTO.getPassword()));

@@ -1,9 +1,12 @@
 package neobis.cms.Controller.Bishkek;
 
+import lombok.extern.log4j.Log4j2;
 import neobis.cms.Dto.*;
 import neobis.cms.Entity.Bishkek.User;
 import neobis.cms.Service.Bishkek.UserService;
 import neobis.cms.Util.JwtUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,6 +18,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/register")
 public class AuthController {
+
+    private final Logger log = LogManager.getLogger();
+
     @Autowired
     private JwtUtil jwtUtil;
     @Autowired
@@ -24,6 +30,7 @@ public class AuthController {
 
     @PostMapping("/user")
     public ResponseMessage createUser(@RequestBody UserDTO userDTO) {
+        log.info("{} sends request to register", userDTO.toString());
         return new ResponseMessage(userService.createUser(userDTO));
     }
 
@@ -34,11 +41,13 @@ public class AuthController {
 
     @PostMapping("/confirm/{id}")
     public ResponseMessage confirmAndSendActivation(@PathVariable Long id) {
+        log.info("Admin confirms user id {}", id);
         return new ResponseMessage(userService.confirm(id));
     }
 
     @PostMapping("/reject")
     public ResponseMessage rejectAndSendEmail(@RequestBody UserRejectDTO userRejectDTO) {
+        log.info("Admin rejects user email {}", userRejectDTO.getEmail());
         return new ResponseMessage(userService.reject(userRejectDTO));
     }
 
@@ -73,12 +82,13 @@ public class AuthController {
 
     @PostMapping("/changePassword")
     public ResponseMessage changePassword(@RequestBody UserPasswordsDTO userPasswordDTO) {
+        log.info("User {} changed password", userPasswordDTO.getEmail());
         return new ResponseMessage(userService.changePassword(userPasswordDTO));
     }
 
     @PostMapping("/forgotPassword/{email}")
     public ResponseMessage forgotPassword(@PathVariable String email) {
+        log.info("User {} forgot/restored password", email);
         return new ResponseMessage(userService.forgotPassword(email));
     }
 }
-

@@ -1,48 +1,50 @@
-package neobis.cms.Service.Bishkek;
+package neobis.cms.Service.Osh;
 
 import neobis.cms.Dto.TeacherDTO;
 import neobis.cms.Entity.Bishkek.BishTeachers;
+import neobis.cms.Entity.Osh.OshTeachers;
 import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Bishkek.BishTeacherRepo;
+import neobis.cms.Repo.Osh.OshTeacherRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class BishTeacherServiceImpl implements BishTeacherService {
+public class OshTeacherServiceImpl implements OshTeacherService {
     @Autowired
-    private BishTeacherRepo teacherRepo;
+    private OshTeacherRepo teacherRepo;
 
     @Override
-    public List<BishTeachers> getAllTeachers() {
+    public List<OshTeachers> getAllTeachers() {
         return teacherRepo.findAll();
     }
 
     @Override
-    public BishTeachers getTeacherById(long id) {
+    public OshTeachers getTeacherById(long id) {
         return teacherRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Teacher id " + id + " was not found"));
     }
 
     @Override
-    public BishTeachers getTeacherByName(String name) {
-        BishTeachers teacher = teacherRepo.findByNameContainingIgnoringCaseAndDeleted(name, false);
+    public OshTeachers getTeacherByName(String name) {
+        OshTeachers teacher = teacherRepo.findByNameContainingIgnoringCaseAndDeleted(name, false);
         if (teacher == null)
             throw new ResourceNotFoundException("Teacher with name " + name + " was not found");
         return teacher;
     }
 
     @Override
-    public BishTeachers addTeacher(TeacherDTO teacherDTO) {
-        BishTeachers teacher = new BishTeachers();
+    public OshTeachers addTeacher(TeacherDTO teacherDTO) {
+        OshTeachers teacher = new OshTeachers();
         teacher.setName(teacherDTO.getName());
         return teacherRepo.save(teacher);
     }
 
     @Override
-    public BishTeachers updateTeacherInfo(long id, TeacherDTO teacherDTO) {
-        BishTeachers teacher = teacherRepo.findById(id)
+    public OshTeachers updateTeacherInfo(long id, TeacherDTO teacherDTO) {
+        OshTeachers teacher = teacherRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Teacher id " + id + " was not found"));
         teacher.setName(teacherDTO.getName());
         return teacherRepo.save(teacher);
@@ -50,7 +52,7 @@ public class BishTeacherServiceImpl implements BishTeacherService {
 
     @Override
     public String deleteTeacherById(long id) {
-        BishTeachers teacher = teacherRepo.findById(id)
+        OshTeachers teacher = teacherRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Teacher id " + id + " was not found"));
         teacher.setDeleted(true);
         teacherRepo.save(teacher);

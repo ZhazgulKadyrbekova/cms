@@ -1,9 +1,10 @@
-package neobis.cms.Service.Bishkek;
+package neobis.cms.Service.Osh;
 
 import neobis.cms.Dto.ClientDTO;
 import neobis.cms.Entity.Bishkek.BishClient;
-import neobis.cms.Exception.ResourceNotFoundException;
+import neobis.cms.Entity.Osh.OshClient;
 import neobis.cms.Repo.Bishkek.BishClientRepo;
+import neobis.cms.Repo.Osh.OshClientRepo;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,32 +16,35 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 @Service
-public class BishClientServiceImpl implements BishClientService {
+public class OshClientServiceImpl implements OshClientService {
 
     @Autowired
-    private BishClientRepo clientRepo;
+    private OshClientRepo clientRepo;
 
     @Autowired
-    private BishCoursesService coursesService;
+    private OshCoursesService coursesService;
 
     private final String dataResourceUrl
             = "https://neolabs.dev/mod/api/?api_key=e539509b630b27e47ac594d0dbba4e69&method=getLeads";
 
     @Override
-    public LocalDateTime getDateOfLastClient(List<BishClient> clients) {
+    public LocalDateTime getDateOfLastClient(List<OshClient> clients) {
         if (clients.isEmpty())
             return null;
-        BishClient client = clients.get(0);
+        OshClient client = clients.get(0);
         return client.getDateCreated();
     }
 
     @Override
     public String getNewClients(LocalDateTime dateTime) {
         RestTemplate restTemplate = new RestTemplate();
-        org.springframework.http.HttpHeaders httpHeaders = new HttpHeaders();
+        HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MediaType.APPLICATION_OCTET_STREAM));
         long epoch = dateTime.atZone(ZoneId.systemDefault()).toEpochSecond();// + 1L;
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(dataResourceUrl + "&date_from=" + epoch);
@@ -52,7 +56,7 @@ public class BishClientServiceImpl implements BishClientService {
     @Override
     public String getNewClients() {
         RestTemplate restTemplate = new RestTemplate();
-        org.springframework.http.HttpHeaders httpHeaders = new HttpHeaders();
+        HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MediaType.APPLICATION_OCTET_STREAM));
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(dataResourceUrl);
         HttpEntity<String> httpEntity = new HttpEntity<>("", httpHeaders);
@@ -61,14 +65,14 @@ public class BishClientServiceImpl implements BishClientService {
     }
 
     @Override
-    public BishClient create(BishClient client) {
+    public OshClient create(OshClient client) {
         client.setStatus("New");
         client.setCity("Bishkek");
         return clientRepo.save(client);
     }
 
     @Override
-    public BishClient parseJson(JSONObject data, BishClient client) {
+    public OshClient parseJson(JSONObject data, OshClient client) {
         if (data != null) {
             Iterator<String> it = data.keys();
             while (it.hasNext()) {
@@ -114,7 +118,9 @@ public class BishClientServiceImpl implements BishClientService {
                                 }
                                 break;
                             case "form_name" :
-                                client.setFormName(data.getString(key));
+                                String formName = data.getString(key);
+                                client.setFormName(formName);
+                                client.setCourse(coursesService.findCourseByFormName(formName));
                                 break;
                             case "time" :
                                 long time = Long.parseLong(data.getString(key));
@@ -135,8 +141,8 @@ public class BishClientServiceImpl implements BishClientService {
     }
 
     @Override
-    public List<BishClient> getClientsFromJson(JSONObject form) {
-        List <BishClient> clients = new ArrayList<>();
+    public List<OshClient> getClientsFromJson(JSONObject form) {
+        List <OshClient> clients = new ArrayList<>();
         if (form != null) {
             JSONObject data = (JSONObject) form.get("data");
             if (data.get("leads") instanceof JSONObject) {
@@ -146,7 +152,7 @@ public class BishClientServiceImpl implements BishClientService {
                     String key = it.next();
                     try {
                         if (leads.get(key) instanceof JSONObject) {
-                            clients.add(parseJson(leads.getJSONObject(key), new BishClient()));
+                            clients.add(parseJson(leads.getJSONObject(key), new OshClient()));
                         }
                     } catch (Throwable e) {
                         e.printStackTrace();
@@ -157,7 +163,7 @@ public class BishClientServiceImpl implements BishClientService {
                 JSONArray array = data.getJSONArray("leads");
                 int size = array.length();
                 for (int i = 0; i < size; i++) {
-                    parseJson(array.getJSONObject(i), new BishClient());
+                    parseJson(array.getJSONObject(i), new OshClient());
                 }
             }
 
@@ -169,7 +175,7 @@ public class BishClientServiceImpl implements BishClientService {
     }
 
     @Override
-    public List<BishClient> getAllClientsFromDB() {
+    public List<OshClient> getAllClientsFromDB() {
         return clientRepo.findAllByDeletedOrderByDateCreatedDesc(false);
     }
 
@@ -181,19 +187,19 @@ public class BishClientServiceImpl implements BishClientService {
             data = new JSONObject(this.getNewClients());
         else
             data = new JSONObject(this.getNewClients(dateTime));
-        List<BishClient> clients = this.getClientsFromJson(data);
-        for (BishClient client : clients)
+        List<OshClient> clients = this.getClientsFromJson(data);
+        for (OshClient client : clients)
             this.create(client);
     }
 
     @Override
-    public List<BishClient> getAllByStatus(String status) {
+    public List<OshClient> getAllByStatus(String status) {
         return clientRepo.findAllByDeletedAndStatusIgnoringCaseOrderByDateCreatedDesc(false,status);
     }
 
     @Override
-    public BishClient create(ClientDTO clientDTO) {
-        BishClient client = new BishClient();
+    public OshClient create(ClientDTO clientDTO) {
+        OshClient client = new OshClient();
         client.setDateCreated(LocalDateTime.now());
         client.setPhoneNo(clientDTO.getPhoneNo());
         client.setName(clientDTO.getName());
@@ -209,13 +215,7 @@ public class BishClientServiceImpl implements BishClientService {
     }
 
     @Override
-    public BishClient getClientByName(String name) {
+    public OshClient getClientByName(String name) {
         return clientRepo.findByNameContainingIgnoringCaseAndDeleted(name, false);
-    }
-
-    @Override
-    public BishClient getClientById(long id) {
-        return clientRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Client with id " + id + " has not found"));
     }
 }

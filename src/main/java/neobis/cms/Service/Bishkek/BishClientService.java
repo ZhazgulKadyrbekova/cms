@@ -18,4 +18,6 @@ public interface BishClientService {
     void addClientsToDB();
     List<BishClient> getAllByStatus(String status);
     BishClient create(ClientDTO clientDTO);
+    BishClient getClientByName(String name);
+    BishClient getClientById(long id);
 }

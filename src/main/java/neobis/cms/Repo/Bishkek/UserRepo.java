@@ -8,9 +8,9 @@ import java.util.List;
 
 @Repository
 public interface UserRepo extends JpaRepository<User, Long> {
-    User findByEmailIgnoringCaseAndIsActive(String email, boolean isActive);
+    User findByEmailIgnoringCaseAndActive(String email, boolean isActive);
 //    User findByEmailIgnoringCase(String email);
     User findByActivationCode(String activationCode);
-    List<User> findAllByIsConfirmed(boolean isConfirmed);
+    List<User> findAllByConfirmed(boolean isConfirmed);
     void deleteByEmail(String email);
 }

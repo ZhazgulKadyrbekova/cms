@@ -19,5 +19,4 @@ public class ClientDTO {
     private boolean laptop;
     private String description;
     private String city;
-    private long course;
 }
