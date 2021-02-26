@@ -20,11 +20,11 @@ public class Init implements CommandLineRunner {
     @Override
     public void run(String... args) {
 
-        Role role = roleRepo.findByNameContainingIgnoringCaseAndDeleted("ROLE_ADMIN", false);
-        if (role == null)
-            role = roleRepo.save(new Role("ROLE_ADMIN"));
-        service.createAdmin(new User(0, "admin@gmail.com", "+996100100100", "Admin Admin",
-                "Admin", null, true, null, true, "12345678", role));
+//        Role role = roleRepo.findByNameContainingIgnoringCaseAndDeleted("ROLE_ADMIN", false);
+  //      if (role == null)
+    //        role = roleRepo.save(new Role("ROLE_ADMIN"));
+      //  service.createAdmin(new User(0, "admin@gmail.com", "+996100100100", "Admin Admin",
+        //        "Admin", null, true, null, true, "12345678", role));
 
     }
 }
