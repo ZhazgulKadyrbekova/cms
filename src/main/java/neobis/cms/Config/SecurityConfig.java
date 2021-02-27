@@ -6,6 +6,8 @@ import neobis.cms.Service.Bishkek.MyUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -14,6 +16,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -33,8 +36,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable().authorizeRequests()
                 .antMatchers("/user/**").permitAll()
-                .antMatchers("/bishkek/*").hasAnyRole("ADMIN", "BISHKEK_SALE", "BISHKEK_MARKET")
-                .antMatchers("/osh/*").hasAnyRole("ADMIN", "OSH_SALE", "OSH_MARKET")
+                .antMatchers("/bishkek/**").hasAnyRole("ADMIN", "BISHKEK_SALE", "BISHKEK_MARKET")
+                .antMatchers("/osh/**").hasAnyRole("ADMIN", "OSH_SALE", "OSH_MARKET")
+//                .antMatchers(HttpMethod.GET,"/register/toConfirm").hasRole("ADMIN")
                 .antMatchers("/register/toConfirm").hasRole("ADMIN")
                 .antMatchers("/register/confirm/*").hasRole("ADMIN")
                 .antMatchers("/register/reject").hasRole("ADMIN")
@@ -42,8 +46,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
                 .anyRequest().permitAll()
                 .and().exceptionHandling()
+//                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        http.headers().httpStrictTransportSecurity().disable();
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
     }
 
     @Bean

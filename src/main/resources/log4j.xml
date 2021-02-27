@@ -23,7 +23,7 @@
 
         <Logger name="neobis.cms" level="debug">
             <AppenderRef ref="LOGFILE"
-                         level="debug" />
+                         level="info" />
         </Logger>
 
     </Loggers>
