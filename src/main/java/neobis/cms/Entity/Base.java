@@ -1,4 +1,4 @@
-package neobis.cms.Entity.Bishkek;
+package neobis.cms.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;

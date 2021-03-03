@@ -3,6 +3,7 @@ package neobis.cms.Entity.Osh;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import neobis.cms.Entity.Base;
 
 import javax.persistence.*;
 

@@ -3,6 +3,7 @@ package neobis.cms.Entity.Bishkek;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import neobis.cms.Entity.Base;
 import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.*;

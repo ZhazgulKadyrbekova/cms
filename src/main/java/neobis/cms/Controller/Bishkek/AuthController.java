@@ -13,6 +13,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Locale;
 
 @CrossOrigin
 @RestController
@@ -73,17 +74,11 @@ public class AuthController {
     public TokenDTO getToken(@RequestBody UserAuthDTO userAuthDTO) throws Exception {
         try {
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(userAuthDTO.getEmail(), userAuthDTO.getPassword()));
+                    new UsernamePasswordAuthenticationToken(userAuthDTO.getEmail().toLowerCase(Locale.ROOT), userAuthDTO.getPassword()));
         } catch (Exception e) {
             throw new Exception("Auth failed");
         }
         return new TokenDTO(jwtUtil.generateToken(userAuthDTO.getEmail()));
-    }
-
-    @PostMapping("/changePassword")
-    public ResponseMessage changePassword(@RequestBody UserPasswordsDTO userPasswordDTO) {
-        log.info("User {} changed password", userPasswordDTO.getEmail());
-        return new ResponseMessage(userService.changePassword(userPasswordDTO));
     }
 
     @PostMapping("/forgotPassword/{email}")

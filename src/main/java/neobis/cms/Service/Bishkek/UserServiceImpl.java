@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 @Service
@@ -60,7 +61,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public String createUser(UserDTO userDTO) {
         User user = new User();
-        String email = userDTO.getEmail();
+        String email = userDTO.getEmail().toLowerCase(Locale.ROOT);
         if (email.startsWith("@") || email.endsWith("@") || !email.contains("@"))
             throw new IllegalArgumentException("Invalid email address");
         user.setEmail(email);
@@ -87,13 +88,16 @@ public class UserServiceImpl implements UserService {
     public String confirm(Long id) {
         User user = userRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User id " + id + " is not found"));
-        user.setConfirmed(true);
+        List<User> usersWaitingForConfirm = this.getListOfUserToConfirm();
+        if (!usersWaitingForConfirm.contains(user))
+            throw new ResourceNotFoundException("User with id " + id + " is not contained in waiting list");
 
         user.setConfirmed(true);
         user.setActivationCode(UUID.randomUUID().toString());
 
-        String message = "To activate your account visit link: /register/activate/" + user.getActivationCode();
-        if (mailService.send(user.getEmail(), "Activation Code", message)) {
+        String message = "To activate your account visit <a href='https:customerms.herokuapp.com/register/activate/" + user.getActivationCode() + "'> link. </a>";
+//        body = "Dear " + candidate + ",<br/><b>Greetings</b><br/>link <a href='http://test.com'></a> <br/><a href='https://google.com'></a>";
+        if (mailService.sendMessage(user.getEmail(), "Activation Code", message)) {
             userRepo.save(user);
             return "Activation code has been successfully sent to user's email!";
         }
@@ -132,8 +136,8 @@ public class UserServiceImpl implements UserService {
         user.setPassword(null);
         user.setActivationCode(UUID.randomUUID().toString());
 
-        String message = "To restore your account visit link: /register/restore/" + user.getActivationCode();
-        if (mailService.send(user.getEmail(), "Restoration Code", message)) {
+        String message = "To restore your account visit <a href='https:customerms.herokuapp.com/register/restore/" + user.getActivationCode() + "'> link. </a>";
+        if (mailService.sendMessage(user.getEmail(), "Restoration Code", message)) {
             userRepo.save(user);
             return "Restoration code has been successfully sent to your email!";
         }
@@ -153,6 +157,9 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public String reject(UserRejectDTO userRejectDTO) {
+        List<User> usersWaitingForConfirm = this.getListOfUserToConfirm();
+        if (!usersWaitingForConfirm.contains(userRepo.findByEmailIgnoringCase(userRejectDTO.getEmail())))
+            throw new ResourceNotFoundException("User with email " + userRejectDTO.getEmail() + " is not contained in waiting list");
         userRepo.deleteByEmail(userRejectDTO.getEmail());
         String message = "Your registration request for email " + userRejectDTO.getEmail() + " was rejected by admin.\n Comment from admin: " + userRejectDTO.getDescription();
         if (mailService.send(userRejectDTO.getEmail(), "Rejected registration request", message)) {

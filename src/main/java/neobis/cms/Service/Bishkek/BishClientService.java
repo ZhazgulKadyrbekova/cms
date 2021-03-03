@@ -20,4 +20,6 @@ public interface BishClientService {
     BishClient create(ClientDTO clientDTO);
     BishClient getClientByName(String name);
     BishClient getClientById(long id);
+    BishClient changeStatus(long id, long status, String username);
+    BishClient updateClient(long id, ClientDTO clientDTO, String username);
 }

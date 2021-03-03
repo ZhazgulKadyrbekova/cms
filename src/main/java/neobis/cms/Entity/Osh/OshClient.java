@@ -1,6 +1,5 @@
 package neobis.cms.Entity.Osh;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -41,8 +40,9 @@ public class OshClient {
     @Column(name = "email")
     private String email;
 
-    @Column(name = "status")
-    private String status;
+    @ManyToOne
+    @JoinColumn(name = "status_id", referencedColumnName = "status_id")
+    private OshStatuses status;
 
     @Column(name = "occupation")
     private String occupation;
@@ -72,8 +72,12 @@ public class OshClient {
     @Column(name = "form_name")
     private String formName;
 
-    //timer
+    @Column(name = "timer")
+    private LocalDateTime timer;
 
     @Column(name = "prepayment")
     private BigDecimal prepayment;
+
+    @Column(name = "leaving_reason")
+    private String leavingReason;
 }

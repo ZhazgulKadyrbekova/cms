@@ -3,6 +3,7 @@ package neobis.cms.Entity.Bishkek;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import neobis.cms.Entity.Base;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -13,7 +14,7 @@ import java.math.BigDecimal;
 
 @Entity
 @Table(name = "Courses")
-public class BishCourses extends Base{
+public class BishCourses extends Base {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

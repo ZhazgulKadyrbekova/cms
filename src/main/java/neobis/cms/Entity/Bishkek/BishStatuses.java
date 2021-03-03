@@ -12,15 +12,16 @@ import javax.persistence.*;
 @AllArgsConstructor
 
 @Entity
-@Table(name = "Teachers")
-public class BishTeachers extends Base {
+@Table(name = "Status")
+public class BishStatuses extends Base {
+//    "ПЕРВЫЙ_КОНТАКТ", "ПЕРЕЗВОН", "ЗВОНОК_СОВЕРШЕН", "ЗАПИСЬ_НА_ПРОБ_УРОК",
+//    "ЗАПИСЬ_НА_КУРС", "ОТЛОЖЕНО", "СТУДЕНТ", "ЗАВЕРШИЛ_ОБУЧЕНИЕ");
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "teacher_id")
+    @Column(name = "status_id")
     private long ID;
 
     @Column(name = "name")
     private String name;
-
 }

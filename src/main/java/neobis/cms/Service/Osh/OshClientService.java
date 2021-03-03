@@ -19,4 +19,7 @@ public interface OshClientService {
     List<OshClient> getAllByStatus(String status);
     OshClient create(ClientDTO clientDTO);
     OshClient getClientByName(String name);
+    OshClient getClientByID(long id);
+    OshClient changeStatus(long id, long status, String username);
+    OshClient updateClient(long id, ClientDTO clientDTO, String username);
 }

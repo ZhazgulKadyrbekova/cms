@@ -1,10 +1,14 @@
 package neobis.cms.Service.Osh;
 
 import neobis.cms.Dto.ClientDTO;
-import neobis.cms.Entity.Bishkek.BishClient;
+import neobis.cms.Entity.Bishkek.History;
 import neobis.cms.Entity.Osh.OshClient;
-import neobis.cms.Repo.Bishkek.BishClientRepo;
+import neobis.cms.Entity.Osh.OshStatuses;
+import neobis.cms.Exception.ResourceNotFoundException;
+import neobis.cms.Repo.Osh.OshStatusesRepo;
 import neobis.cms.Repo.Osh.OshClientRepo;
+import neobis.cms.Service.Bishkek.HistoryService;
+import neobis.cms.Service.Bishkek.UserService;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +32,16 @@ public class OshClientServiceImpl implements OshClientService {
     private OshClientRepo clientRepo;
 
     @Autowired
+    private OshStatusesRepo statusesRepo;
+
+    @Autowired
     private OshCoursesService coursesService;
+
+    @Autowired
+    private HistoryService historyService;
+
+    @Autowired
+    private UserService userService;
 
     private final String dataResourceUrl
             = "https://neolabs.dev/mod/api/?api_key=e539509b630b27e47ac594d0dbba4e69&method=getLeads";
@@ -66,7 +79,7 @@ public class OshClientServiceImpl implements OshClientService {
 
     @Override
     public OshClient create(OshClient client) {
-        client.setStatus("New");
+//        client.setStatus("New");
         client.setCity("Bishkek");
         return clientRepo.save(client);
     }
@@ -118,9 +131,7 @@ public class OshClientServiceImpl implements OshClientService {
                                 }
                                 break;
                             case "form_name" :
-                                String formName = data.getString(key);
-                                client.setFormName(formName);
-                                client.setCourse(coursesService.findCourseByFormName(formName));
+                                client.setFormName(data.getString(key));
                                 break;
                             case "time" :
                                 long time = Long.parseLong(data.getString(key));
@@ -194,7 +205,8 @@ public class OshClientServiceImpl implements OshClientService {
 
     @Override
     public List<OshClient> getAllByStatus(String status) {
-        return clientRepo.findAllByDeletedAndStatusIgnoringCaseOrderByDateCreatedDesc(false,status);
+        OshStatuses oshStatuses = statusesRepo.findByNameContainingIgnoringCase(status);
+        return clientRepo.findAllByDeletedAndStatusOrderByDateCreatedDesc(false, oshStatuses);
     }
 
     @Override
@@ -204,18 +216,85 @@ public class OshClientServiceImpl implements OshClientService {
         client.setPhoneNo(clientDTO.getPhoneNo());
         client.setName(clientDTO.getName());
         client.setEmail(clientDTO.getEmail());
-        client.setStatus(clientDTO.getStatus());
+        client.setStatus(statusesRepo.findById(clientDTO.getStatus())
+                .orElseThrow(() -> new ResourceNotFoundException("Status with id " + clientDTO.getStatus() + " has not found")));
         client.setOccupation(clientDTO.getOccupation());
         client.setTarget(clientDTO.getTarget());
         client.setExperience(clientDTO.isExperience());
         client.setLaptop(clientDTO.isLaptop());
+        client.setCourse(coursesService.findCourseById(clientDTO.getCourse()));
         client.setDescription(clientDTO.getDescription());
-        client.setCity(clientDTO.getCity());
+        client.setCity("OSH");
+        client.setTimer(LocalDateTime.now().plusHours(24L));
+        client.setPrepayment(clientDTO.getPrepayment());
+        client.setLeavingReason(clientDTO.getLeavingReason());
         return clientRepo.save(client);
     }
 
     @Override
     public OshClient getClientByName(String name) {
         return clientRepo.findByNameContainingIgnoringCaseAndDeleted(name, false);
+    }
+
+    @Override
+    public OshClient getClientByID(long id) {
+        return clientRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Client with id " + id + " has not found"));
+    }
+
+    @Override
+    public OshClient changeStatus(long id, long status, String username) {
+        OshClient client = clientRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Client with id " + id + " has not found"));
+        History history = new History();
+        history.setAction("change status");
+        history.setOldData(client.getStatus().getName());
+        history.setUser(userService.findByEmail(username));
+
+        OshStatuses statuses = statusesRepo.findById(status)
+                .orElseThrow(() -> new ResourceNotFoundException("Status with id " + id + " has not found"));
+        history.setNewData(statuses.getName());
+
+        client.setStatus(statuses);
+        client = clientRepo.save(client);
+
+        historyService.create(history);
+        return client;
+    }
+
+    @Override
+    public OshClient updateClient(long id, ClientDTO clientDTO, String username) {
+        OshClient client = clientRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Client with id " + id + " has not found"));
+        History history = new History();
+        history.setAction("update client info");
+        history.setOldData(client.getStatus().getName());
+        history.setUser(userService.findByEmail(username));
+
+        OshStatuses statuses = statusesRepo.findById(clientDTO.getStatus())
+                .orElseThrow(() -> new ResourceNotFoundException("Status with id " + id + " has not found"));
+        history.setNewData(statuses.getName());
+
+        client.setStatus(statuses);
+        client.setPhoneNo(clientDTO.getPhoneNo());
+        client.setName(clientDTO.getName());
+        client.setEmail(clientDTO.getEmail());
+        client.setOccupation(clientDTO.getOccupation());
+        client.setTarget(clientDTO.getTarget());
+        client.setExperience(clientDTO.isExperience());
+        client.setLaptop(clientDTO.isLaptop());
+        client.setCourse(coursesService.findCourseById(clientDTO.getCourse()));
+        client.setDescription(clientDTO.getDescription());
+//        client.setCity("OSH");
+        if (clientDTO.getTimer() == null)
+            client.setTimer(LocalDateTime.now().plusHours(24L));
+        client.setTimer(clientDTO.getTimer());
+        client.setPrepayment(clientDTO.getPrepayment());
+        client.setLeavingReason(clientDTO.getLeavingReason());
+        client = clientRepo.save(client);
+
+        if (!history.getNewData().equals(history.getOldData()))
+            historyService.create(history);
+        return client;
     }
 }

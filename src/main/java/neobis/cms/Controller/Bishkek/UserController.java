@@ -1,12 +1,13 @@
 package neobis.cms.Controller.Bishkek;
 
+import neobis.cms.Dto.ResponseMessage;
+import neobis.cms.Dto.UserPasswordsDTO;
 import neobis.cms.Entity.Bishkek.User;
 import neobis.cms.Service.Bishkek.UserService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
@@ -15,6 +16,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/user")
 public class UserController {
+
+    private final Logger log = LogManager.getLogger();
+
     @Autowired
     private UserService userService;
 
@@ -26,5 +30,11 @@ public class UserController {
     @GetMapping("/profile")
     public User profile(Principal principal) {
         return userService.findByEmail(principal.getName());
+    }
+
+    @PostMapping("/changePassword")
+    public ResponseMessage changePassword(@RequestBody UserPasswordsDTO userPasswordDTO) {
+        log.info("User {} changed password", userPasswordDTO.getEmail());
+        return new ResponseMessage(userService.changePassword(userPasswordDTO));
     }
 }
