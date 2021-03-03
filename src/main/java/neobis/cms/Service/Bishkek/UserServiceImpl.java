@@ -95,9 +95,9 @@ public class UserServiceImpl implements UserService {
         user.setConfirmed(true);
         user.setActivationCode(UUID.randomUUID().toString());
 
-        String message = "To activate your account visit <a href='https:customerms.herokuapp.com/register/activate/" + user.getActivationCode() + "'> link. </a>";
+        String message = "To activate your account visit link: " + user.getActivationCode();
 //        body = "Dear " + candidate + ",<br/><b>Greetings</b><br/>link <a href='http://test.com'></a> <br/><a href='https://google.com'></a>";
-        if (mailService.sendMessage(user.getEmail(), "Activation Code", message)) {
+        if (mailService.send(user.getEmail(), "Activation Code", message)) {
             userRepo.save(user);
             return "Activation code has been successfully sent to user's email!";
         }
@@ -136,8 +136,8 @@ public class UserServiceImpl implements UserService {
         user.setPassword(null);
         user.setActivationCode(UUID.randomUUID().toString());
 
-        String message = "To restore your account visit <a href='https:customerms.herokuapp.com/register/restore/" + user.getActivationCode() + "'> link. </a>";
-        if (mailService.sendMessage(user.getEmail(), "Restoration Code", message)) {
+        String message = "To restore your account visit link: " + user.getActivationCode();
+        if (mailService.send(user.getEmail(), "Restoration Code", message)) {
             userRepo.save(user);
             return "Restoration code has been successfully sent to your email!";
         }
