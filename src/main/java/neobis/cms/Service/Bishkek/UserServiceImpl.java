@@ -60,7 +60,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String createUser(UserDTO userDTO) {
-        User user = new User();
+        User user = userRepo.findByEmailIgnoringCase(userDTO.getEmail());
+        if (user != null)
+            throw new IllegalArgumentException("User with email " + userDTO.getEmail() + " already exists");
+        user = new User();
         String email = userDTO.getEmail().toLowerCase(Locale.ROOT);
         if (email.startsWith("@") || email.endsWith("@") || !email.contains("@"))
             throw new IllegalArgumentException("Invalid email address");
@@ -95,8 +98,7 @@ public class UserServiceImpl implements UserService {
         user.setConfirmed(true);
         user.setActivationCode(UUID.randomUUID().toString());
 
-        String message = "To activate your account visit link: " + user.getActivationCode();
-//        body = "Dear " + candidate + ",<br/><b>Greetings</b><br/>link <a href='http://test.com'></a> <br/><a href='https://google.com'></a>";
+        String message = "To activate your account visit link: https://cms4.herokuapp.com/authorization/activate/" + user.getActivationCode();
         if (mailService.send(user.getEmail(), "Activation Code", message)) {
             userRepo.save(user);
             return "Activation code has been successfully sent to user's email!";
@@ -136,7 +138,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(null);
         user.setActivationCode(UUID.randomUUID().toString());
 
-        String message = "To restore your account visit link: " + user.getActivationCode();
+        String message = "To restore your account visit link: http://cms4.herokuapp.com/authorization/setPassword/" + user.getActivationCode();
         if (mailService.send(user.getEmail(), "Restoration Code", message)) {
             userRepo.save(user);
             return "Restoration code has been successfully sent to your email!";

@@ -20,7 +20,7 @@ public class BishkekTeacherController {
     @Autowired
     private BishTeacherService teacherService;
 
-    @GetMapping("/getAll")
+    @GetMapping
     public List<BishTeachers> getAll() {
         return teacherService.getAllTeachers();
     }
@@ -30,12 +30,12 @@ public class BishkekTeacherController {
         return teacherService.getTeacherById(id);
     }
 
-    @GetMapping("/{name}")
+    @GetMapping("/name/{name}")
     public BishTeachers getByName(@PathVariable String name) {
         return teacherService.getTeacherByName(name);
     }
 
-    @PostMapping("/add")
+    @PostMapping
     public BishTeachers addNewTeacher(@RequestBody TeacherDTO teacherDTO) {
         logger.info("In Bishkek created new teacher {}", teacherDTO.toString());
         return teacherService.addTeacher(teacherDTO);

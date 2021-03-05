@@ -20,7 +20,7 @@ public class BishkekCourseController {
     @Autowired
     private BishCoursesService coursesService;
 
-    @GetMapping("/getAll")
+    @GetMapping
     public List<BishCourses> getAll() {
         return coursesService.findAll();
     }
@@ -30,12 +30,12 @@ public class BishkekCourseController {
         return coursesService.findCourseById(id);
     }
 
-    @GetMapping("/{name}")
+    @GetMapping("/name/{name}")
     public List<BishCourses> getByName(@PathVariable String name) {
         return coursesService.findCourseByName(name);
     }
 
-    @PostMapping("/add")
+    @PostMapping
     public BishCourses addNewCourse(@RequestBody CoursesDTO coursesDTO) {
         log.info("In Bishkek created new course {}", coursesDTO.toString());
         return coursesService.addCourse(coursesDTO);

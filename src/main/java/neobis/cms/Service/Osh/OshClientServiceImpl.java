@@ -248,7 +248,10 @@ public class OshClientServiceImpl implements OshClientService {
                 .orElseThrow(() -> new ResourceNotFoundException("Client with id " + id + " has not found"));
         History history = new History();
         history.setAction("change status");
-        history.setOldData(client.getStatus().getName());
+        if (client.getStatus() == null)
+            history.setOldData(null);
+        else
+            history.setOldData(client.getStatus().getName());
         history.setUser(userService.findByEmail(username));
 
         OshStatuses statuses = statusesRepo.findById(status)
@@ -256,6 +259,7 @@ public class OshClientServiceImpl implements OshClientService {
         history.setNewData(statuses.getName());
 
         client.setStatus(statuses);
+        client.setTimer(LocalDateTime.now().plusHours(24L));
         client = clientRepo.save(client);
 
         historyService.create(history);
@@ -268,7 +272,10 @@ public class OshClientServiceImpl implements OshClientService {
                 .orElseThrow(() -> new ResourceNotFoundException("Client with id " + id + " has not found"));
         History history = new History();
         history.setAction("update client info");
-        history.setOldData(client.getStatus().getName());
+        if (client.getStatus() == null)
+            history.setOldData(null);
+        else
+            history.setOldData(client.getStatus().getName());
         history.setUser(userService.findByEmail(username));
 
         OshStatuses statuses = statusesRepo.findById(clientDTO.getStatus())
@@ -288,7 +295,7 @@ public class OshClientServiceImpl implements OshClientService {
 //        client.setCity("OSH");
         if (clientDTO.getTimer() == null)
             client.setTimer(LocalDateTime.now().plusHours(24L));
-        client.setTimer(clientDTO.getTimer());
+        else    client.setTimer(clientDTO.getTimer());
         client.setPrepayment(clientDTO.getPrepayment());
         client.setLeavingReason(clientDTO.getLeavingReason());
         client = clientRepo.save(client);

@@ -24,7 +24,7 @@ public class OshCourseController {
     @Autowired
     private OshCoursesService coursesService;
 
-    @GetMapping("/getAll")
+    @GetMapping
     public List<OshCourses> getAll() {
         return coursesService.findAll();
     }
@@ -34,12 +34,12 @@ public class OshCourseController {
         return coursesService.findCourseById(id);
     }
 
-    @GetMapping("/{name}")
+    @GetMapping("/name/{name}")
     public OshCourses getByName(@PathVariable String name) {
         return coursesService.findCourseByName(name);
     }
 
-    @PostMapping("/add")
+    @PostMapping
     public OshCourses addNewCourse(@RequestBody CoursesDTO coursesDTO) {
         log.info("In Bishkek created new course {}", coursesDTO.toString());
         return coursesService.addCourse(coursesDTO);

@@ -22,7 +22,7 @@ public class OshTeacherController {
     @Autowired
     private OshTeacherService teacherService;
 
-    @GetMapping("/getAll")
+    @GetMapping
     public List<OshTeachers> getAll() {
         return teacherService.getAllTeachers();
     }
@@ -32,12 +32,12 @@ public class OshTeacherController {
         return teacherService.getTeacherById(id);
     }
 
-    @GetMapping("/{name}")
+    @GetMapping("/name/{name}")
     public OshTeachers getByName(@PathVariable String name) {
         return teacherService.getTeacherByName(name);
     }
 
-    @PostMapping("/add")
+    @PostMapping
     public OshTeachers addNewTeacher(@RequestBody TeacherDTO teacherDTO) {
         logger.info("In Bishkek created new teacher {}", teacherDTO.toString());
         return teacherService.addTeacher(teacherDTO);
