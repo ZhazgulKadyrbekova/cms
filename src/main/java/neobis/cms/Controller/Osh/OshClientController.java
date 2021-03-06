@@ -31,9 +31,9 @@ public class OshClientController {
         return clientService.getClientByID(id);
     }
 
-    @GetMapping("/status/{status}")
-    public List<OshClient> getAllByStatus(@PathVariable String status) {
-        return clientService.getAllByStatus(status);
+    @GetMapping("/status/{status_id}")
+    public List<OshClient> getAllByStatus(@PathVariable Long status_id) {
+        return clientService.getAllByStatus(status_id);
     }
 
     @PostMapping

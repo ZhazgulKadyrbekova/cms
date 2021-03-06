@@ -76,11 +76,11 @@ public class OshClientServiceImpl implements OshClientService {
         ResponseEntity<String> response = restTemplate.exchange(builder.build().toUri(), HttpMethod.GET, httpEntity, String.class);
         return response.getBody();
     }
-
+    
     @Override
     public OshClient create(OshClient client) {
 //        client.setStatus("New");
-        client.setCity("Bishkek");
+        client.setCity("Osh");
         return clientRepo.save(client);
     }
 
@@ -204,8 +204,9 @@ public class OshClientServiceImpl implements OshClientService {
     }
 
     @Override
-    public List<OshClient> getAllByStatus(String status) {
-        OshStatuses oshStatuses = statusesRepo.findByNameContainingIgnoringCase(status);
+    public List<OshClient> getAllByStatus(long status) {
+        OshStatuses oshStatuses = statusesRepo.findById(status)
+                .orElseThrow(() -> new ResourceNotFoundException("Status with id " + status + " has not found"));
         return clientRepo.findAllByDeletedAndStatusOrderByDateCreatedDesc(false, oshStatuses);
     }
 

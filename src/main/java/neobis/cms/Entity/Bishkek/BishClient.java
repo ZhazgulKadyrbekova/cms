@@ -43,6 +43,10 @@ public class BishClient {
     @JoinColumn(name = "status_id", referencedColumnName = "status_id")
     private BishStatuses status;
 
+//    @ManyToOne
+//    @JoinColumn(name = "occupation_id", referencedColumnName = "occupation_id")
+//    private BishOccupation occupation;
+
     @Column(name = "occupation")
     private String occupation;
 

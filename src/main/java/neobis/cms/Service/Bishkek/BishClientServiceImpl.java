@@ -7,6 +7,9 @@ import neobis.cms.Entity.Bishkek.History;
 import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Bishkek.BishClientRepo;
 import neobis.cms.Repo.Bishkek.BishStatusesRepo;
+import neobis.cms.Search.GenericSpecification;
+import neobis.cms.Search.SearchCriteria;
+import neobis.cms.Search.SearchOperation;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +21,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 @Service
 public class BishClientServiceImpl implements BishClientService {
@@ -199,9 +205,35 @@ public class BishClientServiceImpl implements BishClientService {
     }
 
     @Override
-    public List<BishClient> getAllByStatus(String status) {
-        BishStatuses bishStatuses = statusesRepo.findByNameContainingIgnoringCase(status);
+    public List<BishClient> getAllByStatus(long status) {
+        BishStatuses bishStatuses = statusesRepo.findById(status)
+                .orElseThrow(() -> new ResourceNotFoundException("Status with id " + status + " has not found"));
         return clientRepo.findAllByDeletedAndStatusOrderByDateCreatedDesc(false, bishStatuses);
+    }
+
+    @Override
+    public List<BishClient> getWithPredicate(LocalDateTime dateAfter, LocalDateTime dateBefore, Long status, Long course, String occupation, String utm) {
+        GenericSpecification genericSpecification = new GenericSpecification<BishClient>();
+        if (dateAfter != null)
+            genericSpecification.add(new SearchCriteria("dateCreated", null, dateAfter, SearchOperation.GREATER_THAN_EQUAL));
+        if (dateBefore != null)
+            genericSpecification.add(new SearchCriteria("dateCreated", null, dateBefore, SearchOperation.LESS_THAN_EQUAL));
+        if (status != null)
+            genericSpecification.add(new SearchCriteria("status", "id", status, SearchOperation.EQUAL));
+        if (course != null)
+            genericSpecification.add(new SearchCriteria("course", "id", course, SearchOperation.EQUAL));
+        if (occupation != null)
+            genericSpecification.add(new SearchCriteria("occupation", null, occupation, SearchOperation.MATCH));
+        if (utm != null)
+            genericSpecification.add(new SearchCriteria("utm", null, utm, SearchOperation.MATCH));
+//        List<BishClient> clients = clientRepo.findAll((root, criteriaQuery, criteriaBuilder) ->
+//            criteriaBuilder.and(
+//                    criteriaBuilder.greaterThanOrEqualTo(root.get("dateCreated"), dateAfter),
+//                    criteriaBuilder.lessThanOrEqualTo(root.get("dateCreated"), dateBefore)
+//            )
+//        );
+        return clientRepo.findAll(genericSpecification);
+//        return clients;
     }
 
     @Override
@@ -265,19 +297,15 @@ public class BishClientServiceImpl implements BishClientService {
     public BishClient updateClient(long id, ClientDTO clientDTO, String username) {
         BishClient client = clientRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Client with id " + id + " has not found"));
-        History history = new History();
-        history.setAction("update client info");
-        if (client.getStatus() == null)
-            history.setOldData(null);
-        else
-            history.setOldData(client.getStatus().getName());
-        history.setUser(userService.findByEmail(username));
 
-        BishStatuses statuses = statusesRepo.findById(clientDTO.getStatus())
-                .orElseThrow(() -> new ResourceNotFoundException("Status with id " + id + " has not found"));
-        history.setNewData(statuses.getName());
+//        BishStatuses statuses = new BishStatuses();
+//        if (clientDTO.getStatus() != null) {
+//            statuses = statusesRepo.findById(clientDTO.getStatus())
+//                    .orElseThrow(() -> new ResourceNotFoundException("Status with id " + clientDTO.getStatus() + " has not found"));
+//            history.setNewData(statuses.getName());
+//        }
 
-        client.setStatus(statuses);
+//        client.setStatus(statuses);
         client.setPhoneNo(clientDTO.getPhoneNo());
         client.setName(clientDTO.getName());
         client.setEmail(clientDTO.getEmail());
@@ -295,8 +323,6 @@ public class BishClientServiceImpl implements BishClientService {
         client.setLeavingReason(clientDTO.getLeavingReason());
         client = clientRepo.save(client);
 
-        if (!history.getNewData().equals(history.getOldData()))
-            historyService.create(history);
         return client;
     }
 }

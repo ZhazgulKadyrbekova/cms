@@ -16,7 +16,8 @@ public interface BishClientService {
     List<BishClient> getClientsFromJson(JSONObject form);
     List<BishClient> getAllClientsFromDB();
     void addClientsToDB();
-    List<BishClient> getAllByStatus(String status);
+    List<BishClient> getAllByStatus(long status);
+    List<BishClient> getWithPredicate(LocalDateTime dateAfter, LocalDateTime dateBefore, Long status, Long course, String occupation, String utm);
     BishClient create(ClientDTO clientDTO);
     BishClient getClientByName(String name);
     BishClient getClientById(long id);

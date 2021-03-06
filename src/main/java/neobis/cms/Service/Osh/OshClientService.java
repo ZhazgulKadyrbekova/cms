@@ -16,7 +16,7 @@ public interface OshClientService {
     List<OshClient> getClientsFromJson(JSONObject form);
     List<OshClient> getAllClientsFromDB();
     void addClientsToDB();
-    List<OshClient> getAllByStatus(String status);
+    List<OshClient> getAllByStatus(long status);
     OshClient create(ClientDTO clientDTO);
     OshClient getClientByName(String name);
     OshClient getClientByID(long id);
