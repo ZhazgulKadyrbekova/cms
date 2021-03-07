@@ -1,6 +1,7 @@
 package neobis.cms.Controller.Osh;
 
 import neobis.cms.Dto.ClientDTO;
+import neobis.cms.Dto.ResponseMessage;
 import neobis.cms.Entity.Osh.OshClient;
 import neobis.cms.Service.Osh.OshClientService;
 import org.apache.logging.log4j.LogManager;
@@ -26,6 +27,13 @@ public class OshClientController {
         return clientService.getAllClientsFromDB();
     }
 
+    @GetMapping("/search")
+    public List<OshClient> getWithPredicate(@RequestParam(required = false) Long status_id,
+                                            @RequestParam(required = false) Long course_id,
+                                            @RequestParam(required = false) Long occupation_id) {
+        return clientService.getWithPredicate(status_id, course_id, occupation_id);
+    }
+
     @GetMapping("/{id}")
     public OshClient getById(@PathVariable Long id) {
         return clientService.getClientByID(id);
@@ -34,6 +42,11 @@ public class OshClientController {
     @GetMapping("/status/{status_id}")
     public List<OshClient> getAllByStatus(@PathVariable Long status_id) {
         return clientService.getAllByStatus(status_id);
+    }
+
+    @GetMapping("/name/{name}")
+    public List<OshClient> getAllByName(@PathVariable String name) {
+        return clientService.getAllByName(name);
     }
 
     @PostMapping
@@ -45,6 +58,12 @@ public class OshClientController {
     @PutMapping("/{client_id}/status/{status_id}")
     public OshClient changeStatus(Principal principal, @PathVariable("client_id") Long id, @PathVariable("status_id") Long status_id) {
         return clientService.changeStatus(id, status_id, principal.getName());
+    }
+
+    @PutMapping("/{client_id}/city")
+    public ResponseMessage changeCity(@PathVariable Long client_id) {
+        clientService.changeCity(client_id);
+        return new ResponseMessage("Client with id " + client_id + " has been successfully moved to another city");
     }
 
     @PutMapping("/{id}")

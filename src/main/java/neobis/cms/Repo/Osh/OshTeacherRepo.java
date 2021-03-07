@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface OshTeacherRepo extends JpaRepository<OshTeachers, Long> {
-    OshTeachers findByNameContainingIgnoringCaseAndDeleted(String name, boolean deleted);
+    OshTeachers findByNameContainingIgnoringCase(String name);
 }

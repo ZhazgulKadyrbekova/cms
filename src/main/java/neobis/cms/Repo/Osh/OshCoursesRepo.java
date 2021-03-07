@@ -8,6 +8,5 @@ import java.util.List;
 
 @Repository
 public interface OshCoursesRepo extends JpaRepository<OshCourses, Long> {
-    OshCourses findByNameContainingIgnoringCaseAndDeleted(String name, boolean deleted);
-    List<OshCourses> findAllByDeleted(boolean deleted);
+    OshCourses findByNameContainingIgnoringCase(String name);
 }

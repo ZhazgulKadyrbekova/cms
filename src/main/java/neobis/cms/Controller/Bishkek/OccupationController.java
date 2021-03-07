@@ -14,19 +14,13 @@ import java.util.List;
 @CrossOrigin
 @RestController
 @RequestMapping("/occupation")
-public class BishkekOccupationController {
+public class OccupationController {
     @Autowired private BishOccupationRepo bishOccupationRepo;
     @Autowired private OshOccupationRepo oshOccupationRepo;
 
     @GetMapping
     public List<BishOccupation> getOccupations() {
         return bishOccupationRepo.findAll();
-    }
-
-    @PostMapping
-    public BishOccupation addOccupation(@RequestBody OccupationDTO occupationDTO) {
-        oshOccupationRepo.save(new OshOccupation(0, occupationDTO.getName()));
-        return bishOccupationRepo.save(new BishOccupation(0, occupationDTO.getName()));
     }
 
     @PutMapping("/{id}")

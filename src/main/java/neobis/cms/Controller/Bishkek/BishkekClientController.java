@@ -2,19 +2,17 @@ package neobis.cms.Controller.Bishkek;
 
 import io.swagger.annotations.ApiParam;
 import neobis.cms.Dto.ClientDTO;
+import neobis.cms.Dto.ResponseMessage;
 import neobis.cms.Entity.Bishkek.BishClient;
 import neobis.cms.Service.Bishkek.BishClientService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.List;
 
 @CrossOrigin
 @RestController
@@ -36,19 +34,21 @@ public class BishkekClientController {
     }
 
     @GetMapping("/search")
-    public List<BishClient> getWithPredicate(@ApiParam(value="yyyy-MM-dd HH:mm") @RequestParam(required = false) String dateAfter,
-                                             @ApiParam(value="yyyy-MM-dd HH:mm") @RequestParam(required = false) String dateBefore,
+    public List<BishClient> getWithPredicate(
+//                                            @ApiParam(value="yyyy-MM-dd-HH:mm") @RequestParam(required = false) String dateAfter,
+//                                            @ApiParam(value="yyyy-MM-dd-HH:mm") @RequestParam(required = false) String dateBefore,
                                              @RequestParam(required = false) Long status_id,
                                              @RequestParam(required = false) Long course_id,
-                                             @RequestParam(required = false) String occupation,
-                                             @RequestParam(required = false) String utm) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        LocalDateTime date1 = null, date2 = null;
-        if (dateAfter != null)
-        	date1 = LocalDateTime.parse(dateAfter, formatter);
-        if (dateBefore != null)
-            date2 = LocalDateTime.parse(dateBefore, formatter);
-        return clientService.getWithPredicate(date1, date2, status_id, course_id, occupation, utm);
+                                             @RequestParam(required = false) Long occupation_id
+//                                             @RequestParam(required = false) String utm
+    ) {
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH:mm");
+//        LocalDateTime date1 = null, date2 = null;
+//        if (dateAfter != null)
+//        	date1 = LocalDateTime.parse(dateAfter, formatter);
+//        if (dateBefore != null)
+//            date2 = LocalDateTime.parse(dateBefore, formatter);
+        return clientService.getWithPredicate(status_id, course_id, occupation_id);
     }
 
     @GetMapping("/{id}")
@@ -63,6 +63,12 @@ public class BishkekClientController {
         return clientService.getAllByStatus(status_id);
     }
 
+    @GetMapping("/name/{name}")
+    public List<BishClient> getAllByName(@PathVariable String name) {
+        clientService.addClientsToDB();
+        return clientService.getAllByName(name);
+    }
+
     @PostMapping
     public BishClient addClient(@RequestBody ClientDTO clientDTO) {
         log.info("In Bishkek created new client {}", clientDTO.toString());
@@ -72,6 +78,12 @@ public class BishkekClientController {
     @PutMapping("/{client_id}/status/{status_id}")
     public BishClient changeStatus(Principal principal, @PathVariable("client_id") Long id, @PathVariable("status_id") Long status_id) {
         return clientService.changeStatus(id, status_id, principal.getName());
+    }
+
+    @PutMapping("/{client_id}/city")
+    public ResponseMessage changeCity(@PathVariable Long client_id) {
+        clientService.changeCity(client_id);
+        return new ResponseMessage("Client with id " + client_id + " has been successfully moved to another city");
     }
 
     @PutMapping("/{id}")

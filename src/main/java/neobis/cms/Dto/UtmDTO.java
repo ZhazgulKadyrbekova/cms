@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 
-public class StatusDTO {
+public class UtmDTO {
     private String name;
-    private boolean doska;
 }

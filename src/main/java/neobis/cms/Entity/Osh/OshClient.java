@@ -23,9 +23,6 @@ public class OshClient {
     private LocalDateTime dateCreated;
     private LocalDateTime dateUpdated;
 
-    @Column(name = "is_deleted", precision = 0, nullable = false)
-    private boolean deleted;
-
     @PreUpdate
     public void persistUpdate() {
         this.dateUpdated = LocalDateTime.now();
@@ -37,6 +34,9 @@ public class OshClient {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "surname")
+    private String surname;
+
     @Column(name = "email")
     private String email;
 
@@ -44,8 +44,9 @@ public class OshClient {
     @JoinColumn(name = "status_id", referencedColumnName = "status_id")
     private OshStatuses status;
 
-    @Column(name = "occupation")
-    private String occupation;
+    @ManyToOne
+    @JoinColumn(name = "occupation_id", referencedColumnName = "occupation_id")
+    private OshOccupation occupation;
 
     @Column(name = "target")
     private String target;
@@ -60,8 +61,9 @@ public class OshClient {
     @JoinColumn(name = "course_id", referencedColumnName = "course_id")
     private OshCourses course;
 
-    @Column(name = "utm")
-    private String utm;
+    @ManyToOne
+    @JoinColumn(name = "utm_id", referencedColumnName = "utm_id")
+    private OshUTM utm;
 
     @Column(name = "description")
     private String description;

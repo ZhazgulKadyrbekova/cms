@@ -1,10 +1,8 @@
 package neobis.cms.Service.Osh;
 
 import neobis.cms.Dto.TeacherDTO;
-import neobis.cms.Entity.Bishkek.BishTeachers;
 import neobis.cms.Entity.Osh.OshTeachers;
 import neobis.cms.Exception.ResourceNotFoundException;
-import neobis.cms.Repo.Bishkek.BishTeacherRepo;
 import neobis.cms.Repo.Osh.OshTeacherRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,7 +27,7 @@ public class OshTeacherServiceImpl implements OshTeacherService {
 
     @Override
     public OshTeachers getTeacherByName(String name) {
-        OshTeachers teacher = teacherRepo.findByNameContainingIgnoringCaseAndDeleted(name, false);
+        OshTeachers teacher = teacherRepo.findByNameContainingIgnoringCase(name);
         if (teacher == null)
             throw new ResourceNotFoundException("Teacher with name " + name + " was not found");
         return teacher;
@@ -54,8 +52,7 @@ public class OshTeacherServiceImpl implements OshTeacherService {
     public String deleteTeacherById(long id) {
         OshTeachers teacher = teacherRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Teacher id " + id + " was not found"));
-        teacher.setDeleted(true);
-        teacherRepo.save(teacher);
+        teacherRepo.delete(teacher);
         return "Teacher id " + id + " has successfully deleted";
     }
 }

@@ -23,17 +23,17 @@ public class BishCoursesServiceImpl implements BishCoursesService{
             return null;
         formName = formName.substring(7);
         if (formName.contains("PM"))
-            return coursesRepo.findByNameContainingIgnoringCaseAndDeleted("project manager", false);
+            return coursesRepo.findByNameContainingIgnoringCase("project manager");
         if (formName.contains("Java"))
-            return coursesRepo.findByNameContainingIgnoringCaseAndDeleted("java", false);
+            return coursesRepo.findByNameContainingIgnoringCase("java");
         if (formName.contains("JS"))
-            return coursesRepo.findByNameContainingIgnoringCaseAndDeleted("javascript", false);
+            return coursesRepo.findByNameContainingIgnoringCase("javascript");
         if (formName.contains("python"))
-            return coursesRepo.findByNameContainingIgnoringCaseAndDeleted("python", false);
+            return coursesRepo.findByNameContainingIgnoringCase("python");
         if (formName.contains("design"))
-            return coursesRepo.findByNameContainingIgnoringCaseAndDeleted("design", false);
+            return coursesRepo.findByNameContainingIgnoringCase("design");
         if (formName.contains("olympiad"))
-            return coursesRepo.findByNameContainingIgnoringCaseAndDeleted("olympiad", false);
+            return coursesRepo.findByNameContainingIgnoringCase("olympiad");
         return null;
     }
 
@@ -45,12 +45,12 @@ public class BishCoursesServiceImpl implements BishCoursesService{
 
     @Override
     public List<BishCourses> findAll() {
-        return coursesRepo.findAllByDeleted(false);
+        return coursesRepo.findAll();
     }
 
     @Override
     public List<BishCourses> findCourseByName(String name) {
-        List<BishCourses> courses = coursesRepo.findAllByNameContainingIgnoringCaseAndDeleted(name, false);
+        List<BishCourses> courses = coursesRepo.findAllByNameContainingIgnoringCase(name);
         if (courses.isEmpty())
             throw new ResourceNotFoundException("Course with name " + name + " has not found");
         return courses;
@@ -81,8 +81,7 @@ public class BishCoursesServiceImpl implements BishCoursesService{
     public String deleteCourse(long id) {
         BishCourses course = coursesRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Course with id " + id + " has not found"));
-        course.setDeleted(true);
-        coursesRepo.save(course);
+        coursesRepo.delete(course);
         return "Course with id " + id + " has not found";
     }
 }

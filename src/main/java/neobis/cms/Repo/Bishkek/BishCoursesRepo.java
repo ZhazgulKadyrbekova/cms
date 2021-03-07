@@ -8,7 +8,6 @@ import java.util.List;
 
 @Repository
 public interface BishCoursesRepo extends JpaRepository<BishCourses, Long> {
-    List<BishCourses> findAllByNameContainingIgnoringCaseAndDeleted(String name, boolean deleted);
-    BishCourses findByNameContainingIgnoringCaseAndDeleted(String name, boolean deleted);
-    List<BishCourses> findAllByDeleted(boolean deleted);
+    List<BishCourses> findAllByNameContainingIgnoringCase(String name);
+    BishCourses findByNameContainingIgnoringCase(String name);
 }

@@ -24,4 +24,7 @@ public class BishStatuses extends Base {
 
     @Column(name = "name")
     private String name;
+
+    @Column(name = "doska")
+    private boolean doska;
 }

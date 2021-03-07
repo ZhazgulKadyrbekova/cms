@@ -78,7 +78,7 @@ public class UserServiceImpl implements UserService {
         user.setConfirmed(false);
         String roleName = "ROLE_" + userDTO.getCity().toUpperCase();
         roleName += (userDTO.getPosition().equals("marketing")) ? "_MARKET" : "_SALE";
-        Role role = roleRepo.findByNameContainingIgnoringCaseAndDeleted(roleName, false);
+        Role role = roleRepo.findByNameContainingIgnoringCase(roleName);
         if (role == null) {
             role = roleRepo.save(new Role(roleName));
         }

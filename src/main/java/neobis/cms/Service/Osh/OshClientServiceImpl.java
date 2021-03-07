@@ -1,17 +1,26 @@
 package neobis.cms.Service.Osh;
 
 import neobis.cms.Dto.ClientDTO;
-import neobis.cms.Entity.Bishkek.History;
-import neobis.cms.Entity.Osh.OshClient;
-import neobis.cms.Entity.Osh.OshStatuses;
+import neobis.cms.Entity.Bishkek.*;
+import neobis.cms.Entity.Osh.*;
 import neobis.cms.Exception.ResourceNotFoundException;
-import neobis.cms.Repo.Osh.OshStatusesRepo;
+import neobis.cms.Repo.Bishkek.BishClientRepo;
+import neobis.cms.Repo.Bishkek.BishOccupationRepo;
+import neobis.cms.Repo.Bishkek.BishStatusesRepo;
+import neobis.cms.Repo.Bishkek.BishUTMRepo;
 import neobis.cms.Repo.Osh.OshClientRepo;
+import neobis.cms.Repo.Osh.OshOccupationRepo;
+import neobis.cms.Repo.Osh.OshStatusesRepo;
+import neobis.cms.Repo.Osh.OshUTMRepo;
+import neobis.cms.Search.GenericSpecification;
+import neobis.cms.Search.SearchCriteria;
+import neobis.cms.Search.SearchOperation;
+import neobis.cms.Service.Bishkek.BishPaymentService;
 import neobis.cms.Service.Bishkek.HistoryService;
 import neobis.cms.Service.Bishkek.UserService;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -26,25 +35,53 @@ import java.util.Iterator;
 import java.util.List;
 
 @Service
+@Lazy
 public class OshClientServiceImpl implements OshClientService {
 
-    @Autowired
-    private OshClientRepo clientRepo;
+    private final BishClientRepo bishClientRepo;
+    private final OshClientRepo oshClientRepo;
 
-    @Autowired
-    private OshStatusesRepo statusesRepo;
+    private final BishStatusesRepo bishStatusesRepo;
+    private final OshStatusesRepo oshStatusesRepo;
 
-    @Autowired
-    private OshCoursesService coursesService;
+    private final BishOccupationRepo bishOccupationRepo;
 
-    @Autowired
-    private HistoryService historyService;
+    private final OshOccupationRepo oshOccupationRepo;
 
-    @Autowired
-    private UserService userService;
+    private final BishUTMRepo bishUTMRepo;
+
+    private final OshUTMRepo oshUTMRepo;
+
+    private final OshCoursesService coursesService;
+
+    private BishPaymentService bishPaymentService;
+    private OshPaymentService oshPaymentService;
+
+    private final HistoryService historyService;
+
+    private final UserService userService;
 
     private final String dataResourceUrl
             = "https://neolabs.dev/mod/api/?api_key=e539509b630b27e47ac594d0dbba4e69&method=getLeads";
+
+    public OshClientServiceImpl(BishClientRepo bishClientRepo, OshClientRepo oshClientRepo, BishStatusesRepo bishStatusesRepo,
+                                OshStatusesRepo oshStatusesRepo, BishOccupationRepo bishOccupationRepo, OshOccupationRepo oshOccupationRepo,
+                                BishUTMRepo bishUTMRepo, OshUTMRepo oshUTMRepo, OshCoursesService coursesService, @Lazy BishPaymentService bishPaymentService,
+                                @Lazy OshPaymentService oshPaymentService, HistoryService historyService, UserService userService) {
+        this.bishClientRepo = bishClientRepo;
+        this.oshClientRepo = oshClientRepo;
+        this.bishStatusesRepo = bishStatusesRepo;
+        this.oshStatusesRepo = oshStatusesRepo;
+        this.bishPaymentService = bishPaymentService;
+        this.oshPaymentService = oshPaymentService;
+        this.bishOccupationRepo = bishOccupationRepo;
+        this.oshOccupationRepo = oshOccupationRepo;
+        this.bishUTMRepo = bishUTMRepo;
+        this.oshUTMRepo = oshUTMRepo;
+        this.coursesService = coursesService;
+        this.historyService = historyService;
+        this.userService = userService;
+    }
 
     @Override
     public LocalDateTime getDateOfLastClient(List<OshClient> clients) {
@@ -81,7 +118,7 @@ public class OshClientServiceImpl implements OshClientService {
     public OshClient create(OshClient client) {
 //        client.setStatus("New");
         client.setCity("Osh");
-        return clientRepo.save(client);
+        return oshClientRepo.save(client);
     }
 
     @Override
@@ -108,8 +145,43 @@ public class OshClientServiceImpl implements OshClientService {
                                 client.setPhoneNo(data.getString(key));
                                 break;
                             case "url" :
-                                if (!data.getString(key).equals("neolabs.dev/"))
-                                    client.setUtm(data.getString(key));
+                                if (!data.getString(key).equals("neolabs.dev/")) {
+                                    String utmName = data.getString(key);
+                                    OshUTM utm;
+                                    if (utmName.contains("instagram")) {
+                                        utm = oshUTMRepo.findByNameContainingIgnoringCase("instagram").orElse(null);
+                                        if (utm == null) {
+                                            bishUTMRepo.save(new BishUTM(0, "instagram"));
+                                            utm = oshUTMRepo.save(new OshUTM(0, "instagram"));
+                                        }
+                                        client.setUtm(utm);
+                                    }
+                                    if (utmName.contains("facebook")) {
+                                        utm = oshUTMRepo.findByNameContainingIgnoringCase("facebook").orElse(null);
+                                        if (utm == null) {
+                                            bishUTMRepo.save(new BishUTM(0, "facebook"));
+                                            utm = oshUTMRepo.save(new OshUTM(0, "facebook"));
+                                        }
+                                        client.setUtm(utm);
+                                    }
+                                    if (utmName.contains("google")) {
+                                        utm = oshUTMRepo.findByNameContainingIgnoringCase("google").orElse(null);
+                                        if (utm == null) {
+                                            bishUTMRepo.save(new BishUTM(0, "google"));
+                                            utm = oshUTMRepo.save(new OshUTM(0, "google"));
+                                        }
+                                        client.setUtm(utm);
+                                    }
+                                    if (utmName.contains("neobis")) {
+                                        utm = oshUTMRepo.findByNameContainingIgnoringCase("neobis").orElse(null);
+                                        if (utm == null) {
+                                            bishUTMRepo.save(new BishUTM(0, "neobis"));
+                                            utm = oshUTMRepo.save(new OshUTM(0, "neobis"));
+                                        }
+                                        client.setUtm(utm);
+                                    }
+
+                                }
                                 break;
                             case "value" :
                                 target = (data.getString(key).equals("Освоить профессию программиста") ||
@@ -124,11 +196,15 @@ public class OshClientServiceImpl implements OshClientService {
                                     client.setTarget(data.getString(key));
                                 }
                                 if (occupation) {
-                                    client.setOccupation(data.getString(key));
+                                    String occupationName = data.getString(key);
+                                    OshOccupation oshOccupation = oshOccupationRepo.findByNameContainingIgnoringCase(occupationName).orElse(null);
+                                    if (oshOccupation == null) {
+                                        bishOccupationRepo.save(new BishOccupation(0, occupationName));
+                                        oshOccupation = oshOccupationRepo.save(new OshOccupation(0, occupationName));
+                                    }
+                                    client.setOccupation(oshOccupation);
                                 }
-                                if (experience) {
-                                    client.setExperience(experience);
-                                }
+                                client.setExperience(experience);
                                 break;
                             case "form_name" :
                                 client.setFormName(data.getString(key));
@@ -187,12 +263,12 @@ public class OshClientServiceImpl implements OshClientService {
 
     @Override
     public List<OshClient> getAllClientsFromDB() {
-        return clientRepo.findAllByDeletedOrderByDateCreatedDesc(false);
+        return oshClientRepo.findAllByOrderByDateCreatedDesc();
     }
 
     @Override
     public void addClientsToDB() {
-        LocalDateTime dateTime = this.getDateOfLastClient(clientRepo.findAllByDeletedOrderByDateCreatedDesc(false));
+        LocalDateTime dateTime = this.getDateOfLastClient(oshClientRepo.findAllByOrderByDateCreatedDesc());
         JSONObject data;
         if (dateTime == null)
             data = new JSONObject(this.getNewClients());
@@ -205,9 +281,28 @@ public class OshClientServiceImpl implements OshClientService {
 
     @Override
     public List<OshClient> getAllByStatus(long status) {
-        OshStatuses oshStatuses = statusesRepo.findById(status)
+        OshStatuses oshStatuses = oshStatusesRepo.findById(status)
                 .orElseThrow(() -> new ResourceNotFoundException("Status with id " + status + " has not found"));
-        return clientRepo.findAllByDeletedAndStatusOrderByDateCreatedDesc(false, oshStatuses);
+        return oshClientRepo.findAllByStatusOrderByDateCreatedDesc(oshStatuses);
+    }
+
+    @Override
+    public List<OshClient> getAllByName(String name) {
+        List<OshClient> clients = oshClientRepo.findAllBySurnameContainingIgnoringCase(name);
+        clients.addAll(oshClientRepo.findAllByNameContainingIgnoringCase(name));
+        return clients;
+    }
+
+    @Override
+    public List<OshClient> getWithPredicate(Long status, Long course, Long occupation) {
+        GenericSpecification genericSpecification = new GenericSpecification<OshClient>();
+        if (status != null)
+            genericSpecification.add(new SearchCriteria("status", status, SearchOperation.EQUAL));
+        if (course != null)
+            genericSpecification.add(new SearchCriteria("course", course, SearchOperation.EQUAL));
+        if (occupation != null)
+            genericSpecification.add(new SearchCriteria("occupation", occupation, SearchOperation.EQUAL));
+        return oshClientRepo.findAll(genericSpecification);
     }
 
     @Override
@@ -217,9 +312,9 @@ public class OshClientServiceImpl implements OshClientService {
         client.setPhoneNo(clientDTO.getPhoneNo());
         client.setName(clientDTO.getName());
         client.setEmail(clientDTO.getEmail());
-        client.setStatus(statusesRepo.findById(clientDTO.getStatus())
+        client.setStatus(oshStatusesRepo.findById(clientDTO.getStatus())
                 .orElseThrow(() -> new ResourceNotFoundException("Status with id " + clientDTO.getStatus() + " has not found")));
-        client.setOccupation(clientDTO.getOccupation());
+        client.setOccupation(oshOccupationRepo.findById(clientDTO.getOccupation()).orElse(null));
         client.setTarget(clientDTO.getTarget());
         client.setExperience(clientDTO.isExperience());
         client.setLaptop(clientDTO.isLaptop());
@@ -229,23 +324,23 @@ public class OshClientServiceImpl implements OshClientService {
         client.setTimer(LocalDateTime.now().plusHours(24L));
         client.setPrepayment(clientDTO.getPrepayment());
         client.setLeavingReason(clientDTO.getLeavingReason());
-        return clientRepo.save(client);
+        return oshClientRepo.save(client);
     }
 
     @Override
     public OshClient getClientByName(String name) {
-        return clientRepo.findByNameContainingIgnoringCaseAndDeleted(name, false);
+        return oshClientRepo.findByNameContainingIgnoringCase(name);
     }
 
     @Override
     public OshClient getClientByID(long id) {
-        return clientRepo.findById(id)
+        return oshClientRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Client with id " + id + " has not found"));
     }
 
     @Override
     public OshClient changeStatus(long id, long status, String username) {
-        OshClient client = clientRepo.findById(id)
+        OshClient client = oshClientRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Client with id " + id + " has not found"));
         History history = new History();
         history.setAction("change status");
@@ -255,13 +350,13 @@ public class OshClientServiceImpl implements OshClientService {
             history.setOldData(client.getStatus().getName());
         history.setUser(userService.findByEmail(username));
 
-        OshStatuses statuses = statusesRepo.findById(status)
+        OshStatuses statuses = oshStatusesRepo.findById(status)
                 .orElseThrow(() -> new ResourceNotFoundException("Status with id " + id + " has not found"));
         history.setNewData(statuses.getName());
 
         client.setStatus(statuses);
         client.setTimer(LocalDateTime.now().plusHours(24L));
-        client = clientRepo.save(client);
+        client = oshClientRepo.save(client);
 
         historyService.create(history);
         return client;
@@ -269,7 +364,7 @@ public class OshClientServiceImpl implements OshClientService {
 
     @Override
     public OshClient updateClient(long id, ClientDTO clientDTO, String username) {
-        OshClient client = clientRepo.findById(id)
+        OshClient client = oshClientRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Client with id " + id + " has not found"));
         History history = new History();
         history.setAction("update client info");
@@ -279,15 +374,17 @@ public class OshClientServiceImpl implements OshClientService {
             history.setOldData(client.getStatus().getName());
         history.setUser(userService.findByEmail(username));
 
-        OshStatuses statuses = statusesRepo.findById(clientDTO.getStatus())
-                .orElseThrow(() -> new ResourceNotFoundException("Status with id " + id + " has not found"));
-        history.setNewData(statuses.getName());
+        if (clientDTO.getStatus() != 0) {
+            OshStatuses statuses = oshStatusesRepo.findById(clientDTO.getStatus())
+                    .orElseThrow(() -> new ResourceNotFoundException("Status with id " + clientDTO.getStatus() + " has not found"));
+            history.setNewData(statuses.getName());
+            client.setStatus(statuses);
+        }
 
-        client.setStatus(statuses);
         client.setPhoneNo(clientDTO.getPhoneNo());
         client.setName(clientDTO.getName());
         client.setEmail(clientDTO.getEmail());
-        client.setOccupation(clientDTO.getOccupation());
+        client.setOccupation(oshOccupationRepo.findById(clientDTO.getOccupation()).orElse(null));
         client.setTarget(clientDTO.getTarget());
         client.setExperience(clientDTO.isExperience());
         client.setLaptop(clientDTO.isLaptop());
@@ -299,10 +396,61 @@ public class OshClientServiceImpl implements OshClientService {
         else    client.setTimer(clientDTO.getTimer());
         client.setPrepayment(clientDTO.getPrepayment());
         client.setLeavingReason(clientDTO.getLeavingReason());
-        client = clientRepo.save(client);
+        client = oshClientRepo.save(client);
 
         if (!history.getNewData().equals(history.getOldData()))
             historyService.create(history);
         return client;
+    }
+
+    @Override
+    public void changeCity(long id) {
+        OshClient oshClient = oshClientRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Client with id " + id + " has not found"));
+
+//        First step - create bishClient
+        BishClient bishClient = new BishClient();
+        bishClient.setDateCreated(oshClient.getDateCreated());
+        bishClient.setPhoneNo(oshClient.getPhoneNo());
+        bishClient.setName(oshClient.getName());
+        bishClient.setSurname(oshClient.getSurname());
+        bishClient.setEmail(oshClient.getEmail());
+        if (oshClient.getStatus() != null)
+            bishClient.setStatus(bishStatusesRepo.findByNameContainingIgnoringCase(oshClient.getStatus().getName()));
+        if (oshClient.getOccupation() != null)
+            bishClient.setOccupation(bishOccupationRepo.findByNameContainingIgnoringCase(oshClient.getOccupation().getName()).orElse(null));
+        bishClient.setTarget(oshClient.getTarget());
+        bishClient.setExperience(oshClient.isExperience());
+        bishClient.setLaptop(oshClient.isLaptop());
+        if (oshClient.getUtm() != null)
+            bishClient.setUtm(bishUTMRepo.findByNameContainingIgnoringCase(oshClient.getUtm().getName()).orElse(null));
+        bishClient.setDescription(oshClient.getDescription());
+        bishClient.setCity("OSH");
+        bishClient.setFormName(oshClient.getFormName());
+//         TODO
+        bishClient.setTimer(oshClient.getTimer());
+        bishClient.setPrepayment(oshClient.getPrepayment());
+        bishClient.setLeavingReason(oshClient.getLeavingReason());
+        bishClientRepo.save(bishClient);
+
+//        Second step - create all payments of oshClient
+        List<OshPayment> oshPayments =  oshPaymentService.getAllByClientID(id);
+        List<BishPayment> bishPayments = new ArrayList<>();
+        for (OshPayment oshPayment : oshPayments) {
+            BishPayment bishPayment = new BishPayment();
+            bishPayment.setMonth(oshPayment.getMonth());
+            bishPayment.setPrice(oshPayment.getPrice());
+            bishPayment.setDone(oshPayment.isDone());
+            bishPayment.setMethod(oshPayment.getMethod());
+            bishPayment.setClient(bishClient);
+            bishPayments.add(bishPaymentService.save(bishPayment));
+
+//            Third step is inside of second step - delete payments of oshClient
+            oshPaymentService.delete(oshPayment);
+        }
+
+//        Fourth step - delete oshClient
+        oshClientRepo.delete(oshClient);
+
     }
 }

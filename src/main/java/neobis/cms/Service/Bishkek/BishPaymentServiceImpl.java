@@ -5,11 +5,13 @@ import neobis.cms.Entity.Bishkek.BishClient;
 import neobis.cms.Entity.Bishkek.BishPayment;
 import neobis.cms.Repo.Bishkek.BishPaymentRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@Lazy
 public class BishPaymentServiceImpl implements BishPaymentService {
     @Autowired
     private BishPaymentRepo paymentRepo;
@@ -23,7 +25,7 @@ public class BishPaymentServiceImpl implements BishPaymentService {
     }
 
     @Override
-    public List<BishPayment> getAllByClient(long id) {
+    public List<BishPayment> getAllByClientID(long id) {
         BishClient client = clientService.getClientById(id);
         return paymentRepo.findAllByClient(client);
     }
@@ -37,5 +39,15 @@ public class BishPaymentServiceImpl implements BishPaymentService {
         payment.setMethod(paymentDTO.getMethod());
         payment.setClient(clientService.getClientById(paymentDTO.getClient()));
         return paymentRepo.save(payment);
+    }
+
+    @Override
+    public BishPayment save(BishPayment payment) {
+        return paymentRepo.save(payment);
+    }
+
+    @Override
+    public void delete(BishPayment payment) {
+        paymentRepo.delete(payment);
     }
 }

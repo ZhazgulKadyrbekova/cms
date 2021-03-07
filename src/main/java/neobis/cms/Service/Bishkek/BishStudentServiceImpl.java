@@ -1,11 +1,7 @@
 package neobis.cms.Service.Bishkek;
 
-import neobis.cms.Entity.Bishkek.BishClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 public class BishStudentServiceImpl implements BishStudentService{

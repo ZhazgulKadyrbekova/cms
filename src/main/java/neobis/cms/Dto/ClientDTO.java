@@ -14,15 +14,15 @@ import java.time.LocalDateTime;
 public class ClientDTO {
     private String phoneNo;
     private String name;
+    private String surname;
     private String email;
     private long status;
-    private String occupation;
+    private long occupation;
     private String target;
     private boolean experience;
     private boolean laptop;
     private long course;
     private String description;
-    private String city;
     private LocalDateTime timer;
     private BigDecimal prepayment;
     private String leavingReason;

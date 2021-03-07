@@ -10,9 +10,9 @@ import java.util.List;
 
 @Repository
 public interface BishClientRepo extends JpaRepository<BishClient, Long>, JpaSpecificationExecutor<BishClient> {
-    List<BishClient> findAllByDeletedOrderByDateCreatedDesc(boolean deleted);
-    List<BishClient> findAllByDeletedAndStatusOrderByDateCreatedDesc(boolean deleted, BishStatuses status);
-//    List<BishClient> findAllByDeletedAndStatusIgnoringCaseOrderByDateCreatedDesc(boolean deleted, Statuses status);
-//    BishClient findByNameContainingIgnoringCase(String name);
-    BishClient findByNameContainingIgnoringCaseAndDeleted(String name, boolean deleted);
+    List<BishClient> findAllByOrderByDateCreatedDesc();
+    List<BishClient> findAllByStatusOrderByDateCreatedDesc(BishStatuses status);
+    List<BishClient> findAllByNameContainingIgnoringCase(String name);
+    List<BishClient> findAllBySurnameContainingIgnoringCase(String surname);
+    BishClient findByNameContainingIgnoringCase(String name);
 }

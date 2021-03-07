@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface BishPaymentService {
     List<BishPayment> getAll();
-    List<BishPayment> getAllByClient(long id);
+    List<BishPayment> getAllByClientID(long id);
     BishPayment create(PaymentDTO paymentDTO);
+    BishPayment save(BishPayment payment);
+    void delete(BishPayment payment);
 }

@@ -20,8 +20,6 @@ public class Base {
     private LocalDateTime dateCreated;
     @Column(name = "date_updated")
     private LocalDateTime dateUpdated;
-    @Column(name = "is_deleted", precision = 0, nullable = false)
-    private boolean deleted;
 
     @PrePersist
     public void onPrePersist() {

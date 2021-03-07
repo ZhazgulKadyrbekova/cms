@@ -27,7 +27,7 @@ public class BishTeacherServiceImpl implements BishTeacherService {
 
     @Override
     public BishTeachers getTeacherByName(String name) {
-        BishTeachers teacher = teacherRepo.findByNameContainingIgnoringCaseAndDeleted(name, false);
+        BishTeachers teacher = teacherRepo.findByNameContainingIgnoringCase(name);
         if (teacher == null)
             throw new ResourceNotFoundException("Teacher with name " + name + " was not found");
         return teacher;
@@ -52,8 +52,7 @@ public class BishTeacherServiceImpl implements BishTeacherService {
     public String deleteTeacherById(long id) {
         BishTeachers teacher = teacherRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Teacher id " + id + " was not found"));
-        teacher.setDeleted(true);
-        teacherRepo.save(teacher);
+        teacherRepo.delete(teacher);
         return "Teacher id " + id + " has successfully deleted";
     }
 }

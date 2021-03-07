@@ -6,7 +6,6 @@ import neobis.cms.Entity.Osh.OshStatuses;
 import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Bishkek.BishStatusesRepo;
 import neobis.cms.Repo.Osh.OshStatusesRepo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,22 +13,30 @@ import java.util.List;
 @CrossOrigin
 @RestController
 @RequestMapping("/status")
-public class BishkekStatusController {
-    @Autowired
-    private BishStatusesRepo bishStatusesRepo;
+public class StatusController {
+    private final BishStatusesRepo bishStatusesRepo;
 
-    @Autowired
-    private OshStatusesRepo oshStatusesRepo;
+    private final OshStatusesRepo oshStatusesRepo;
+
+    public StatusController(BishStatusesRepo bishStatusesRepo, OshStatusesRepo oshStatusesRepo) {
+        this.bishStatusesRepo = bishStatusesRepo;
+        this.oshStatusesRepo = oshStatusesRepo;
+    }
 
     @GetMapping
     public List<BishStatuses> getStatuses() {
-        return bishStatusesRepo.findAll();
+        return bishStatusesRepo.findAllByOrderByDateCreatedDesc();
+    }
+
+    @GetMapping("/doska")
+    public List<BishStatuses> getStatusesDoska() {
+        return bishStatusesRepo.findAllByDoska(true);
     }
 
     @PostMapping
     public BishStatuses addStatus(@RequestBody StatusDTO status) {
-        oshStatusesRepo.save(new OshStatuses(0, status.getName()));
-        return bishStatusesRepo.save(new BishStatuses(0, status.getName()));
+        oshStatusesRepo.save(new OshStatuses(0, status.getName(), status.isDoska()));
+        return bishStatusesRepo.save(new BishStatuses(0, status.getName(), status.isDoska()));
     }
 
     @PutMapping("/{id}")
@@ -40,8 +47,10 @@ public class BishkekStatusController {
                 .orElseThrow(() -> new ResourceNotFoundException("Status with id " + id + " has not found"));
 
         oshStatuses.setName(status.getName());
+        oshStatuses.setDoska(status.isDoska());
         oshStatusesRepo.save(oshStatuses);
         bishStatuses.setName(status.getName());
+        bishStatuses.setDoska(status.isDoska());
         return bishStatusesRepo.save(bishStatuses);
     }
 }

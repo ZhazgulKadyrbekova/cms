@@ -8,7 +8,7 @@ import lombok.Data;
 
 public class SearchCriteria {
     private String key;
-    private String key2;
+//    private String key2;
     private Object value;
     private SearchOperation operation;
 
