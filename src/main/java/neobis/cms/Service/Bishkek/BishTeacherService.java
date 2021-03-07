@@ -8,7 +8,7 @@ import java.util.List;
 public interface BishTeacherService {
     List<BishTeachers> getAllTeachers();
     BishTeachers getTeacherById(long id);
-    BishTeachers getTeacherByName(String name);
+    List<BishTeachers> getTeachersByName(String name);
     BishTeachers addTeacher(TeacherDTO teacherDTO);
     BishTeachers updateTeacherInfo(long id, TeacherDTO teacherDTO);
     String deleteTeacherById(long id);

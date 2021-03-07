@@ -23,4 +23,7 @@ public class OshTeachers extends Base {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "surname")
+    private String surname;
+
 }

@@ -26,17 +26,17 @@ public class BishTeacherServiceImpl implements BishTeacherService {
     }
 
     @Override
-    public BishTeachers getTeacherByName(String name) {
-        BishTeachers teacher = teacherRepo.findByNameContainingIgnoringCase(name);
-        if (teacher == null)
-            throw new ResourceNotFoundException("Teacher with name " + name + " was not found");
-        return teacher;
+    public List<BishTeachers> getTeachersByName(String name) {
+        List<BishTeachers> teachers = teacherRepo.findAllBySurnameContainingIgnoringCase(name);
+        teachers.addAll(teacherRepo.findAllByNameContainingIgnoringCase(name));
+        return teachers;
     }
 
     @Override
     public BishTeachers addTeacher(TeacherDTO teacherDTO) {
         BishTeachers teacher = new BishTeachers();
         teacher.setName(teacherDTO.getName());
+        teacher.setSurname(teacherDTO.getSurname());
         return teacherRepo.save(teacher);
     }
 
@@ -45,6 +45,7 @@ public class BishTeacherServiceImpl implements BishTeacherService {
         BishTeachers teacher = teacherRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Teacher id " + id + " was not found"));
         teacher.setName(teacherDTO.getName());
+        teacher.setSurname(teacherDTO.getSurname());
         return teacherRepo.save(teacher);
     }
 

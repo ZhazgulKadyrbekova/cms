@@ -2,9 +2,7 @@ package neobis.cms.Controller.Osh;
 
 import neobis.cms.Dto.ResponseMessage;
 import neobis.cms.Dto.TeacherDTO;
-import neobis.cms.Entity.Bishkek.BishTeachers;
 import neobis.cms.Entity.Osh.OshTeachers;
-import neobis.cms.Service.Bishkek.BishTeacherService;
 import neobis.cms.Service.Osh.OshTeacherService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

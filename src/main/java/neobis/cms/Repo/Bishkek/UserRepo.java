@@ -12,5 +12,6 @@ public interface UserRepo extends JpaRepository<User, Long> {
     User findByEmailIgnoringCase(String email);
     User findByActivationCode(String activationCode);
     List<User> findAllByConfirmed(boolean isConfirmed);
+    List<User> findAllByCityContainingIgnoringCase(String city);
     void deleteByEmail(String email);
 }

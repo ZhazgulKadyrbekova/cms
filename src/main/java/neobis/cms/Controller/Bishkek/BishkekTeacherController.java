@@ -31,8 +31,8 @@ public class BishkekTeacherController {
     }
 
     @GetMapping("/name/{name}")
-    public BishTeachers getByName(@PathVariable String name) {
-        return teacherService.getTeacherByName(name);
+    public List<BishTeachers> getByName(@PathVariable String name) {
+        return teacherService.getTeachersByName(name);
     }
 
     @PostMapping

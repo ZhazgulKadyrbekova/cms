@@ -35,7 +35,6 @@ import java.util.Iterator;
 import java.util.List;
 
 @Service
-@Lazy
 public class OshClientServiceImpl implements OshClientService {
 
     private final BishClientRepo bishClientRepo;
@@ -45,11 +44,9 @@ public class OshClientServiceImpl implements OshClientService {
     private final OshStatusesRepo oshStatusesRepo;
 
     private final BishOccupationRepo bishOccupationRepo;
-
     private final OshOccupationRepo oshOccupationRepo;
 
     private final BishUTMRepo bishUTMRepo;
-
     private final OshUTMRepo oshUTMRepo;
 
     private final OshCoursesService coursesService;
@@ -311,17 +308,24 @@ public class OshClientServiceImpl implements OshClientService {
         client.setDateCreated(LocalDateTime.now());
         client.setPhoneNo(clientDTO.getPhoneNo());
         client.setName(clientDTO.getName());
+        client.setSurname(clientDTO.getSurname());
         client.setEmail(clientDTO.getEmail());
-        client.setStatus(oshStatusesRepo.findById(clientDTO.getStatus())
+        if (clientDTO.getStatus() != 0)
+            client.setStatus(oshStatusesRepo.findById(clientDTO.getStatus())
                 .orElseThrow(() -> new ResourceNotFoundException("Status with id " + clientDTO.getStatus() + " has not found")));
-        client.setOccupation(oshOccupationRepo.findById(clientDTO.getOccupation()).orElse(null));
+        if (clientDTO.getOccupation() != 0)
+            client.setOccupation(oshOccupationRepo.findById(clientDTO.getOccupation()).orElse(null));
         client.setTarget(clientDTO.getTarget());
         client.setExperience(clientDTO.isExperience());
         client.setLaptop(clientDTO.isLaptop());
-        client.setCourse(coursesService.findCourseById(clientDTO.getCourse()));
+        if (clientDTO.getCourse() != 0)
+            client.setCourse(coursesService.findCourseById(clientDTO.getCourse()));
         client.setDescription(clientDTO.getDescription());
         client.setCity("OSH");
-        client.setTimer(LocalDateTime.now().plusHours(24L));
+        if (clientDTO.getTimer() == null)
+            client.setTimer(LocalDateTime.now().plusHours(24L));
+        else
+            client.setTimer(clientDTO.getTimer());
         client.setPrepayment(clientDTO.getPrepayment());
         client.setLeavingReason(clientDTO.getLeavingReason());
         return oshClientRepo.save(client);
@@ -355,7 +359,11 @@ public class OshClientServiceImpl implements OshClientService {
         history.setNewData(statuses.getName());
 
         client.setStatus(statuses);
-        client.setTimer(LocalDateTime.now().plusHours(24L));
+        if (client.getTimer() == null) {
+            client.setTimer(LocalDateTime.now().plusHours(24L));
+        } else if (client.getTimer().isAfter(LocalDateTime.now().plusHours(24L))){
+            client.setTimer(LocalDateTime.now().plusHours(24L));
+        }
         client = oshClientRepo.save(client);
 
         historyService.create(history);
@@ -383,22 +391,32 @@ public class OshClientServiceImpl implements OshClientService {
 
         client.setPhoneNo(clientDTO.getPhoneNo());
         client.setName(clientDTO.getName());
+        client.setSurname(clientDTO.getSurname());
         client.setEmail(clientDTO.getEmail());
-        client.setOccupation(oshOccupationRepo.findById(clientDTO.getOccupation()).orElse(null));
+
+	    if (clientDTO.getOccupation() != 0)
+	        client.setOccupation(oshOccupationRepo.findById(clientDTO.getOccupation()).orElse(null));
         client.setTarget(clientDTO.getTarget());
         client.setExperience(clientDTO.isExperience());
         client.setLaptop(clientDTO.isLaptop());
-        client.setCourse(coursesService.findCourseById(clientDTO.getCourse()));
+	    if (clientDTO.getCourse() != 0)
+	        client.setCourse(coursesService.findCourseById(clientDTO.getCourse()));
         client.setDescription(clientDTO.getDescription());
-//        client.setCity("OSH");
-        if (clientDTO.getTimer() == null)
-            client.setTimer(LocalDateTime.now().plusHours(24L));
-        else    client.setTimer(clientDTO.getTimer());
+        client.setCity("OSH");
+        if (client.getTimer() == null) {
+            if (clientDTO.getTimer() == null)
+                client.setTimer(LocalDateTime.now().plusHours(24L));
+            else
+                client.setTimer(clientDTO.getTimer());
+        } else if (!client.getTimer().isAfter(LocalDateTime.now().plusHours(24L))){
+            client.setTimer(clientDTO.getTimer());
+        }
         client.setPrepayment(clientDTO.getPrepayment());
         client.setLeavingReason(clientDTO.getLeavingReason());
         client = oshClientRepo.save(client);
 
-        if (!history.getNewData().equals(history.getOldData()))
+        if ((history.getNewData().isEmpty() || history.getNewData() == null)
+                                            & !history.getNewData().equals(history.getOldData()))
             historyService.create(history);
         return client;
     }

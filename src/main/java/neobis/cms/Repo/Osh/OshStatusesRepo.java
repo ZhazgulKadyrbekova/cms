@@ -11,4 +11,5 @@ public interface OshStatusesRepo extends JpaRepository<OshStatuses, Long> {
     OshStatuses findByNameContainingIgnoringCase(String name);
     List<OshStatuses> findAllByDoska(boolean doska);
     List<OshStatuses> findAllByOrderByDateCreatedDesc();
+    List<OshStatuses> findAllByNameContainingIgnoringCase(String name);
 }

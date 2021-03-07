@@ -1,6 +1,7 @@
 package neobis.cms.Controller.Bishkek;
 
 import neobis.cms.Dto.UtmDTO;
+import neobis.cms.Entity.Bishkek.BishStatuses;
 import neobis.cms.Entity.Bishkek.BishUTM;
 import neobis.cms.Entity.Osh.OshUTM;
 import neobis.cms.Exception.ResourceNotFoundException;
@@ -29,12 +30,17 @@ public class UTMController {
         return bishUTMRepo.save(new BishUTM(0, utmDTO.getName()));
     }
 
+    @GetMapping("/name/{name}")
+    public List<BishUTM> getAllByName(@PathVariable String name) {
+        return bishUTMRepo.findAllByNameContainingIgnoringCase(name);
+    }
+
     @PutMapping("/{id}")
     public BishUTM updateOccupationName(@RequestBody UtmDTO occupationDTO, @PathVariable Long id) {
         OshUTM oshUTM = oshUTMRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Occupation with id " + id + " has not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("UTM with id " + id + " has not found"));
         BishUTM bishUTM = bishUTMRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Occupation with id " + id + " has not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("UTM with id " + id + " has not found"));
 
         oshUTM.setName(occupationDTO.getName());
         oshUTMRepo.save(oshUTM);

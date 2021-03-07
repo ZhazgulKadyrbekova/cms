@@ -32,6 +32,11 @@ public class UserController {
         return userService.findByEmail(principal.getName());
     }
 
+    @GetMapping("/city/{city}")
+    public List<User> getAllByCity(@PathVariable String city) {
+        return userService.getUsersByCity(city);
+    }
+
     @PostMapping("/changePassword")
     public ResponseMessage changePassword(@RequestBody UserPasswordsDTO userPasswordDTO) {
         log.info("User {} changed password", userPasswordDTO.getEmail());

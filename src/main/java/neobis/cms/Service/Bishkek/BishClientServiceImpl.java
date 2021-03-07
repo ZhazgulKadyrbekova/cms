@@ -334,17 +334,24 @@ public class BishClientServiceImpl implements BishClientService {
         client.setDateCreated(LocalDateTime.now());
         client.setPhoneNo(clientDTO.getPhoneNo());
         client.setName(clientDTO.getName());
+        client.setSurname(clientDTO.getSurname());
         client.setEmail(clientDTO.getEmail());
-        client.setStatus(bishStatusesRepo.findById(clientDTO.getStatus())
+        if (clientDTO.getStatus() != 0)
+            client.setStatus(bishStatusesRepo.findById(clientDTO.getStatus())
                 .orElseThrow(() -> new ResourceNotFoundException("Status with id " + clientDTO.getStatus() + " has not found")));
-        client.setOccupation(bishOccupationRepo.findById(clientDTO.getOccupation()).orElse(null));
+        if (clientDTO.getOccupation() != 0)
+            client.setOccupation(bishOccupationRepo.findById(clientDTO.getOccupation()).orElse(null));
         client.setTarget(clientDTO.getTarget());
         client.setExperience(clientDTO.isExperience());
         client.setLaptop(clientDTO.isLaptop());
-        client.setCourse(coursesService.findCourseById(clientDTO.getCourse()));
+        if (clientDTO.getCourse() != 0)
+            client.setCourse(coursesService.findCourseById(clientDTO.getCourse()));
         client.setDescription(clientDTO.getDescription());
         client.setCity("BISHKEK");
-        client.setTimer(LocalDateTime.now().plusHours(24L));
+        if (clientDTO.getTimer() == null)
+            client.setTimer(LocalDateTime.now().plusHours(24L));
+        else
+            client.setTimer(clientDTO.getTimer());
         client.setPrepayment(clientDTO.getPrepayment());
         client.setLeavingReason(clientDTO.getLeavingReason());
         return bishClientRepo.save(client);
@@ -378,7 +385,13 @@ public class BishClientServiceImpl implements BishClientService {
         history.setNewData(statuses.getName());
 
         client.setStatus(statuses);
-        client.setTimer(LocalDateTime.now().plusHours(24L));
+
+        if (client.getTimer() == null) {
+            client.setTimer(LocalDateTime.now().plusHours(24L));
+        } else if (client.getTimer().isAfter(LocalDateTime.now().plusHours(24L))){
+            client.setTimer(LocalDateTime.now().plusHours(24L));
+        }
+
         client = bishClientRepo.save(client);
 
         historyService.create(history);
@@ -406,17 +419,26 @@ public class BishClientServiceImpl implements BishClientService {
 
         client.setPhoneNo(clientDTO.getPhoneNo());
         client.setName(clientDTO.getName());
+        client.setSurname(clientDTO.getSurname());
         client.setEmail(clientDTO.getEmail());
-        client.setOccupation(bishOccupationRepo.findById(clientDTO.getOccupation()).orElse(null));
+	
+	    if (clientDTO.getOccupation() != 0)
+	        client.setOccupation(bishOccupationRepo.findById(clientDTO.getOccupation()).orElse(null));
         client.setTarget(clientDTO.getTarget());
         client.setExperience(clientDTO.isExperience());
         client.setLaptop(clientDTO.isLaptop());
-        client.setCourse(coursesService.findCourseById(clientDTO.getCourse()));
+	    if (clientDTO.getCourse() != 0)
+	        client.setCourse(coursesService.findCourseById(clientDTO.getCourse()));
         client.setDescription(clientDTO.getDescription());
-//        client.setCity("BISHKEK");
-        if (clientDTO.getTimer() == null)
-            client.setTimer(LocalDateTime.now().plusHours(24L));
-        else    client.setTimer(clientDTO.getTimer());
+        client.setCity("BISHKEK");
+        if (client.getTimer() == null) {
+            if (clientDTO.getTimer() == null)
+                client.setTimer(LocalDateTime.now().plusHours(24L));
+            else
+                client.setTimer(clientDTO.getTimer());
+        } else if (!client.getTimer().isAfter(LocalDateTime.now().plusHours(24L))){
+            client.setTimer(clientDTO.getTimer());
+        }
         client.setPrepayment(clientDTO.getPrepayment());
         client.setLeavingReason(clientDTO.getLeavingReason());
         client = bishClientRepo.save(client);

@@ -15,6 +15,7 @@ public interface UserService {
     void createAdmin(User user);
     String createUser(UserDTO userDTO);
     List<User> getListOfUserToConfirm();
+    List<User> getUsersByCity(String city);
     String confirm(Long id);
     String activate(String activationCode);
     String changePassword(UserPasswordsDTO userPasswordDTO);

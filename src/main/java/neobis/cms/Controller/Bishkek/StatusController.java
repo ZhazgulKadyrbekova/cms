@@ -33,6 +33,11 @@ public class StatusController {
         return bishStatusesRepo.findAllByDoska(true);
     }
 
+    @GetMapping("/name/{name}")
+    public List<BishStatuses> getAllByName(@PathVariable String name) {
+        return bishStatusesRepo.findAllByNameContainingIgnoringCase(name);
+    }
+
     @PostMapping
     public BishStatuses addStatus(@RequestBody StatusDTO status) {
         oshStatusesRepo.save(new OshStatuses(0, status.getName(), status.isDoska()));

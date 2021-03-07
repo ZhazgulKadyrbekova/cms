@@ -59,6 +59,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<User> getUsersByCity(String city) {
+        return userRepo.findAllByCityContainingIgnoringCase(city);
+    }
+
+    @Override
     public String createUser(UserDTO userDTO) {
         User user = userRepo.findByEmailIgnoringCase(userDTO.getEmail());
         if (user != null)

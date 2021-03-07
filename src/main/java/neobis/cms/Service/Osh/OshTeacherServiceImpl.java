@@ -20,6 +20,13 @@ public class OshTeacherServiceImpl implements OshTeacherService {
     }
 
     @Override
+    public List<OshTeachers> getAllByName(String name) {
+        List<OshTeachers> teachers = teacherRepo.findAllByNameContainingIgnoringCase(name);
+        teachers.addAll(teacherRepo.findAllBySurnameContainingIgnoringCase(name));
+        return teachers;
+    }
+
+    @Override
     public OshTeachers getTeacherById(long id) {
         return teacherRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Teacher id " + id + " was not found"));
@@ -37,6 +44,7 @@ public class OshTeacherServiceImpl implements OshTeacherService {
     public OshTeachers addTeacher(TeacherDTO teacherDTO) {
         OshTeachers teacher = new OshTeachers();
         teacher.setName(teacherDTO.getName());
+        teacher.setSurname(teacherDTO.getSurname());
         return teacherRepo.save(teacher);
     }
 
@@ -45,6 +53,7 @@ public class OshTeacherServiceImpl implements OshTeacherService {
         OshTeachers teacher = teacherRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Teacher id " + id + " was not found"));
         teacher.setName(teacherDTO.getName());
+        teacher.setSurname(teacherDTO.getSurname());
         return teacherRepo.save(teacher);
     }
 

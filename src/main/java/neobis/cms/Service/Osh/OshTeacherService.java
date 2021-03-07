@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface OshTeacherService {
     List<OshTeachers> getAllTeachers();
+    List<OshTeachers> getAllByName(String name);
     OshTeachers getTeacherById(long id);
     OshTeachers getTeacherByName(String name);
     OshTeachers addTeacher(TeacherDTO teacherDTO);

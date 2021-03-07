@@ -23,6 +23,11 @@ public class OccupationController {
         return bishOccupationRepo.findAll();
     }
 
+    @GetMapping("/name/{name}")
+    public List<BishOccupation> getAllByName(@PathVariable String name) {
+        return bishOccupationRepo.findAllByNameContainingIgnoringCase(name);
+    }
+
     @PutMapping("/{id}")
     public BishOccupation updateOccupationName(@RequestBody OccupationDTO occupationDTO, @PathVariable Long id) {
         OshOccupation oshOccupation = oshOccupationRepo.findById(id)

@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 
 public class TeacherDTO {
     private String name;
+    private String surname;
 }
