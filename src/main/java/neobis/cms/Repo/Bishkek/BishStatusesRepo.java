@@ -11,6 +11,6 @@ public interface BishStatusesRepo extends JpaRepository<BishStatuses, Long> {
     BishStatuses findByNameContainingIgnoringCase(String name);
     List<BishStatuses> findAllByNameContainingIgnoringCase(String name);
     List<BishStatuses> findAllByDoska(boolean doska);
-    List<BishStatuses> findAllByOrderByDateCreatedDesc();
+    List<BishStatuses> findAllByOrderByDateCreatedAsc();
 //    List<BishStatuses> findAllOrderByDateCreatedDesc();
 }

@@ -25,7 +25,7 @@ public class StatusController {
 
     @GetMapping
     public List<BishStatuses> getStatuses() {
-        return bishStatusesRepo.findAllByOrderByDateCreatedDesc();
+        return bishStatusesRepo.findAllByOrderByDateCreatedAsc();
     }
 
     @GetMapping("/doska")

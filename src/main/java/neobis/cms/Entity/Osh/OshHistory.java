@@ -1,27 +1,31 @@
-package neobis.cms.Entity.Bishkek;
+package neobis.cms.Entity.Osh;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import neobis.cms.Entity.Base;
 
 import javax.persistence.*;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 
 @Entity
 @Table(name = "History")
-public class History extends Base {
+public class OshHistory extends Base {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "history_id")
     private long ID;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "user_id")
-    private User user;
+    @Column(name = "user_email")
+    private String userEmail;
+
+    @Column(name = "client_phone")
+    private String clientPhone;
 
     @Column(name = "action")
     private String action;

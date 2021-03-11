@@ -1,6 +1,9 @@
 src/main/java/neobis/cms/b64.txt
+src/main/java/neobis/cms/ResponseExample.json
+src/main/java/neobis/cms/ResponseErrorExample.json
 HELP.md
 target/
+logs/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/

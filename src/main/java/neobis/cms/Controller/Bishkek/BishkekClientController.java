@@ -53,26 +53,26 @@ public class BishkekClientController {
 
     @GetMapping("/{id}")
     public BishClient getById(@PathVariable Long id) {
-        clientService.addClientsToDB();
+//        clientService.addClientsToDB();
         return clientService.getClientById(id);
     }
 
     @GetMapping("/status/{status_id}")
     public List<BishClient> getAllByStatus(@PathVariable Long status_id) {
-        clientService.addClientsToDB();
+//        clientService.addClientsToDB();
         return clientService.getAllByStatus(status_id);
     }
 
     @GetMapping("/name/{name}")
     public List<BishClient> getAllByName(@PathVariable String name) {
-        clientService.addClientsToDB();
+//        clientService.addClientsToDB();
         return clientService.getAllByName(name);
     }
 
     @PostMapping
-    public BishClient addClient(@RequestBody ClientDTO clientDTO) {
+    public BishClient addClient(@RequestBody ClientDTO clientDTO, Principal principal) {
         log.info("In Bishkek created new client {}", clientDTO.toString());
-        return clientService.create(clientDTO);
+        return clientService.create(clientDTO, principal.getName());
     }
 
     @PutMapping("/{client_id}/status/{status_id}")
@@ -81,8 +81,8 @@ public class BishkekClientController {
     }
 
     @PutMapping("/{client_id}/city")
-    public ResponseMessage changeCity(@PathVariable Long client_id) {
-        clientService.changeCity(client_id);
+    public ResponseMessage changeCity(@PathVariable Long client_id, Principal principal) {
+        clientService.changeCity(client_id, principal.getName());
         return new ResponseMessage("Client with id " + client_id + " has been successfully moved to another city");
     }
 

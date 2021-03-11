@@ -16,7 +16,6 @@ import neobis.cms.Search.GenericSpecification;
 import neobis.cms.Search.SearchCriteria;
 import neobis.cms.Search.SearchOperation;
 import neobis.cms.Service.Bishkek.BishPaymentService;
-import neobis.cms.Service.Bishkek.HistoryService;
 import neobis.cms.Service.Bishkek.UserService;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -54,7 +53,7 @@ public class OshClientServiceImpl implements OshClientService {
     private BishPaymentService bishPaymentService;
     private OshPaymentService oshPaymentService;
 
-    private final HistoryService historyService;
+    private final OshHistoryService historyService;
 
     private final UserService userService;
 
@@ -64,7 +63,7 @@ public class OshClientServiceImpl implements OshClientService {
     public OshClientServiceImpl(BishClientRepo bishClientRepo, OshClientRepo oshClientRepo, BishStatusesRepo bishStatusesRepo,
                                 OshStatusesRepo oshStatusesRepo, BishOccupationRepo bishOccupationRepo, OshOccupationRepo oshOccupationRepo,
                                 BishUTMRepo bishUTMRepo, OshUTMRepo oshUTMRepo, OshCoursesService coursesService, @Lazy BishPaymentService bishPaymentService,
-                                @Lazy OshPaymentService oshPaymentService, HistoryService historyService, UserService userService) {
+                                @Lazy OshPaymentService oshPaymentService, OshHistoryService historyService, UserService userService) {
         this.bishClientRepo = bishClientRepo;
         this.oshClientRepo = oshClientRepo;
         this.bishStatusesRepo = bishStatusesRepo;
@@ -303,32 +302,75 @@ public class OshClientServiceImpl implements OshClientService {
     }
 
     @Override
-    public OshClient create(ClientDTO clientDTO) {
+    public OshClient create(ClientDTO clientDTO, String userEmail) {
         OshClient client = new OshClient();
         client.setDateCreated(LocalDateTime.now());
         client.setPhoneNo(clientDTO.getPhoneNo());
         client.setName(clientDTO.getName());
         client.setSurname(clientDTO.getSurname());
         client.setEmail(clientDTO.getEmail());
-        if (clientDTO.getStatus() != 0)
-            client.setStatus(oshStatusesRepo.findById(clientDTO.getStatus())
-                .orElseThrow(() -> new ResourceNotFoundException("Status with id " + clientDTO.getStatus() + " has not found")));
-        if (clientDTO.getOccupation() != 0)
-            client.setOccupation(oshOccupationRepo.findById(clientDTO.getOccupation()).orElse(null));
         client.setTarget(clientDTO.getTarget());
         client.setExperience(clientDTO.isExperience());
         client.setLaptop(clientDTO.isLaptop());
-        if (clientDTO.getCourse() != 0)
-            client.setCourse(coursesService.findCourseById(clientDTO.getCourse()));
         client.setDescription(clientDTO.getDescription());
         client.setCity("OSH");
+        client.setPrepayment(clientDTO.getPrepayment());
+        client.setLeavingReason(clientDTO.getLeavingReason());
+
+        OshHistory historyStatus = null, historyOccupation = null, historyCourse = null, historyUTM = null;
+        if (clientDTO.getStatus() != 0) {
+            OshStatuses statuses = oshStatusesRepo.findById(clientDTO.getStatus())
+                    .orElseThrow(() -> new ResourceNotFoundException("Status with id " + clientDTO.getStatus() + " has not found"));
+            client.setStatus(statuses);
+            historyStatus = new OshHistory();
+            historyStatus.setUserEmail(userEmail);
+            historyStatus.setClientPhone(client.getPhoneNo());
+            historyStatus.setAction("status");
+            historyStatus.setNewData(statuses.getName());
+        }
+        if (clientDTO.getOccupation() != 0) {
+            OshOccupation occupation = oshOccupationRepo.findById(clientDTO.getOccupation())
+                    .orElseThrow(() -> new ResourceNotFoundException("Occupation with id " + clientDTO.getOccupation() + " has not found"));
+            client.setOccupation(occupation);
+            historyOccupation = new OshHistory();
+            historyOccupation.setUserEmail(userEmail);
+            historyOccupation.setClientPhone(client.getPhoneNo());
+            historyOccupation.setAction("occupation");
+            historyOccupation.setNewData(occupation.getName());
+        }
+        if (clientDTO.getCourse() != 0) {
+            OshCourses courses = coursesService.findCourseById(clientDTO.getCourse());
+            if (courses == null)
+                throw new ResourceNotFoundException("Course with id " + clientDTO.getCourse() + " has not found");
+            client.setCourse(courses);
+            historyCourse = new OshHistory();
+            historyCourse.setUserEmail(userEmail);
+            historyCourse.setClientPhone(client.getPhoneNo());
+            historyCourse.setAction("course");
+            historyCourse.setNewData(courses.getName());
+        }
+        if (clientDTO.getUTM() != 0) {
+            OshUTM utm = oshUTMRepo.findById(clientDTO.getUTM())
+                    .orElseThrow(() -> new ResourceNotFoundException("UTM with id " + clientDTO.getUTM() + " has not found"));
+            client.setUtm(utm);
+            historyUTM = new OshHistory();
+            historyUTM.setUserEmail(userEmail);
+            historyUTM.setClientPhone(client.getPhoneNo());
+            historyUTM.setAction("UTM");
+            historyUTM.setNewData(utm.getName());
+        }
+
         if (clientDTO.getTimer() == null)
             client.setTimer(LocalDateTime.now().plusHours(24L));
         else
             client.setTimer(clientDTO.getTimer());
-        client.setPrepayment(clientDTO.getPrepayment());
-        client.setLeavingReason(clientDTO.getLeavingReason());
-        return oshClientRepo.save(client);
+
+        client = oshClientRepo.save(client);
+        if (historyCourse != null) historyService.create(historyCourse);
+        if (historyOccupation != null) historyService.create(historyOccupation);
+        if (historyUTM != null) historyService.create(historyUTM);
+        if (historyStatus != null) historyService.create(historyStatus);
+        return client;
     }
 
     @Override
@@ -346,17 +388,18 @@ public class OshClientServiceImpl implements OshClientService {
     public OshClient changeStatus(long id, long status, String username) {
         OshClient client = oshClientRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Client with id " + id + " has not found"));
-        History history = new History();
-        history.setAction("change status");
+        OshHistory oshHistory = new OshHistory();
+        oshHistory.setAction("status");
         if (client.getStatus() == null)
-            history.setOldData(null);
+            oshHistory.setOldData(null);
         else
-            history.setOldData(client.getStatus().getName());
-        history.setUser(userService.findByEmail(username));
+            oshHistory.setOldData(client.getStatus().getName());
+        oshHistory.setUserEmail(username);
+        oshHistory.setClientPhone(client.getPhoneNo());
 
         OshStatuses statuses = oshStatusesRepo.findById(status)
                 .orElseThrow(() -> new ResourceNotFoundException("Status with id " + id + " has not found"));
-        history.setNewData(statuses.getName());
+        oshHistory.setNewData(statuses.getName());
 
         client.setStatus(statuses);
         if (client.getTimer() == null) {
@@ -364,9 +407,10 @@ public class OshClientServiceImpl implements OshClientService {
         } else if (client.getTimer().isAfter(LocalDateTime.now().plusHours(24L))){
             client.setTimer(LocalDateTime.now().plusHours(24L));
         }
+
         client = oshClientRepo.save(client);
 
-        historyService.create(history);
+        historyService.create(oshHistory);
         return client;
     }
 
@@ -374,35 +418,72 @@ public class OshClientServiceImpl implements OshClientService {
     public OshClient updateClient(long id, ClientDTO clientDTO, String username) {
         OshClient client = oshClientRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Client with id " + id + " has not found"));
-        History history = new History();
-        history.setAction("update client info");
-        if (client.getStatus() == null)
-            history.setOldData(null);
-        else
-            history.setOldData(client.getStatus().getName());
-        history.setUser(userService.findByEmail(username));
-
+        OshHistory historyStatus = null, historyOccupation = null, historyCourse = null, historyUTM = null;
         if (clientDTO.getStatus() != 0) {
             OshStatuses statuses = oshStatusesRepo.findById(clientDTO.getStatus())
                     .orElseThrow(() -> new ResourceNotFoundException("Status with id " + clientDTO.getStatus() + " has not found"));
-            history.setNewData(statuses.getName());
+            historyStatus = new OshHistory();
+            historyStatus.setUserEmail(username);
+            historyStatus.setClientPhone(client.getPhoneNo());
+            historyStatus.setAction("status");
+            OshStatuses oldStatus = client.getStatus();
+            if (oldStatus != null)
+                historyStatus.setOldData(client.getStatus().getName());
+            historyStatus.setNewData(statuses.getName());
             client.setStatus(statuses);
+        }
+        if (clientDTO.getOccupation() != 0) {
+            OshOccupation occupation = oshOccupationRepo.findById(clientDTO.getOccupation())
+                    .orElseThrow(() -> new ResourceNotFoundException("Occupation with id " + clientDTO.getOccupation() + " has not found"));
+            historyOccupation = new OshHistory();
+            historyOccupation.setUserEmail(username);
+            historyOccupation.setClientPhone(client.getPhoneNo());
+            historyOccupation.setAction("occupation");
+            OshOccupation oldOccupation = client.getOccupation();
+            if (oldOccupation != null)
+                historyOccupation.setOldData(client.getOccupation().getName());
+            historyOccupation.setNewData(occupation.getName());
+            client.setOccupation(occupation);
+        }
+        if (clientDTO.getCourse() != 0) {
+            OshCourses courses = coursesService.findCourseById(clientDTO.getCourse());
+            if (courses == null)
+                throw new ResourceNotFoundException("Course with id " + clientDTO.getCourse() + " has not found");
+            historyCourse = new OshHistory();
+            historyCourse.setUserEmail(username);
+            historyCourse.setClientPhone(client.getPhoneNo());
+            historyCourse.setAction("course");
+            OshCourses oldCourse = client.getCourse();
+            if (oldCourse != null)
+                historyCourse.setOldData(client.getCourse().getName());
+            historyCourse.setNewData(courses.getName());
+            client.setCourse(courses);
+        }
+        if (clientDTO.getUTM() != 0) {
+            OshUTM utm = oshUTMRepo.findById(clientDTO.getUTM())
+                    .orElseThrow(() -> new ResourceNotFoundException("UTM with id " + clientDTO.getUTM() + " has not found"));
+            historyUTM = new OshHistory();
+            historyUTM.setUserEmail(username);
+            historyUTM.setClientPhone(client.getPhoneNo());
+            historyUTM.setAction("UTM");
+            OshUTM oldUTM = client.getUtm();
+            if (oldUTM != null)
+                historyUTM.setNewData(utm.getName());
+            client.setUtm(utm);
         }
 
         client.setPhoneNo(clientDTO.getPhoneNo());
         client.setName(clientDTO.getName());
         client.setSurname(clientDTO.getSurname());
         client.setEmail(clientDTO.getEmail());
-
-	    if (clientDTO.getOccupation() != 0)
-	        client.setOccupation(oshOccupationRepo.findById(clientDTO.getOccupation()).orElse(null));
-        client.setTarget(clientDTO.getTarget());
+	    client.setTarget(clientDTO.getTarget());
         client.setExperience(clientDTO.isExperience());
         client.setLaptop(clientDTO.isLaptop());
-	    if (clientDTO.getCourse() != 0)
-	        client.setCourse(coursesService.findCourseById(clientDTO.getCourse()));
-        client.setDescription(clientDTO.getDescription());
+	    client.setDescription(clientDTO.getDescription());
         client.setCity("OSH");
+        client.setPrepayment(clientDTO.getPrepayment());
+        client.setLeavingReason(clientDTO.getLeavingReason());
+
         if (client.getTimer() == null) {
             if (clientDTO.getTimer() == null)
                 client.setTimer(LocalDateTime.now().plusHours(24L));
@@ -411,18 +492,20 @@ public class OshClientServiceImpl implements OshClientService {
         } else if (!client.getTimer().isAfter(LocalDateTime.now().plusHours(24L))){
             client.setTimer(clientDTO.getTimer());
         }
-        client.setPrepayment(clientDTO.getPrepayment());
-        client.setLeavingReason(clientDTO.getLeavingReason());
         client = oshClientRepo.save(client);
-
-        if ((history.getNewData().isEmpty() || history.getNewData() == null)
-                                            & !history.getNewData().equals(history.getOldData()))
-            historyService.create(history);
+        if (historyCourse != null && !historyCourse.getOldData().equals(historyCourse.getNewData()))
+            historyService.create(historyCourse);
+        if (historyOccupation != null && !historyOccupation.getOldData().equals(historyOccupation.getNewData()))
+            historyService.create(historyOccupation);
+        if (historyUTM != null && !historyUTM.getOldData().equals(historyUTM.getNewData()))
+            historyService.create(historyUTM);
+        if (historyStatus != null && !historyStatus.getOldData().equals(historyStatus.getNewData()))
+            historyService.create(historyStatus);
         return client;
     }
 
     @Override
-    public void changeCity(long id) {
+    public void changeCity(long id, String userEmail) {
         OshClient oshClient = oshClientRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Client with id " + id + " has not found"));
 

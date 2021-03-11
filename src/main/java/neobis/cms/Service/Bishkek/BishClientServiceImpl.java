@@ -30,10 +30,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class BishClientServiceImpl implements BishClientService {
@@ -55,7 +52,7 @@ public class BishClientServiceImpl implements BishClientService {
     private  BishPaymentService bishPaymentService;
     private  OshPaymentService oshPaymentService;
 
-    private final HistoryService historyService;
+    private final BishHistoryService bishHistoryService;
 
     private final UserService userService;
 
@@ -65,7 +62,7 @@ public class BishClientServiceImpl implements BishClientService {
     public BishClientServiceImpl(BishStatusesRepo statusesRepo, BishClientRepo bishClientRepo, OshClientRepo oshClientRepo, OshStatusesRepo oshStatusesRepo,
                                  BishOccupationRepo bishOccupationRepo, OshOccupationRepo oshOccupationRepo, BishUTMRepo bishUTMRepo, OshUTMRepo oshUTMRepo,
                                  BishCoursesService coursesService, @Lazy BishPaymentService bishPaymentService, @Lazy OshPaymentService oshPaymentService,
-                                 HistoryService historyService, UserService userService) {
+                                 BishHistoryService bishHistoryService, UserService userService) {
         this.bishStatusesRepo = statusesRepo;
         this.bishClientRepo = bishClientRepo;
         this.oshClientRepo = oshClientRepo;
@@ -77,7 +74,7 @@ public class BishClientServiceImpl implements BishClientService {
         this.coursesService = coursesService;
         this.bishPaymentService = bishPaymentService;
         this.oshPaymentService = oshPaymentService;
-        this.historyService = historyService;
+        this.bishHistoryService = bishHistoryService;
         this.userService = userService;
     }
 
@@ -329,32 +326,76 @@ public class BishClientServiceImpl implements BishClientService {
     }
 */
     @Override
-    public BishClient create(ClientDTO clientDTO) {
+    public BishClient create(ClientDTO clientDTO, String userEmail) {
         BishClient client = new BishClient();
         client.setDateCreated(LocalDateTime.now());
         client.setPhoneNo(clientDTO.getPhoneNo());
         client.setName(clientDTO.getName());
         client.setSurname(clientDTO.getSurname());
         client.setEmail(clientDTO.getEmail());
-        if (clientDTO.getStatus() != 0)
-            client.setStatus(bishStatusesRepo.findById(clientDTO.getStatus())
-                .orElseThrow(() -> new ResourceNotFoundException("Status with id " + clientDTO.getStatus() + " has not found")));
-        if (clientDTO.getOccupation() != 0)
-            client.setOccupation(bishOccupationRepo.findById(clientDTO.getOccupation()).orElse(null));
         client.setTarget(clientDTO.getTarget());
         client.setExperience(clientDTO.isExperience());
         client.setLaptop(clientDTO.isLaptop());
-        if (clientDTO.getCourse() != 0)
-            client.setCourse(coursesService.findCourseById(clientDTO.getCourse()));
         client.setDescription(clientDTO.getDescription());
         client.setCity("BISHKEK");
+        client.setPrepayment(clientDTO.getPrepayment());
+        client.setLeavingReason(clientDTO.getLeavingReason());
+
+
+        BishHistory historyStatus = null, historyOccupation = null, historyCourse = null, historyUTM = null;
+        if (clientDTO.getStatus() != 0) {
+            BishStatuses statuses = bishStatusesRepo.findById(clientDTO.getStatus())
+                    .orElseThrow(() -> new ResourceNotFoundException("Status with id " + clientDTO.getStatus() + " has not found"));
+            client.setStatus(statuses);
+            historyStatus = new BishHistory();
+            historyStatus.setUserEmail(userEmail);
+            historyStatus.setClientPhone(client.getPhoneNo());
+            historyStatus.setAction("status");
+            historyStatus.setNewData(statuses.getName());
+        }
+        if (clientDTO.getOccupation() != 0) {
+            BishOccupation occupation = bishOccupationRepo.findById(clientDTO.getOccupation())
+                    .orElseThrow(() -> new ResourceNotFoundException("Occupation with id " + clientDTO.getOccupation() + " has not found"));
+            client.setOccupation(occupation);
+            historyOccupation = new BishHistory();
+            historyOccupation.setUserEmail(userEmail);
+            historyOccupation.setClientPhone(client.getPhoneNo());
+            historyOccupation.setAction("occupation");
+            historyOccupation.setNewData(occupation.getName());
+        }
+        if (clientDTO.getCourse() != 0) {
+            BishCourses courses = coursesService.findCourseById(clientDTO.getCourse());
+            if (courses == null)
+                throw new ResourceNotFoundException("Course with id " + clientDTO.getCourse() + " has not found");
+            client.setCourse(courses);
+            historyCourse = new BishHistory();
+            historyCourse.setUserEmail(userEmail);
+            historyCourse.setClientPhone(client.getPhoneNo());
+            historyCourse.setAction("course");
+            historyCourse.setNewData(courses.getName());
+        }
+        if (clientDTO.getUTM() != 0) {
+            BishUTM utm = bishUTMRepo.findById(clientDTO.getUTM())
+                    .orElseThrow(() -> new ResourceNotFoundException("UTM with id " + clientDTO.getUTM() + " has not found"));
+            client.setUtm(utm);
+            historyUTM = new BishHistory();
+            historyUTM.setUserEmail(userEmail);
+            historyUTM.setClientPhone(client.getPhoneNo());
+            historyUTM.setAction("UTM");
+            historyUTM.setNewData(utm.getName());
+        }
+
         if (clientDTO.getTimer() == null)
             client.setTimer(LocalDateTime.now().plusHours(24L));
         else
             client.setTimer(clientDTO.getTimer());
-        client.setPrepayment(clientDTO.getPrepayment());
-        client.setLeavingReason(clientDTO.getLeavingReason());
-        return bishClientRepo.save(client);
+
+        client = bishClientRepo.save(client);
+        if (historyCourse != null) bishHistoryService.create(historyCourse);
+        if (historyOccupation != null) bishHistoryService.create(historyOccupation);
+        if (historyUTM != null) bishHistoryService.create(historyUTM);
+        if (historyStatus != null) bishHistoryService.create(historyStatus);
+        return client;
     }
 
     @Override
@@ -372,17 +413,19 @@ public class BishClientServiceImpl implements BishClientService {
     public BishClient changeStatus(long id, long status, String username) {
         BishClient client = bishClientRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Client with id " + id + " has not found"));
-        History history = new History();
-        history.setAction("change status");
+
+        BishHistory bishHistory = new BishHistory();
+        bishHistory.setAction("status");
         if (client.getStatus() == null)
-            history.setOldData(null);
+            bishHistory.setOldData(null);
         else
-            history.setOldData(client.getStatus().getName());
-        history.setUser(userService.findByEmail(username));
+            bishHistory.setOldData(client.getStatus().getName());
+        bishHistory.setUserEmail(username);
+        bishHistory.setClientPhone(client.getPhoneNo());
 
         BishStatuses statuses = bishStatusesRepo.findById(status)
                 .orElseThrow(() -> new ResourceNotFoundException("Status with id " + id + " has not found"));
-        history.setNewData(statuses.getName());
+        bishHistory.setNewData(statuses.getName());
 
         client.setStatus(statuses);
 
@@ -394,7 +437,7 @@ public class BishClientServiceImpl implements BishClientService {
 
         client = bishClientRepo.save(client);
 
-        historyService.create(history);
+        bishHistoryService.create(bishHistory);
         return client;
     }
 
@@ -402,35 +445,74 @@ public class BishClientServiceImpl implements BishClientService {
     public BishClient updateClient(long id, ClientDTO clientDTO, String username) {
         BishClient client = bishClientRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Client with id " + id + " has not found"));
-        History history = new History();
-        history.setAction("update client info");
-        if (client.getStatus() == null)
-            history.setOldData(null);
-        else
-            history.setOldData(client.getStatus().getName());
-        history.setUser(userService.findByEmail(username));
 
+        BishHistory historyStatus = null, historyOccupation = null, historyCourse = null, historyUTM = null;
         if (clientDTO.getStatus() != 0) {
             BishStatuses statuses = bishStatusesRepo.findById(clientDTO.getStatus())
                     .orElseThrow(() -> new ResourceNotFoundException("Status with id " + clientDTO.getStatus() + " has not found"));
-            history.setNewData(statuses.getName());
+
+            historyStatus = new BishHistory();
+            historyStatus.setUserEmail(username);
+            historyStatus.setClientPhone(client.getPhoneNo());
+            historyStatus.setAction("status");
+            BishStatuses oldStatus = client.getStatus();
+            if (oldStatus != null)
+                historyStatus.setOldData(client.getStatus().getName());
+            historyStatus.setNewData(statuses.getName());
             client.setStatus(statuses);
+        }
+        if (clientDTO.getOccupation() != 0) {
+            BishOccupation occupation = bishOccupationRepo.findById(clientDTO.getOccupation())
+                    .orElseThrow(() -> new ResourceNotFoundException("Occupation with id " + clientDTO.getOccupation() + " has not found"));
+            historyOccupation = new BishHistory();
+            historyOccupation.setUserEmail(username);
+            historyOccupation.setClientPhone(client.getPhoneNo());
+            historyOccupation.setAction("occupation");
+            BishOccupation oldOccupation = client.getOccupation();
+            if (oldOccupation != null)
+                historyOccupation.setOldData(client.getOccupation().getName());
+            historyOccupation.setNewData(occupation.getName());
+            client.setOccupation(occupation);
+        }
+        if (clientDTO.getCourse() != 0) {
+            BishCourses courses = coursesService.findCourseById(clientDTO.getCourse());
+            if (courses == null)
+                throw new ResourceNotFoundException("Course with id " + clientDTO.getCourse() + " has not found");
+            historyCourse = new BishHistory();
+            historyCourse.setUserEmail(username);
+            historyCourse.setClientPhone(client.getPhoneNo());
+            historyCourse.setAction("course");
+            BishCourses oldCourse = client.getCourse();
+            if (oldCourse != null)
+                historyCourse.setOldData(client.getCourse().getName());
+            historyCourse.setNewData(courses.getName());
+            client.setCourse(courses);
+        }
+        if (clientDTO.getUTM() != 0) {
+            BishUTM utm = bishUTMRepo.findById(clientDTO.getUTM())
+                    .orElseThrow(() -> new ResourceNotFoundException("UTM with id " + clientDTO.getUTM() + " has not found"));
+            historyUTM = new BishHistory();
+            historyUTM.setUserEmail(username);
+            historyUTM.setClientPhone(client.getPhoneNo());
+            historyUTM.setAction("UTM");
+            BishUTM oldUTM = client.getUtm();
+            if (oldUTM != null)
+                historyUTM.setNewData(utm.getName());
+            client.setUtm(utm);
         }
 
         client.setPhoneNo(clientDTO.getPhoneNo());
         client.setName(clientDTO.getName());
         client.setSurname(clientDTO.getSurname());
         client.setEmail(clientDTO.getEmail());
-	
-	    if (clientDTO.getOccupation() != 0)
-	        client.setOccupation(bishOccupationRepo.findById(clientDTO.getOccupation()).orElse(null));
-        client.setTarget(clientDTO.getTarget());
+	    client.setTarget(clientDTO.getTarget());
         client.setExperience(clientDTO.isExperience());
         client.setLaptop(clientDTO.isLaptop());
-	    if (clientDTO.getCourse() != 0)
-	        client.setCourse(coursesService.findCourseById(clientDTO.getCourse()));
-        client.setDescription(clientDTO.getDescription());
+	    client.setDescription(clientDTO.getDescription());
         client.setCity("BISHKEK");
+        client.setPrepayment(clientDTO.getPrepayment());
+        client.setLeavingReason(clientDTO.getLeavingReason());
+
         if (client.getTimer() == null) {
             if (clientDTO.getTimer() == null)
                 client.setTimer(LocalDateTime.now().plusHours(24L));
@@ -439,18 +521,20 @@ public class BishClientServiceImpl implements BishClientService {
         } else if (!client.getTimer().isAfter(LocalDateTime.now().plusHours(24L))){
             client.setTimer(clientDTO.getTimer());
         }
-        client.setPrepayment(clientDTO.getPrepayment());
-        client.setLeavingReason(clientDTO.getLeavingReason());
         client = bishClientRepo.save(client);
-
-        if ((history.getNewData().isEmpty() || history.getNewData() == null)
-                                            & !history.getNewData().equals(history.getOldData()))
-            historyService.create(history);
+        if (historyCourse != null && !historyCourse.getOldData().equals(historyCourse.getNewData()))
+            bishHistoryService.create(historyCourse);
+        if (historyOccupation != null && !historyOccupation.getOldData().equals(historyOccupation.getNewData()))
+            bishHistoryService.create(historyOccupation);
+        if (historyUTM != null && !historyUTM.getOldData().equals(historyUTM.getNewData()))
+            bishHistoryService.create(historyUTM);
+        if (historyStatus != null && !historyStatus.getOldData().equals(historyStatus.getNewData()))
+            bishHistoryService.create(historyStatus);
         return client;
     }
 
     @Override
-    public void changeCity(long id) {
+    public void changeCity(long id, String userEmail) {
         BishClient bishClient = bishClientRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Client with id " + id + " has not found"));
 
@@ -498,5 +582,9 @@ public class BishClientServiceImpl implements BishClientService {
 //        Fourth step - delete bishClient
         bishClientRepo.delete(bishClient);
 
+        BishHistory history = new BishHistory();
+        history.setUserEmail(userEmail);
+        history.setAction("change city of client");
+        history.setClientPhone(oshClient.getPhoneNo());
     }
 }

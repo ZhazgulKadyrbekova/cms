@@ -50,9 +50,9 @@ public class OshClientController {
     }
 
     @PostMapping
-    public OshClient addClient(@RequestBody ClientDTO clientDTO) {
+    public OshClient addClient(@RequestBody ClientDTO clientDTO, Principal principal) {
         log.info("In Osh created new client {}", clientDTO.toString());
-        return clientService.create(clientDTO);
+        return clientService.create(clientDTO, principal.getName());
     }
 
     @PutMapping("/{client_id}/status/{status_id}")
@@ -61,8 +61,8 @@ public class OshClientController {
     }
 
     @PutMapping("/{client_id}/city")
-    public ResponseMessage changeCity(@PathVariable Long client_id) {
-        clientService.changeCity(client_id);
+    public ResponseMessage changeCity(@PathVariable Long client_id, Principal principal) {
+        clientService.changeCity(client_id, principal.getName());
         return new ResponseMessage("Client with id " + client_id + " has been successfully moved to another city");
     }
 
