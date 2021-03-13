@@ -26,33 +26,17 @@ public class GenericSpecification<T> implements Specification<T> {
     @Override
     public Predicate toPredicate(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
         List<Predicate> predicates = new ArrayList<>();
-        String key2 = null;
+        Predicate predicate;
         for (SearchCriteria criteria : list) {
-            if (criteria.getValue() instanceof BishCourses || criteria.getValue() instanceof BishStatuses || criteria.getValue() instanceof BishOccupation)
-                key2 = "id";
-            switch (criteria.getOperation()) {
-                case EQUAL:
-                    if (key2 != null)
-                        predicates.add(builder.equal(root.get(criteria.getKey()).get(key2), criteria.getValue()));
-                    else
-                        predicates.add(builder.equal(root.get(criteria.getKey()), criteria.getValue()));
-                    break;
-                case NOT_EQUAL:
-                    predicates.add(builder.notEqual(root.get(criteria.getKey()), criteria.getValue()));
-                    break;
-                case GREATER_THAN_EQUAL:
-                    predicates.add(builder.greaterThanOrEqualTo(root.get(criteria.getKey()), criteria.getValue().toString()));
-                    break;
-                case LESS_THAN_EQUAL:
-                    predicates.add(builder.lessThanOrEqualTo(root.get(criteria.getKey()), criteria.getValue().toString()));
-                    break;
-                case MATCH:
-                    predicates.add(builder.like(builder.lower(root.get(criteria.getKey())), "%" + criteria.getValue().toString().toLowerCase() + "%"));
-                    break;
+            List<Predicate> predicatesList = new ArrayList<>();
+            for (int itemID = 0; itemID < criteria.getValue().size(); itemID++) {
+                predicatesList.add(builder.equal(root.get(criteria.getKey()), criteria.getValue().get(itemID)));
             }
+            predicate = builder.or(predicatesList.toArray(new Predicate[0]));
+            predicates.add(predicate);
         }
+        predicates.toArray(new Predicate[0]);
         return builder.and(predicates.toArray(new Predicate[0]));
     }
-}
 
-// 2021-03-05 19:15:10.078000
+}

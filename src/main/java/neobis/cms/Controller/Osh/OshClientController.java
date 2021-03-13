@@ -28,9 +28,12 @@ public class OshClientController {
     }
 
     @GetMapping("/search")
-    public List<OshClient> getWithPredicate(@RequestParam(required = false) Long status_id,
-                                            @RequestParam(required = false) Long course_id,
-                                            @RequestParam(required = false) Long occupation_id) {
+    public List<OshClient> getWithPredicate(@RequestParam(required = false) String nameOrPhone,
+                                            @RequestParam(required = false) List<Long> status_id,
+                                            @RequestParam(required = false) List<Long> course_id,
+                                            @RequestParam(required = false) List<Long> occupation_id) {
+        if (nameOrPhone != null)
+            return clientService.search(nameOrPhone);
         return clientService.getWithPredicate(status_id, course_id, occupation_id);
     }
 
@@ -44,10 +47,10 @@ public class OshClientController {
         return clientService.getAllByStatus(status_id);
     }
 
-    @GetMapping("/name/{name}")
-    public List<OshClient> getAllByName(@PathVariable String name) {
-        return clientService.getAllByName(name);
-    }
+//    @GetMapping("/name/{name}")
+//    public List<OshClient> getAllByName(@PathVariable String name) {
+//        return clientService.getAllByName(name);
+//    }
 
     @PostMapping
     public OshClient addClient(@RequestBody ClientDTO clientDTO, Principal principal) {

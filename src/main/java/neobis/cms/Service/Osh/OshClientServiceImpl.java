@@ -290,7 +290,7 @@ public class OshClientServiceImpl implements OshClientService {
     }
 
     @Override
-    public List<OshClient> getWithPredicate(Long status, Long course, Long occupation) {
+    public List<OshClient> getWithPredicate(List<Long> status, List<Long> course, List<Long> occupation) {
         GenericSpecification genericSpecification = new GenericSpecification<OshClient>();
         if (status != null)
             genericSpecification.add(new SearchCriteria("status", status, SearchOperation.EQUAL));
@@ -553,5 +553,16 @@ public class OshClientServiceImpl implements OshClientService {
 //        Fourth step - delete oshClient
         oshClientRepo.delete(oshClient);
 
+    }
+
+    @Override
+    public List<OshClient> search(String nameOrPhone) {
+        List<OshClient> clients = new ArrayList<>();
+        for (String item : nameOrPhone.split(" ")) {
+            clients.addAll(oshClientRepo.findAllByNameContainingIgnoringCase(item));
+            clients.addAll(oshClientRepo.findAllBySurnameContainingIgnoringCase(item));
+        }
+        clients.addAll(oshClientRepo.findAllByPhoneNoContaining(nameOrPhone));
+        return clients;
     }
 }

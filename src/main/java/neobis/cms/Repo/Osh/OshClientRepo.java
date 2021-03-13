@@ -14,5 +14,6 @@ public interface OshClientRepo extends JpaRepository<OshClient, Long>, JpaSpecif
     List<OshClient> findAllByStatusOrderByDateCreatedDesc(OshStatuses status);
     List<OshClient> findAllByNameContainingIgnoringCase(String name);
     List<OshClient> findAllBySurnameContainingIgnoringCase(String surname);
+    List<OshClient> findAllByPhoneNoContaining(String phoneNo);
     OshClient findByNameContainingIgnoringCase(String name);
 }

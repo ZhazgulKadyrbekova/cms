@@ -289,7 +289,7 @@ public class BishClientServiceImpl implements BishClientService {
     }
 
     @Override
-    public List<BishClient> getWithPredicate(Long status, Long course, Long occupation) {
+    public List<BishClient> getWithPredicate(List<Long> status, List<Long> course, List<Long> occupation) {
         GenericSpecification genericSpecification = new GenericSpecification<BishClient>();
         if (status != null)
             genericSpecification.add(new SearchCriteria("status", status, SearchOperation.EQUAL));
@@ -586,5 +586,16 @@ public class BishClientServiceImpl implements BishClientService {
         history.setUserEmail(userEmail);
         history.setAction("change city of client");
         history.setClientPhone(oshClient.getPhoneNo());
+    }
+
+    @Override
+    public List<BishClient> search(String nameOrPhone) {
+        List<BishClient> clients = new ArrayList<>();
+        for (String item : nameOrPhone.split(" ")) {
+            clients.addAll(bishClientRepo.findAllByNameContainingIgnoringCase(item));
+            clients.addAll(bishClientRepo.findAllBySurnameContainingIgnoringCase(item));
+        }
+        clients.addAll(bishClientRepo.findAllByPhoneNoContaining(nameOrPhone));
+        return clients;
     }
 }

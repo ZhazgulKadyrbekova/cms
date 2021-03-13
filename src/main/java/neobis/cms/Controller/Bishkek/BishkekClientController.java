@@ -37,9 +37,10 @@ public class BishkekClientController {
     public List<BishClient> getWithPredicate(
 //                                            @ApiParam(value="yyyy-MM-dd-HH:mm") @RequestParam(required = false) String dateAfter,
 //                                            @ApiParam(value="yyyy-MM-dd-HH:mm") @RequestParam(required = false) String dateBefore,
-                                             @RequestParam(required = false) Long status_id,
-                                             @RequestParam(required = false) Long course_id,
-                                             @RequestParam(required = false) Long occupation_id
+                                             @RequestParam(required = false) String nameOrPhone,
+                                             @RequestParam(required = false) List<Long> status_id,
+                                             @RequestParam(required = false) List<Long> course_id,
+                                             @RequestParam(required = false) List<Long> occupation_id
 //                                             @RequestParam(required = false) String utm
     ) {
 //        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH:mm");
@@ -48,6 +49,8 @@ public class BishkekClientController {
 //        	date1 = LocalDateTime.parse(dateAfter, formatter);
 //        if (dateBefore != null)
 //            date2 = LocalDateTime.parse(dateBefore, formatter);
+        if (nameOrPhone != null)
+            return clientService.search(nameOrPhone);
         return clientService.getWithPredicate(status_id, course_id, occupation_id);
     }
 
@@ -63,11 +66,11 @@ public class BishkekClientController {
         return clientService.getAllByStatus(status_id);
     }
 
-    @GetMapping("/name/{name}")
-    public List<BishClient> getAllByName(@PathVariable String name) {
-//        clientService.addClientsToDB();
-        return clientService.getAllByName(name);
-    }
+//    @GetMapping("/name/{name}")
+//    public List<BishClient> getAllByName(@PathVariable String name) {
+////        clientService.addClientsToDB();
+//        return clientService.getAllByName(name);
+//    }
 
     @PostMapping
     public BishClient addClient(@RequestBody ClientDTO clientDTO, Principal principal) {

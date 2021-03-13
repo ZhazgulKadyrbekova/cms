@@ -18,11 +18,12 @@ public interface BishClientService {
     void addClientsToDB();
     List<BishClient> getAllByStatus(long status);
     List<BishClient> getAllByName(String name);
-    List<BishClient> getWithPredicate(Long status, Long course, Long occupation_id);
+    List<BishClient> getWithPredicate(List<Long> status, List<Long> course, List<Long> occupation_id);
     BishClient create(ClientDTO clientDTO, String userEmail);
     BishClient getClientByName(String name);
     BishClient getClientById(long id);
     BishClient changeStatus(long id, long status, String username);
     BishClient updateClient(long id, ClientDTO clientDTO, String username);
     void changeCity(long id, String userEmail);
+    List<BishClient> search(String nameOrPhone);
 }

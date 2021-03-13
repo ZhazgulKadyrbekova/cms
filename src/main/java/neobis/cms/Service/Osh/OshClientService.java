@@ -18,11 +18,12 @@ public interface OshClientService {
     void addClientsToDB();
     List<OshClient> getAllByStatus(long status);
     List<OshClient> getAllByName(String name);
-    List<OshClient> getWithPredicate(Long status, Long course, Long occupation_id);
+    List<OshClient> getWithPredicate(List<Long> status, List<Long> course, List<Long> occupation_id);
     OshClient create(ClientDTO clientDTO, String userEmail);
     OshClient getClientByName(String name);
     OshClient getClientByID(long id);
     OshClient changeStatus(long id, long status, String username);
     OshClient updateClient(long id, ClientDTO clientDTO, String username);
     void changeCity(long id, String userEmail);
+    List<OshClient> search(String nameOrPhone);
 }
