@@ -7,14 +7,8 @@ import neobis.cms.Entity.Osh.OshOccupation;
 import neobis.cms.Entity.Osh.OshPayment;
 import neobis.cms.Entity.Osh.OshUTM;
 import neobis.cms.Exception.ResourceNotFoundException;
-import neobis.cms.Repo.Bishkek.BishClientRepo;
-import neobis.cms.Repo.Bishkek.BishOccupationRepo;
-import neobis.cms.Repo.Bishkek.BishStatusesRepo;
-import neobis.cms.Repo.Bishkek.BishUTMRepo;
-import neobis.cms.Repo.Osh.OshClientRepo;
-import neobis.cms.Repo.Osh.OshOccupationRepo;
-import neobis.cms.Repo.Osh.OshStatusesRepo;
-import neobis.cms.Repo.Osh.OshUTMRepo;
+import neobis.cms.Repo.Bishkek.*;
+import neobis.cms.Repo.Osh.*;
 import neobis.cms.Search.GenericSpecification;
 import neobis.cms.Search.SearchCriteria;
 import neobis.cms.Search.SearchOperation;
@@ -22,6 +16,7 @@ import neobis.cms.Service.Osh.OshPaymentService;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.*;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -56,13 +51,17 @@ public class BishClientServiceImpl implements BishClientService {
 
     private final UserService userService;
 
+    private final BishLeavingReasonRepo bishLeavingReasonRepo;
+    private final OshLeavingReasonRepo oshLeavingReasonRepo;
+
     private final String dataResourceUrl
             = "https://neolabs.dev/mod/api/?api_key=e539509b630b27e47ac594d0dbba4e69&method=getLeads";
 
     public BishClientServiceImpl(BishStatusesRepo statusesRepo, BishClientRepo bishClientRepo, OshClientRepo oshClientRepo, OshStatusesRepo oshStatusesRepo,
                                  BishOccupationRepo bishOccupationRepo, OshOccupationRepo oshOccupationRepo, BishUTMRepo bishUTMRepo, OshUTMRepo oshUTMRepo,
                                  BishCoursesService coursesService, @Lazy BishPaymentService bishPaymentService, @Lazy OshPaymentService oshPaymentService,
-                                 BishHistoryService bishHistoryService, UserService userService) {
+                                 BishHistoryService bishHistoryService, UserService userService, BishLeavingReasonRepo bishLeavingReasonRepo,
+                                 OshLeavingReasonRepo oshLeavingReasonRepo) {
         this.bishStatusesRepo = statusesRepo;
         this.bishClientRepo = bishClientRepo;
         this.oshClientRepo = oshClientRepo;
@@ -76,6 +75,8 @@ public class BishClientServiceImpl implements BishClientService {
         this.oshPaymentService = oshPaymentService;
         this.bishHistoryService = bishHistoryService;
         this.userService = userService;
+        this.bishLeavingReasonRepo = bishLeavingReasonRepo;
+        this.oshLeavingReasonRepo = oshLeavingReasonRepo;
     }
 
     @Override
@@ -257,8 +258,20 @@ public class BishClientServiceImpl implements BishClientService {
     }
 
     @Override
-    public List<BishClient> getAllClientsFromDB() {
-        return bishClientRepo.findAllByOrderByDateCreatedDesc();
+    public Page<BishClient> getAllClientsFromDB(Pageable pageable) {
+//        Pageable paging = PageRequest.of(pageNo, pageSize, Sort.by("dateUpdated").ascending().and(Sort.by("dateCreated").ascending()));
+//        Page<BishClient> pagedResult = bishClientRepo.findAll(paging);
+//        if(pagedResult.hasContent()) {
+//            return pagedResult.getContent();
+//        } else {
+//            return new ArrayList<BishClient>();
+//        }
+        List<BishClient> clients = bishClientRepo.findAllByOrderByDateCreatedDesc();
+        final int start = (int)pageable.getOffset();
+        final int end = Math.min((start + pageable.getPageSize()), clients.size());
+        final Page<BishClient> page = new PageImpl<>(clients.subList(start, end), pageable, clients.size());
+
+        return page;
     }
 
     @Override
@@ -289,7 +302,7 @@ public class BishClientServiceImpl implements BishClientService {
     }
 
     @Override
-    public List<BishClient> getWithPredicate(List<Long> status, List<Long> course, List<Long> occupation) {
+    public Page<BishClient> getWithPredicate(Pageable pageable, List<Long> status, List<Long> course, List<Long> occupation) {
         GenericSpecification genericSpecification = new GenericSpecification<BishClient>();
         if (status != null)
             genericSpecification.add(new SearchCriteria("status", status, SearchOperation.EQUAL));
@@ -297,7 +310,13 @@ public class BishClientServiceImpl implements BishClientService {
             genericSpecification.add(new SearchCriteria("course", course, SearchOperation.EQUAL));
         if (occupation != null)
             genericSpecification.add(new SearchCriteria("occupation", occupation, SearchOperation.EQUAL));
-        return bishClientRepo.findAll(genericSpecification);
+        List<BishClient> clients = bishClientRepo.findAll(genericSpecification);
+
+        final int start = (int)pageable.getOffset();
+        final int end = Math.min((start + pageable.getPageSize()), clients.size());
+        final Page<BishClient> page = new PageImpl<>(clients.subList(start, end), pageable, clients.size());
+
+        return page;
     }
 /*
     @Override
@@ -339,7 +358,9 @@ public class BishClientServiceImpl implements BishClientService {
         client.setDescription(clientDTO.getDescription());
         client.setCity("BISHKEK");
         client.setPrepayment(clientDTO.getPrepayment());
-        client.setLeavingReason(clientDTO.getLeavingReason());
+        if (clientDTO.getLeavingReason() != 0)
+            client.setLeavingReason(bishLeavingReasonRepo.findById(clientDTO.getLeavingReason())
+                    .orElseThrow(() -> new ResourceNotFoundException("Reason with id " + clientDTO.getLeavingReason() + "has not found")));
 
 
         BishHistory historyStatus = null, historyOccupation = null, historyCourse = null, historyUTM = null;
@@ -511,7 +532,10 @@ public class BishClientServiceImpl implements BishClientService {
 	    client.setDescription(clientDTO.getDescription());
         client.setCity("BISHKEK");
         client.setPrepayment(clientDTO.getPrepayment());
-        client.setLeavingReason(clientDTO.getLeavingReason());
+        if (clientDTO.getLeavingReason() != 0)
+            client.setLeavingReason(bishLeavingReasonRepo.findById(clientDTO.getLeavingReason())
+                    .orElseThrow(() -> new ResourceNotFoundException("Reason with id " + clientDTO.getLeavingReason() + "has not found")));
+
 
         if (client.getTimer() == null) {
             if (clientDTO.getTimer() == null)
@@ -560,7 +584,7 @@ public class BishClientServiceImpl implements BishClientService {
 //         TODO
         oshClient.setTimer(bishClient.getTimer());
         oshClient.setPrepayment(bishClient.getPrepayment());
-        oshClient.setLeavingReason(bishClient.getLeavingReason());
+        oshClient.setLeavingReason(oshLeavingReasonRepo.findByNameContainingIgnoringCase(bishClient.getLeavingReason().getName()).orElse(null));
         oshClientRepo.save(oshClient);
 
 //        Second step - create all payments of bishClient
@@ -589,13 +613,18 @@ public class BishClientServiceImpl implements BishClientService {
     }
 
     @Override
-    public List<BishClient> search(String nameOrPhone) {
+    public Page<BishClient> search(Pageable pageable, String nameOrPhone) {
         List<BishClient> clients = new ArrayList<>();
         for (String item : nameOrPhone.split(" ")) {
             clients.addAll(bishClientRepo.findAllByNameContainingIgnoringCase(item));
             clients.addAll(bishClientRepo.findAllBySurnameContainingIgnoringCase(item));
         }
         clients.addAll(bishClientRepo.findAllByPhoneNoContaining(nameOrPhone));
-        return clients;
+
+        final int start = (int)pageable.getOffset();
+        final int end = Math.min((start + pageable.getPageSize()), clients.size());
+        final Page<BishClient> page = new PageImpl<>(clients.subList(start, end), pageable, clients.size());
+
+        return page;
     }
 }

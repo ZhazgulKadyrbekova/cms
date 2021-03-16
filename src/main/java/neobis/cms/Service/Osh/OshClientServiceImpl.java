@@ -4,14 +4,8 @@ import neobis.cms.Dto.ClientDTO;
 import neobis.cms.Entity.Bishkek.*;
 import neobis.cms.Entity.Osh.*;
 import neobis.cms.Exception.ResourceNotFoundException;
-import neobis.cms.Repo.Bishkek.BishClientRepo;
-import neobis.cms.Repo.Bishkek.BishOccupationRepo;
-import neobis.cms.Repo.Bishkek.BishStatusesRepo;
-import neobis.cms.Repo.Bishkek.BishUTMRepo;
-import neobis.cms.Repo.Osh.OshClientRepo;
-import neobis.cms.Repo.Osh.OshOccupationRepo;
-import neobis.cms.Repo.Osh.OshStatusesRepo;
-import neobis.cms.Repo.Osh.OshUTMRepo;
+import neobis.cms.Repo.Bishkek.*;
+import neobis.cms.Repo.Osh.*;
 import neobis.cms.Search.GenericSpecification;
 import neobis.cms.Search.SearchCriteria;
 import neobis.cms.Search.SearchOperation;
@@ -57,13 +51,17 @@ public class OshClientServiceImpl implements OshClientService {
 
     private final UserService userService;
 
+    private final BishLeavingReasonRepo bishLeavingReasonRepo;
+    private final OshLeavingReasonRepo oshLeavingReasonRepo;
+
     private final String dataResourceUrl
             = "https://neolabs.dev/mod/api/?api_key=e539509b630b27e47ac594d0dbba4e69&method=getLeads";
 
     public OshClientServiceImpl(BishClientRepo bishClientRepo, OshClientRepo oshClientRepo, BishStatusesRepo bishStatusesRepo,
                                 OshStatusesRepo oshStatusesRepo, BishOccupationRepo bishOccupationRepo, OshOccupationRepo oshOccupationRepo,
                                 BishUTMRepo bishUTMRepo, OshUTMRepo oshUTMRepo, OshCoursesService coursesService, @Lazy BishPaymentService bishPaymentService,
-                                @Lazy OshPaymentService oshPaymentService, OshHistoryService historyService, UserService userService) {
+                                @Lazy OshPaymentService oshPaymentService, OshHistoryService historyService, UserService userService,
+                                BishLeavingReasonRepo bishLeavingReasonRepo, OshLeavingReasonRepo oshLeavingReasonRepo) {
         this.bishClientRepo = bishClientRepo;
         this.oshClientRepo = oshClientRepo;
         this.bishStatusesRepo = bishStatusesRepo;
@@ -77,6 +75,8 @@ public class OshClientServiceImpl implements OshClientService {
         this.coursesService = coursesService;
         this.historyService = historyService;
         this.userService = userService;
+        this.bishLeavingReasonRepo = bishLeavingReasonRepo;
+        this.oshLeavingReasonRepo = oshLeavingReasonRepo;
     }
 
     @Override
@@ -315,7 +315,9 @@ public class OshClientServiceImpl implements OshClientService {
         client.setDescription(clientDTO.getDescription());
         client.setCity("OSH");
         client.setPrepayment(clientDTO.getPrepayment());
-        client.setLeavingReason(clientDTO.getLeavingReason());
+        if (clientDTO.getLeavingReason() != 0)
+            client.setLeavingReason(oshLeavingReasonRepo.findById(clientDTO.getLeavingReason())
+                    .orElseThrow(() -> new ResourceNotFoundException("Reason with id " + clientDTO.getLeavingReason() + "has not found")));
 
         OshHistory historyStatus = null, historyOccupation = null, historyCourse = null, historyUTM = null;
         if (clientDTO.getStatus() != 0) {
@@ -482,7 +484,9 @@ public class OshClientServiceImpl implements OshClientService {
 	    client.setDescription(clientDTO.getDescription());
         client.setCity("OSH");
         client.setPrepayment(clientDTO.getPrepayment());
-        client.setLeavingReason(clientDTO.getLeavingReason());
+        if (clientDTO.getLeavingReason() != 0)
+            client.setLeavingReason(oshLeavingReasonRepo.findById(clientDTO.getLeavingReason())
+                    .orElseThrow((() -> new ResourceNotFoundException("Reason with id " + clientDTO.getLeavingReason() + "has not found"))));
 
         if (client.getTimer() == null) {
             if (clientDTO.getTimer() == null)
@@ -531,7 +535,7 @@ public class OshClientServiceImpl implements OshClientService {
 //         TODO
         bishClient.setTimer(oshClient.getTimer());
         bishClient.setPrepayment(oshClient.getPrepayment());
-        bishClient.setLeavingReason(oshClient.getLeavingReason());
+        bishClient.setLeavingReason(bishLeavingReasonRepo.findByNameContainingIgnoringCase(bishClient.getLeavingReason().getName()).orElse(null));
         bishClientRepo.save(bishClient);
 
 //        Second step - create all payments of oshClient
@@ -553,6 +557,12 @@ public class OshClientServiceImpl implements OshClientService {
 //        Fourth step - delete oshClient
         oshClientRepo.delete(oshClient);
 
+        OshHistory history = new OshHistory();
+        history.setUserEmail(userEmail);
+        history.setAction("change city of client");
+        history.setClientPhone(bishClient.getPhoneNo());
+        history.setOldData("OSH");
+        history.setNewData("BISHKEK");
     }
 
     @Override

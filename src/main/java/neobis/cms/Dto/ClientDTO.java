@@ -25,7 +25,7 @@ public class ClientDTO {
     private String description;
     private LocalDateTime timer;
     private BigDecimal prepayment;
-    private String leavingReason;
+    private long leavingReason;
     private long UTM;
 
 }

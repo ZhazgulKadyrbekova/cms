@@ -1,17 +1,16 @@
 package neobis.cms.Controller.Bishkek;
 
-import io.swagger.annotations.ApiParam;
 import neobis.cms.Dto.ClientDTO;
 import neobis.cms.Dto.ResponseMessage;
 import neobis.cms.Entity.Bishkek.BishClient;
 import neobis.cms.Service.Bishkek.BishClientService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @CrossOrigin
@@ -28,13 +27,16 @@ public class BishkekClientController {
     }
 
     @GetMapping
-    public List<BishClient> getAll() {
+    public Page<BishClient> getAll(Pageable pageable
+//                                    @RequestParam(defaultValue = "0") Integer pageNo,
+//                                    @RequestParam(defaultValue = "20") Integer pageSize
+    ) {
         clientService.addClientsToDB();
-        return clientService.getAllClientsFromDB();
+        return clientService.getAllClientsFromDB(pageable);
     }
 
     @GetMapping("/search")
-    public List<BishClient> getWithPredicate(
+    public Page<BishClient> getWithPredicate(Pageable pageable,
 //                                            @ApiParam(value="yyyy-MM-dd-HH:mm") @RequestParam(required = false) String dateAfter,
 //                                            @ApiParam(value="yyyy-MM-dd-HH:mm") @RequestParam(required = false) String dateBefore,
                                              @RequestParam(required = false) String nameOrPhone,
@@ -50,8 +52,8 @@ public class BishkekClientController {
 //        if (dateBefore != null)
 //            date2 = LocalDateTime.parse(dateBefore, formatter);
         if (nameOrPhone != null)
-            return clientService.search(nameOrPhone);
-        return clientService.getWithPredicate(status_id, course_id, occupation_id);
+            return clientService.search(pageable, nameOrPhone);
+        return clientService.getWithPredicate(pageable, status_id, course_id, occupation_id);
     }
 
     @GetMapping("/{id}")

@@ -14,6 +14,7 @@ public class UserDTO {
     private String position;
     private String city;
     private String name;
+    private String surname;
     private String phoneNo;
     private String password;
 }

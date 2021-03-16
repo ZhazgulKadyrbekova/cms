@@ -80,6 +80,7 @@ public class OshClient {
     @Column(name = "prepayment")
     private BigDecimal prepayment;
 
-    @Column(name = "leaving_reason")
-    private String leavingReason;
+    @ManyToOne
+    @JoinColumn(name = "leaving_reason_id", referencedColumnName = "leaving_reason_id")
+    private OshLeavingReason leavingReason;
 }
