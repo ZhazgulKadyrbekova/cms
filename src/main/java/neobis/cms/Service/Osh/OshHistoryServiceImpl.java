@@ -1,12 +1,16 @@
 package neobis.cms.Service.Osh;
 
 import neobis.cms.Dto.StatisticResponse;
+import neobis.cms.Entity.Bishkek.BishHistory;
 import neobis.cms.Entity.Osh.*;
 import neobis.cms.Repo.Osh.OshHistoryRepo;
 import neobis.cms.Repo.Osh.OshOccupationRepo;
 import neobis.cms.Repo.Osh.OshStatusesRepo;
 import neobis.cms.Repo.Osh.OshUTMRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -39,8 +43,14 @@ public class OshHistoryServiceImpl implements OshHistoryService {
     }
 
     @Override
-    public List<OshHistory> getAll() {
-        return historyRepo.findAllByDateCreatedAfter(LocalDateTime.now().minusDays(3L));
+    public Page<OshHistory> getAll(Pageable pageable) {
+        List<OshHistory> histories = historyRepo.findAllByDateCreatedAfter(LocalDateTime.now().minusDays(3L));
+
+        final int start = (int)pageable.getOffset();
+        final int end = Math.min((start + pageable.getPageSize()), histories.size());
+        final Page<OshHistory> page = new PageImpl<>(histories.subList(start, end), pageable, histories.size());
+
+        return page;
     }
 
     @Override

@@ -14,6 +14,9 @@ import neobis.cms.Service.Bishkek.UserService;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -258,8 +261,13 @@ public class OshClientServiceImpl implements OshClientService {
     }
 
     @Override
-    public List<OshClient> getAllClientsFromDB() {
-        return oshClientRepo.findAllByOrderByDateCreatedDesc();
+    public Page<OshClient> getAllClientsFromDB(Pageable pageable) {
+        List<OshClient> clients = oshClientRepo.findAllByOrderByDateCreatedDesc();
+        final int start = (int) pageable.getOffset();
+        final  int end = Math.min((start + pageable.getPageSize()), clients.size());
+        final Page<OshClient> page = new PageImpl<>(clients.subList(start, end), pageable, clients.size());
+
+        return page;
     }
 
     @Override
@@ -290,7 +298,7 @@ public class OshClientServiceImpl implements OshClientService {
     }
 
     @Override
-    public List<OshClient> getWithPredicate(List<Long> status, List<Long> course, List<Long> occupation) {
+    public Page<OshClient> getWithPredicate(Pageable pageable, List<Long> status, List<Long> course, List<Long> occupation) {
         GenericSpecification genericSpecification = new GenericSpecification<OshClient>();
         if (status != null)
             genericSpecification.add(new SearchCriteria("status", status, SearchOperation.EQUAL));
@@ -298,7 +306,13 @@ public class OshClientServiceImpl implements OshClientService {
             genericSpecification.add(new SearchCriteria("course", course, SearchOperation.EQUAL));
         if (occupation != null)
             genericSpecification.add(new SearchCriteria("occupation", occupation, SearchOperation.EQUAL));
-        return oshClientRepo.findAll(genericSpecification);
+        List<OshClient> clients = oshClientRepo.findAll(genericSpecification);
+
+        final int start = (int)pageable.getOffset();
+        final int end = Math.min((start + pageable.getPageSize()), clients.size());
+        final Page<OshClient> page = new PageImpl<>(clients.subList(start, end), pageable, clients.size());
+
+        return page;
     }
 
     @Override
@@ -566,13 +580,18 @@ public class OshClientServiceImpl implements OshClientService {
     }
 
     @Override
-    public List<OshClient> search(String nameOrPhone) {
+    public Page<OshClient> search(Pageable pageable, String nameOrPhone) {
         List<OshClient> clients = new ArrayList<>();
         for (String item : nameOrPhone.split(" ")) {
             clients.addAll(oshClientRepo.findAllByNameContainingIgnoringCase(item));
             clients.addAll(oshClientRepo.findAllBySurnameContainingIgnoringCase(item));
         }
         clients.addAll(oshClientRepo.findAllByPhoneNoContaining(nameOrPhone));
-        return clients;
+
+        final int start = (int) pageable.getOffset();
+        final  int end = Math.min((start + pageable.getPageSize()), clients.size());
+        final Page<OshClient> page = new PageImpl<>(clients.subList(start, end), pageable, clients.size());
+
+        return page;
     }
 }

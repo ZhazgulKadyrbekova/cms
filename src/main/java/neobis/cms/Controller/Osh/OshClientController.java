@@ -7,6 +7,8 @@ import neobis.cms.Service.Osh.OshClientService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -23,18 +25,19 @@ public class OshClientController {
     private OshClientService clientService;
 
     @GetMapping
-    public List<OshClient> getAll() {
-        return clientService.getAllClientsFromDB();
+    public Page<OshClient> getAll(Pageable pageable) {
+        return clientService.getAllClientsFromDB(pageable);
     }
 
     @GetMapping("/search")
-    public List<OshClient> getWithPredicate(@RequestParam(required = false) String nameOrPhone,
+    public Page<OshClient> getWithPredicate(Pageable pageable,
+                                            @RequestParam(required = false) String nameOrPhone,
                                             @RequestParam(required = false) List<Long> status_id,
                                             @RequestParam(required = false) List<Long> course_id,
                                             @RequestParam(required = false) List<Long> occupation_id) {
         if (nameOrPhone != null)
-            return clientService.search(nameOrPhone);
-        return clientService.getWithPredicate(status_id, course_id, occupation_id);
+            return clientService.search(pageable, nameOrPhone);
+        return clientService.getWithPredicate(pageable, status_id, course_id, occupation_id);
     }
 
     @GetMapping("/{id}")

@@ -3,9 +3,9 @@ package neobis.cms.Controller.Bishkek;
 import neobis.cms.Entity.Bishkek.BishHistory;
 import neobis.cms.Service.Bishkek.BishHistoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @CrossOrigin
 @RestController
@@ -15,8 +15,8 @@ public class BishkekHistoryController {
     private BishHistoryService historyService;
 
     @GetMapping
-    public List<BishHistory> getAll() {
-        return historyService.getAll();
+    public Page<BishHistory> getAll(Pageable pageable) {
+        return historyService.getAll(pageable);
     }
 
 //    @GetMapping("/search")

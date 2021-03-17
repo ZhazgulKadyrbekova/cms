@@ -1,6 +1,5 @@
 package neobis.cms.Service.Bishkek;
 
-import io.swagger.models.auth.In;
 import neobis.cms.Dto.StatisticResponse;
 import neobis.cms.Entity.Bishkek.*;
 import neobis.cms.Repo.Bishkek.BishHistoryRepo;
@@ -8,6 +7,9 @@ import neobis.cms.Repo.Bishkek.BishOccupationRepo;
 import neobis.cms.Repo.Bishkek.BishStatusesRepo;
 import neobis.cms.Repo.Bishkek.BishUTMRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -40,8 +42,14 @@ public class BishHistoryServiceImpl implements BishHistoryService {
     }
 
     @Override
-    public List<BishHistory> getAll() {
-        return bishHistoryRepo.findAllByDateCreatedAfter(LocalDateTime.now().minusDays(3L));
+    public Page<BishHistory> getAll(Pageable pageable) {
+        List<BishHistory> histories = bishHistoryRepo.findAllByDateCreatedAfter(LocalDateTime.now().minusDays(3L));
+
+        final int start = (int)pageable.getOffset();
+        final int end = Math.min((start + pageable.getPageSize()), histories.size());
+        final Page<BishHistory> page = new PageImpl<>(histories.subList(start, end), pageable, histories.size());
+
+        return page;
     }
 
     @Override
