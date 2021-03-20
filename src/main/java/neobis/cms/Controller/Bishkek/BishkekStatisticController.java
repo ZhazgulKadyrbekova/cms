@@ -20,10 +20,11 @@ public class BishkekStatisticController {
     @GetMapping
     public List<StatisticResponse> getStatistic(@ApiParam(value="yyyy-MM-dd HH:mm") @RequestParam String dateAfter,
                                                 @ApiParam(value="yyyy-MM-dd HH:mm") @RequestParam String dateBefore,
-                                                @RequestParam String filter) {
+                                                @RequestParam(required = false) List<Long> status_id,
+                                                @RequestParam(required = false) List<Long> course_id) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         LocalDateTime dateTime1 = LocalDateTime.parse(dateAfter, formatter);
         LocalDateTime dateTime2 = LocalDateTime.parse(dateBefore, formatter);
-        return historyService.getStatistic(dateTime1, dateTime2, filter);
+        return historyService.getStatistic(dateTime1, dateTime2, status_id, course_id);
     }
 }

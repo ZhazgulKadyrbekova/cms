@@ -145,35 +145,35 @@ public class BishClientServiceImpl implements BishClientService {
                                 if (!data.getString(key).equals("neolabs.dev/")) {
                                     String utmName = data.getString(key);
                                     BishUTM utm;
-                                    if (utmName.contains("instagram")) {
-                                        utm = bishUTMRepo.findByNameContainingIgnoringCase("instagram").orElse(null);
+                                    if (utmName.contains("Instagram")) {
+                                        utm = bishUTMRepo.findByNameContainingIgnoringCase("Instagram").orElse(null);
                                         if (utm == null) {
-                                            oshUTMRepo.save(new OshUTM(0, "instagram"));
-                                            utm = bishUTMRepo.save(new BishUTM(0, "instagram"));
+                                            oshUTMRepo.save(new OshUTM(0, "Instagram"));
+                                            utm = bishUTMRepo.save(new BishUTM(0, "Instagram"));
                                         }
                                         client.setUtm(utm);
                                     }
-                                    if (utmName.contains("facebook")) {
-                                        utm = bishUTMRepo.findByNameContainingIgnoringCase("facebook").orElse(null);
+                                    if (utmName.contains("Facebook")) {
+                                        utm = bishUTMRepo.findByNameContainingIgnoringCase("Facebook").orElse(null);
                                         if (utm == null) {
-                                            oshUTMRepo.save(new OshUTM(0, "facebook"));
-                                            utm = bishUTMRepo.save(new BishUTM(0, "facebook"));
+                                            oshUTMRepo.save(new OshUTM(0, "Facebook"));
+                                            utm = bishUTMRepo.save(new BishUTM(0, "Facebook"));
                                         }
                                         client.setUtm(utm);
                                     }
-                                    if (utmName.contains("google")) {
-                                        utm = bishUTMRepo.findByNameContainingIgnoringCase("google").orElse(null);
+                                    if (utmName.contains("Google")) {
+                                        utm = bishUTMRepo.findByNameContainingIgnoringCase("Google").orElse(null);
                                         if (utm == null) {
-                                            oshUTMRepo.save(new OshUTM(0, "google"));
-                                            utm = bishUTMRepo.save(new BishUTM(0, "google"));
+                                            oshUTMRepo.save(new OshUTM(0, "Google"));
+                                            utm = bishUTMRepo.save(new BishUTM(0, "Google"));
                                         }
                                         client.setUtm(utm);
                                     }
-                                    if (utmName.contains("neobis")) {
-                                        utm = bishUTMRepo.findByNameContainingIgnoringCase("neobis").orElse(null);
+                                    if (utmName.contains("Neobis")) {
+                                        utm = bishUTMRepo.findByNameContainingIgnoringCase("Neobis").orElse(null);
                                         if (utm == null) {
-                                            oshUTMRepo.save(new OshUTM(0, "neobis"));
-                                            utm = bishUTMRepo.save(new BishUTM(0, "neobis"));
+                                            oshUTMRepo.save(new OshUTM(0, "Neobis"));
+                                            utm = bishUTMRepo.save(new BishUTM(0, "Neobis"));
                                         }
                                         client.setUtm(utm);
                                     }
@@ -284,8 +284,10 @@ public class BishClientServiceImpl implements BishClientService {
         else
             data = new JSONObject(this.getNewClients(dateTime));
         List<BishClient> clients = this.getClientsFromJson(data);
-        for (BishClient client : clients)
-            this.create(client);
+        for (BishClient client : clients) {
+            if (!client.getFormName().equals("Набор в клуб"))
+                this.create(client);
+        }
     }
 
     @Override
@@ -547,13 +549,13 @@ public class BishClientServiceImpl implements BishClientService {
             client.setTimer(clientDTO.getTimer());
         }
         client = bishClientRepo.save(client);
-        if (historyCourse != null && !historyCourse.getOldData().equals(historyCourse.getNewData()))
+        if (historyCourse != null && (historyCourse.getOldData() == null || !historyCourse.getOldData().equals(historyCourse.getNewData())))
             bishHistoryService.create(historyCourse);
-        if (historyOccupation != null && !historyOccupation.getOldData().equals(historyOccupation.getNewData()))
+        if (historyOccupation != null && (historyOccupation.getOldData() == null || !historyOccupation.getOldData().equals(historyOccupation.getNewData())))
             bishHistoryService.create(historyOccupation);
-        if (historyUTM != null && !historyUTM.getOldData().equals(historyUTM.getNewData()))
+        if (historyUTM != null && (historyUTM.getOldData() == null || !historyUTM.getOldData().equals(historyUTM.getNewData())))
             bishHistoryService.create(historyUTM);
-        if (historyStatus != null && !historyStatus.getOldData().equals(historyStatus.getNewData()))
+        if (historyStatus != null && (historyStatus.getOldData() == null || !historyStatus.getOldData().equals(historyStatus.getNewData())))
             bishHistoryService.create(historyStatus);
         return client;
     }

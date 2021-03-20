@@ -11,5 +11,5 @@ import java.util.List;
 public interface OshHistoryService {
     OshHistory create(OshHistory oshHistory);
     Page<OshHistory> getAll(Pageable pageable);
-    List<StatisticResponse> getStatistic(LocalDateTime dateAfter, LocalDateTime dateBefore, String action);
+    List<StatisticResponse> getStatistic(LocalDateTime dateAfter, LocalDateTime dateBefore, List<Long> status_id, List<Long> course_id);
 }

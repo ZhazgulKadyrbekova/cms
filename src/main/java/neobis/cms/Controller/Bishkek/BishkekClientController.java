@@ -4,12 +4,16 @@ import neobis.cms.Dto.ClientDTO;
 import neobis.cms.Dto.ResponseMessage;
 import neobis.cms.Entity.Bishkek.BishClient;
 import neobis.cms.Service.Bishkek.BishClientService;
+import neobis.cms.Service.ExcelService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 
@@ -21,9 +25,10 @@ public class BishkekClientController {
     private final Logger log = LogManager.getLogger();
 
     private final BishClientService clientService;
-
-    public BishkekClientController(BishClientService clientService) {
+    private final ExcelService excelService;
+    public BishkekClientController(BishClientService clientService, ExcelService excelService) {
         this.clientService = clientService;
+        this.excelService = excelService;
     }
 
     @GetMapping
@@ -54,6 +59,25 @@ public class BishkekClientController {
         if (nameOrPhone != null)
             return clientService.search(pageable, nameOrPhone);
         return clientService.getWithPredicate(pageable, status_id, course_id, occupation_id);
+    }
+
+    @GetMapping(value = "/export")
+//            produces = MediaType.APPLICATION_OCTET_STREAM)
+    public byte[] getFile() throws IOException {
+        Workbook workbook = excelService.getWorkbook();
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        try {
+            workbook.write(bos);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            bos.close();
+        }
+        //        File file = excelService.writeIntoFile();
+//        return ResponseEntity.ok(file, MediaType.APPLICATION_OCTET_STREAM)
+//                .header("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"" ) //optional
+//                .build();
+        return bos.toByteArray();
     }
 
     @GetMapping("/{id}")

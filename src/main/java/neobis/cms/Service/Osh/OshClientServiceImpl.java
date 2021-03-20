@@ -279,8 +279,10 @@ public class OshClientServiceImpl implements OshClientService {
         else
             data = new JSONObject(this.getNewClients(dateTime));
         List<OshClient> clients = this.getClientsFromJson(data);
-        for (OshClient client : clients)
-            this.create(client);
+        for (OshClient client : clients) {
+            if (!client.getFormName().equals("Набор в клуб"))
+                this.create(client);
+        }
     }
 
     @Override

@@ -11,5 +11,5 @@ import java.util.List;
 public interface BishHistoryService {
     BishHistory create(BishHistory bishHistory);
     Page<BishHistory> getAll(Pageable pageable);
-    List<StatisticResponse> getStatistic(LocalDateTime dateAfter, LocalDateTime dateBefore, String action);
+    List<StatisticResponse> getStatistic(LocalDateTime dateAfter, LocalDateTime dateBefore, List<Long> status_id, List<Long> course_id);
 }
