@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import neobis.cms.Entity.Base;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -49,6 +50,7 @@ public class User extends Base {
 
     @JsonIgnore
     @Column(name = "password")
+    @Size(min = 8)
     private String password;
 
     @ManyToOne//(cascade = {CascadeType.ALL})

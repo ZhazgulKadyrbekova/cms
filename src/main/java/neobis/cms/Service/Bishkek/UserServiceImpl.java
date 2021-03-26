@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 
 @Service
@@ -66,15 +65,24 @@ public class UserServiceImpl implements UserService {
     @Override
     public String createUser(UserDTO userDTO) {
         User user = userRepo.findByEmailIgnoringCase(userDTO.getEmail());
+        String city = userDTO.getCity();
+        String position = userDTO.getPosition();
         if (user != null)
             throw new IllegalArgumentException("User with email " + userDTO.getEmail() + " already exists");
-        user = new User();
-        String email = userDTO.getEmail().toLowerCase(Locale.ROOT);
+        if (!city.equalsIgnoreCase("bishkek") || !city.equalsIgnoreCase("osh")) {
+            throw new IllegalArgumentException("Invalid city");
+        }
+        if (!position.equalsIgnoreCase("marketing") || !position.equalsIgnoreCase("management")) {
+            throw new IllegalArgumentException("Invalid position");
+        }
+        String email = userDTO.getEmail().toLowerCase();
         if (email.startsWith("@") || email.endsWith("@") || !email.contains("@"))
             throw new IllegalArgumentException("Invalid email address");
+
+        user = new User();
         user.setEmail(email);
-        user.setPosition(userDTO.getPosition());
-        user.setCity(userDTO.getCity());
+        user.setPosition(position);
+        user.setCity(city);
         user.setName(userDTO.getName());
         user.setSurname(userDTO.getSurname());
         user.setPhoneNo(userDTO.getPhoneNo());
@@ -82,8 +90,7 @@ public class UserServiceImpl implements UserService {
         user.setActivationCode(null);
         user.setActive(false);
         user.setConfirmed(false);
-        String roleName = "ROLE_" + userDTO.getCity().toUpperCase();
-        roleName += (userDTO.getPosition().equals("marketing")) ? "_MARKET" : "_SALE";
+        String roleName = "ROLE_" + city.toUpperCase() + "_" + position.toUpperCase();
         Role role = roleRepo.findByNameContainingIgnoringCase(roleName);
         if (role == null) {
             role = roleRepo.save(new Role(roleName));

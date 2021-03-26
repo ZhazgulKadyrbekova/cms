@@ -19,8 +19,8 @@ public class BishHistory extends Base {
     @Column(name = "history_id")
     private long ID;
 
-    @Column(name = "user_email")
-    private String userEmail;
+    @Column(name = "user_full_name")
+    private String fullName;
 
     @Column(name = "client_phone")
     private String clientPhone;

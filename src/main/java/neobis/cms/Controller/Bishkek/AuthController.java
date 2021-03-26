@@ -1,6 +1,5 @@
 package neobis.cms.Controller.Bishkek;
 
-import lombok.extern.log4j.Log4j2;
 import neobis.cms.Dto.*;
 import neobis.cms.Entity.Bishkek.User;
 import neobis.cms.Service.Bishkek.UserService;
@@ -29,27 +28,27 @@ public class AuthController {
     @Autowired
     private UserService userService;
 
-    @PostMapping("/user")
-    public ResponseMessage createUser(@RequestBody UserDTO userDTO) {
-        log.info("{} sends request to register", userDTO.toString());
-        return new ResponseMessage(userService.createUser(userDTO));
-    }
-
-    @GetMapping("/toConfirm")
+    @GetMapping("/admin/toConfirm")
     public List<User> getListOfUserToConfirm() {
         return userService.getListOfUserToConfirm();
     }
 
-    @PostMapping("/confirm/{id}")
+    @PostMapping("/admin/confirm/{id}")
     public ResponseMessage confirmAndSendActivation(@PathVariable Long id) {
         log.info("Admin confirms user id {}", id);
         return new ResponseMessage(userService.confirm(id));
     }
 
-    @PostMapping("/reject")
+    @PostMapping("/admin/reject")
     public ResponseMessage rejectAndSendEmail(@RequestBody UserRejectDTO userRejectDTO) {
         log.info("Admin rejects user email {}", userRejectDTO.getEmail());
         return new ResponseMessage(userService.reject(userRejectDTO));
+    }
+
+    @PostMapping("/user")
+    public ResponseMessage createUser(@RequestBody UserDTO userDTO) {
+        log.info("{} sends request to register", userDTO.toString());
+        return new ResponseMessage(userService.createUser(userDTO));
     }
 
     @GetMapping("/activate/{code}")

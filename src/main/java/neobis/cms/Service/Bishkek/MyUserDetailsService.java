@@ -2,7 +2,6 @@ package neobis.cms.Service.Bishkek;
 
 import neobis.cms.Entity.Bishkek.Role;
 import neobis.cms.Repo.Bishkek.UserRepo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -14,8 +13,11 @@ import java.util.List;
 
 @Service
 public class MyUserDetailsService  implements UserDetailsService {
-    @Autowired
-    private UserRepo userAccountRepository;
+    private final UserRepo userAccountRepository;
+
+    public MyUserDetailsService(UserRepo userAccountRepository) {
+        this.userAccountRepository = userAccountRepository;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {

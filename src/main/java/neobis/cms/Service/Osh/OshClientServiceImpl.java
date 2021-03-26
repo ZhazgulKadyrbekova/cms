@@ -196,7 +196,7 @@ public class OshClientServiceImpl implements OshClientService {
                                 }
                                 if (occupation) {
                                     String occupationName = data.getString(key);
-                                    OshOccupation oshOccupation = oshOccupationRepo.findByNameContainingIgnoringCase(occupationName).orElse(null);
+                                    OshOccupation oshOccupation = oshOccupationRepo.findByNameContainingIgnoringCase(occupationName);
                                     if (oshOccupation == null) {
                                         bishOccupationRepo.save(new BishOccupation(0, occupationName));
                                         oshOccupation = oshOccupationRepo.save(new OshOccupation(0, occupationName));
@@ -319,6 +319,7 @@ public class OshClientServiceImpl implements OshClientService {
 
     @Override
     public OshClient create(ClientDTO clientDTO, String userEmail) {
+        User user = userService.findByEmail(userEmail);
         OshClient client = new OshClient();
         client.setDateCreated(LocalDateTime.now());
         client.setPhoneNo(clientDTO.getPhoneNo());
@@ -341,7 +342,7 @@ public class OshClientServiceImpl implements OshClientService {
                     .orElseThrow(() -> new ResourceNotFoundException("Status with id " + clientDTO.getStatus() + " has not found"));
             client.setStatus(statuses);
             historyStatus = new OshHistory();
-            historyStatus.setUserEmail(userEmail);
+            historyStatus.setFullName(user.getName() + " " + user.getSurname());
             historyStatus.setClientPhone(client.getPhoneNo());
             historyStatus.setAction("status");
             historyStatus.setNewData(statuses.getName());
@@ -351,7 +352,7 @@ public class OshClientServiceImpl implements OshClientService {
                     .orElseThrow(() -> new ResourceNotFoundException("Occupation with id " + clientDTO.getOccupation() + " has not found"));
             client.setOccupation(occupation);
             historyOccupation = new OshHistory();
-            historyOccupation.setUserEmail(userEmail);
+            historyOccupation.setFullName(user.getName() + " " + user.getSurname());
             historyOccupation.setClientPhone(client.getPhoneNo());
             historyOccupation.setAction("occupation");
             historyOccupation.setNewData(occupation.getName());
@@ -362,7 +363,7 @@ public class OshClientServiceImpl implements OshClientService {
                 throw new ResourceNotFoundException("Course with id " + clientDTO.getCourse() + " has not found");
             client.setCourse(courses);
             historyCourse = new OshHistory();
-            historyCourse.setUserEmail(userEmail);
+            historyCourse.setFullName(user.getName() + " " + user.getSurname());
             historyCourse.setClientPhone(client.getPhoneNo());
             historyCourse.setAction("course");
             historyCourse.setNewData(courses.getName());
@@ -372,7 +373,7 @@ public class OshClientServiceImpl implements OshClientService {
                     .orElseThrow(() -> new ResourceNotFoundException("UTM with id " + clientDTO.getUTM() + " has not found"));
             client.setUtm(utm);
             historyUTM = new OshHistory();
-            historyUTM.setUserEmail(userEmail);
+            historyUTM.setFullName(user.getName() + " " + user.getSurname());
             historyUTM.setClientPhone(client.getPhoneNo());
             historyUTM.setAction("UTM");
             historyUTM.setNewData(utm.getName());
@@ -404,6 +405,7 @@ public class OshClientServiceImpl implements OshClientService {
 
     @Override
     public OshClient changeStatus(long id, long status, String username) {
+        User user = userService.findByEmail(username);
         OshClient client = oshClientRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Client with id " + id + " has not found"));
         OshHistory oshHistory = new OshHistory();
@@ -412,7 +414,7 @@ public class OshClientServiceImpl implements OshClientService {
             oshHistory.setOldData(null);
         else
             oshHistory.setOldData(client.getStatus().getName());
-        oshHistory.setUserEmail(username);
+        oshHistory.setFullName(user.getName() + " " + user.getSurname());
         oshHistory.setClientPhone(client.getPhoneNo());
 
         OshStatuses statuses = oshStatusesRepo.findById(status)
@@ -434,6 +436,7 @@ public class OshClientServiceImpl implements OshClientService {
 
     @Override
     public OshClient updateClient(long id, ClientDTO clientDTO, String username) {
+        User user = userService.findByEmail(username);
         OshClient client = oshClientRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Client with id " + id + " has not found"));
         OshHistory historyStatus = null, historyOccupation = null, historyCourse = null, historyUTM = null;
@@ -441,7 +444,7 @@ public class OshClientServiceImpl implements OshClientService {
             OshStatuses statuses = oshStatusesRepo.findById(clientDTO.getStatus())
                     .orElseThrow(() -> new ResourceNotFoundException("Status with id " + clientDTO.getStatus() + " has not found"));
             historyStatus = new OshHistory();
-            historyStatus.setUserEmail(username);
+            historyStatus.setFullName(user.getName() + " " + user.getSurname());
             historyStatus.setClientPhone(client.getPhoneNo());
             historyStatus.setAction("status");
             OshStatuses oldStatus = client.getStatus();
@@ -454,7 +457,7 @@ public class OshClientServiceImpl implements OshClientService {
             OshOccupation occupation = oshOccupationRepo.findById(clientDTO.getOccupation())
                     .orElseThrow(() -> new ResourceNotFoundException("Occupation with id " + clientDTO.getOccupation() + " has not found"));
             historyOccupation = new OshHistory();
-            historyOccupation.setUserEmail(username);
+            historyOccupation.setFullName(user.getName() + " " + user.getSurname());
             historyOccupation.setClientPhone(client.getPhoneNo());
             historyOccupation.setAction("occupation");
             OshOccupation oldOccupation = client.getOccupation();
@@ -468,7 +471,7 @@ public class OshClientServiceImpl implements OshClientService {
             if (courses == null)
                 throw new ResourceNotFoundException("Course with id " + clientDTO.getCourse() + " has not found");
             historyCourse = new OshHistory();
-            historyCourse.setUserEmail(username);
+            historyCourse.setFullName(user.getName() + " " + user.getSurname());
             historyCourse.setClientPhone(client.getPhoneNo());
             historyCourse.setAction("course");
             OshCourses oldCourse = client.getCourse();
@@ -481,7 +484,7 @@ public class OshClientServiceImpl implements OshClientService {
             OshUTM utm = oshUTMRepo.findById(clientDTO.getUTM())
                     .orElseThrow(() -> new ResourceNotFoundException("UTM with id " + clientDTO.getUTM() + " has not found"));
             historyUTM = new OshHistory();
-            historyUTM.setUserEmail(username);
+            historyUTM.setFullName(user.getName() + " " + user.getSurname());
             historyUTM.setClientPhone(client.getPhoneNo());
             historyUTM.setAction("UTM");
             OshUTM oldUTM = client.getUtm();
@@ -526,6 +529,7 @@ public class OshClientServiceImpl implements OshClientService {
 
     @Override
     public void changeCity(long id, String userEmail) {
+        User user = userService.findByEmail(userEmail);
         OshClient oshClient = oshClientRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Client with id " + id + " has not found"));
 
@@ -539,7 +543,7 @@ public class OshClientServiceImpl implements OshClientService {
         if (oshClient.getStatus() != null)
             bishClient.setStatus(bishStatusesRepo.findByNameContainingIgnoringCase(oshClient.getStatus().getName()));
         if (oshClient.getOccupation() != null)
-            bishClient.setOccupation(bishOccupationRepo.findByNameContainingIgnoringCase(oshClient.getOccupation().getName()).orElse(null));
+            bishClient.setOccupation(bishOccupationRepo.findByNameContainingIgnoringCase(oshClient.getOccupation().getName()));
         bishClient.setTarget(oshClient.getTarget());
         bishClient.setExperience(oshClient.isExperience());
         bishClient.setLaptop(oshClient.isLaptop());
@@ -574,7 +578,7 @@ public class OshClientServiceImpl implements OshClientService {
         oshClientRepo.delete(oshClient);
 
         OshHistory history = new OshHistory();
-        history.setUserEmail(userEmail);
+        history.setFullName(user.getName() + " " + user.getSurname());
         history.setAction("change city of client");
         history.setClientPhone(bishClient.getPhoneNo());
         history.setOldData("OSH");

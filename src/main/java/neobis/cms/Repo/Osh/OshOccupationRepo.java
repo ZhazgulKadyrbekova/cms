@@ -10,5 +10,5 @@ import java.util.Optional;
 @Repository
 public interface OshOccupationRepo extends JpaRepository<OshOccupation, Long> {
     List<OshOccupation> findAllByNameContainingIgnoringCase(String name);
-    Optional<OshOccupation> findByNameContainingIgnoringCase(String name);
+    OshOccupation findByNameContainingIgnoringCase(String name);
 }

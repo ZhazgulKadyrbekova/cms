@@ -1,19 +1,26 @@
 package neobis.cms.Controller.Bishkek;
 
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import neobis.cms.Dto.ClientDTO;
 import neobis.cms.Dto.ResponseMessage;
 import neobis.cms.Entity.Bishkek.BishClient;
 import neobis.cms.Service.Bishkek.BishClientService;
 import neobis.cms.Service.ExcelService;
+import neobis.cms.Util.ExcelUtilHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 
@@ -32,15 +39,27 @@ public class BishkekClientController {
     }
 
     @GetMapping
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "page", dataType = "int", paramType = "query",
+                    value = "Results page you want to retrieve (0...N)", defaultValue = "0"),
+            @ApiImplicitParam(name = "size", dataType = "int", paramType = "query",
+                    value = "Number of records per page.", defaultValue = "20")
+    })
     public Page<BishClient> getAll(Pageable pageable
 //                                    @RequestParam(defaultValue = "0") Integer pageNo,
 //                                    @RequestParam(defaultValue = "20") Integer pageSize
     ) {
-        clientService.addClientsToDB();
+        // clientService.addClientsToDB();
         return clientService.getAllClientsFromDB(pageable);
     }
 
     @GetMapping("/search")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "page", dataType = "int", paramType = "query",
+                    value = "Results page you want to retrieve (0...N)", defaultValue = "0"),
+            @ApiImplicitParam(name = "size", dataType = "int", paramType = "query",
+                    value = "Number of records per page.", defaultValue = "20")
+    })
     public Page<BishClient> getWithPredicate(Pageable pageable,
 //                                            @ApiParam(value="yyyy-MM-dd-HH:mm") @RequestParam(required = false) String dateAfter,
 //                                            @ApiParam(value="yyyy-MM-dd-HH:mm") @RequestParam(required = false) String dateBefore,
@@ -63,27 +82,40 @@ public class BishkekClientController {
 
     @GetMapping(value = "/export")
 //            produces = MediaType.APPLICATION_OCTET_STREAM)
-    public byte[] getFile() throws IOException {
-        Workbook workbook = excelService.getWorkbook();
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        try {
-            workbook.write(bos);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            bos.close();
-        }
-        //        File file = excelService.writeIntoFile();
-//        return ResponseEntity.ok(file, MediaType.APPLICATION_OCTET_STREAM)
-//                .header("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"" ) //optional
-//                .build();
-        return bos.toByteArray();
+    public ResponseEntity<Resource> getFile() {
+        String filename = "Clients.xlsx";
+        InputStreamResource file = new InputStreamResource(excelService.loadBishClients());
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(file);
     }
 
     @GetMapping("/{id}")
     public BishClient getById(@PathVariable Long id) {
 //        clientService.addClientsToDB();
         return clientService.getClientById(id);
+    }
+
+    @PostMapping("/import")
+    public ResponseEntity<ResponseMessage> importFile(@RequestParam("file") MultipartFile file) {
+        String message = "";
+        if (ExcelUtilHelper.hasExcelFormat(file)) {
+            try {
+                excelService.saveBishClients(file);
+
+                message = "Successfully uploaded file " + file.getOriginalFilename();
+                return ResponseEntity.status(HttpStatus.OK).body(new ResponseMessage(message));
+            } catch (Exception e) {
+	            e.printStackTrace();
+                message = "Could not upload file " + file.getOriginalFilename() + "! " + e.getMessage();
+                return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new ResponseMessage(message));
+            }
+        }
+
+        message = "Please, upload an excel file in xlsx format!";
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseMessage(message));
     }
 
     @GetMapping("/status/{status_id}")

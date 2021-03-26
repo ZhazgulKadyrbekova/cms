@@ -1,8 +1,5 @@
 package neobis.cms.Search;
 
-import neobis.cms.Entity.Bishkek.BishCourses;
-import neobis.cms.Entity.Bishkek.BishOccupation;
-import neobis.cms.Entity.Bishkek.BishStatuses;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.CriteriaBuilder;

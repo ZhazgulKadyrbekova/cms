@@ -6,10 +6,10 @@ import neobis.cms.Entity.Bishkek.BishCourses;
 import java.util.List;
 
 public interface BishCoursesService {
-    BishCourses findCourseByFormName(String formName);
+    BishCourses findCourseByName(String name);
     BishCourses findCourseById(long id);
     List<BishCourses> findAll();
-    List<BishCourses> findCourseByName(String name);
+    List<BishCourses> findCoursesByName(String name);
     BishCourses addCourse(CoursesDTO courseDTO);
     BishCourses updateCourse(long id, CoursesDTO courseDTO);
     String deleteCourse(long id);

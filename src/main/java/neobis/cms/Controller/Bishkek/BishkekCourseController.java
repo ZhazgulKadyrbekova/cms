@@ -32,7 +32,7 @@ public class BishkekCourseController {
 
     @GetMapping("/name/{name}")
     public List<BishCourses> getByName(@PathVariable String name) {
-        return coursesService.findCourseByName(name);
+        return coursesService.findCoursesByName(name);
     }
 
     @PostMapping

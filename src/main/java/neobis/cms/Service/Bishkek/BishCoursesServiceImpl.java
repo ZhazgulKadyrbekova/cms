@@ -16,7 +16,7 @@ public class BishCoursesServiceImpl implements BishCoursesService{
 
     @Autowired
     private BishTeacherService teacherService;
-
+/*
     @Override
     public BishCourses findCourseByFormName(String formName) {
         if (formName.equals("Заявка с quiz"))
@@ -36,7 +36,12 @@ public class BishCoursesServiceImpl implements BishCoursesService{
             return coursesRepo.findByNameContainingIgnoringCase("olympiad");
         return null;
     }
+*/
 
+    @Override
+    public BishCourses findCourseByName(String name) {
+        return coursesRepo.findByNameContainingIgnoringCase(name);
+    }
     @Override
     public BishCourses findCourseById(long id) {
         return coursesRepo.findById(id)
@@ -49,7 +54,7 @@ public class BishCoursesServiceImpl implements BishCoursesService{
     }
 
     @Override
-    public List<BishCourses> findCourseByName(String name) {
+    public List<BishCourses> findCoursesByName(String name) {
         List<BishCourses> courses = coursesRepo.findAllByNameContainingIgnoringCase(name);
         if (courses.isEmpty())
             throw new ResourceNotFoundException("Course with name " + name + " has not found");

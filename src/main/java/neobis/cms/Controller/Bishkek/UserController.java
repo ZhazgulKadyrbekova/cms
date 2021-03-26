@@ -7,6 +7,7 @@ import neobis.cms.Service.Bishkek.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -23,8 +24,11 @@ public class UserController {
     private UserService userService;
 
     @GetMapping
-    public List<User> getAll() {
-            return userService.findAll();
+    public ResponseEntity getAll(@RequestParam(value = "email", required = false) String email) {
+        if (email == null)
+            return ResponseEntity.ok(userService.findAll());
+        else
+            return ResponseEntity.ok(userService.findByEmail(email));
     }
 
     @GetMapping("/profile")
@@ -42,4 +46,5 @@ public class UserController {
         log.info("User {} changed password", userPasswordDTO.getEmail());
         return new ResponseMessage(userService.changePassword(userPasswordDTO));
     }
+
 }

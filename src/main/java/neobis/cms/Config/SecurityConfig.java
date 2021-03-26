@@ -35,18 +35,24 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable().authorizeRequests()
-                .antMatchers("/user/**").permitAll()
-                .antMatchers("/bishkek/**").hasAnyRole("ADMIN", "BISHKEK_SALE", "BISHKEK_MARKET")
-                .antMatchers("/osh/**").hasAnyRole("ADMIN", "OSH_SALE", "OSH_MARKET")
-//                .antMatchers(HttpMethod.GET,"/register/toConfirm").hasRole("ADMIN")
-                .antMatchers("/register/toConfirm").hasRole("ADMIN")
-                .antMatchers("/register/confirm/*").hasRole("ADMIN")
-                .antMatchers("/register/reject").hasRole("ADMIN")
+//                .antMatchers("/user/**").permitAll()
+                .antMatchers("/bishkek/**").hasAnyRole("ADMIN", "BISHKEK_MANAGEMENT", "BISHKEK_MARKETING")
+                .antMatchers("/osh/**").hasAnyRole("ADMIN", "OSH_MANAGEMENT", "OSH_MARKETING")
+                .antMatchers("/register/admin/**").hasRole("ADMIN")
+                .antMatchers("/register/**").permitAll()
+                .antMatchers(HttpMethod.POST, "/status").hasRole("ADMIN")
+                .antMatchers(HttpMethod.PUT, "/status").hasRole("ADMIN")
+                .antMatchers(HttpMethod.POST, "/utm").hasRole("ADMIN")
+                .antMatchers(HttpMethod.PUT, "/utm").hasRole("ADMIN")
+                .antMatchers("/bishkek/history").hasRole("ADMIN")
+                .antMatchers("/osh/history").hasRole("ADMIN")
+                .antMatchers(HttpMethod.POST, "/occupation").hasRole("ADMIN")
+                .antMatchers(HttpMethod.PUT, "/occupation").hasRole("ADMIN")
 
 
-                .anyRequest().permitAll()
+                .anyRequest().authenticated()
                 .and().exceptionHandling()
-//                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.headers().httpStrictTransportSecurity().disable();
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
