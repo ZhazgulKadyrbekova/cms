@@ -56,7 +56,7 @@ public class BishClientServiceImpl implements BishClientService {
 
     private final String dataResourceUrl
 //            = "https://neolabs.dev/mod/api/?api_key=e539509b630b27e47ac594d0dbba4e69&method=getLeads";
-            = "https://neolabs.dev/mod/api/?api_key=e539509b630b27e47ac594d0dbba4e69&method=getLeads&start=0&count=1000";
+            = "https://neolabs.dev/mod/api/?api_key=e539509b630b27e47ac594d0dbba4e69&method=getLeads&start=0&count=200";
 
     public BishClientServiceImpl(BishStatusesRepo statusesRepo, BishClientRepo bishClientRepo, OshClientRepo oshClientRepo, OshStatusesRepo oshStatusesRepo,
                                  BishOccupationRepo bishOccupationRepo, OshOccupationRepo oshOccupationRepo, BishUTMRepo bishUTMRepo, OshUTMRepo oshUTMRepo,
@@ -145,7 +145,7 @@ public class BishClientServiceImpl implements BishClientService {
                                 if (!data.getString(key).equals("neolabs.dev/")) {
                                     String utmName = data.getString(key);
                                     BishUTM utm;
-                                    if (utmName.contains("Instagram")) {
+                                    if (utmName.contains("instagram")) {
                                         utm = bishUTMRepo.findByNameContainingIgnoringCase("Instagram").orElse(null);
                                         if (utm == null) {
                                             oshUTMRepo.save(new OshUTM(0, "Instagram"));
@@ -153,7 +153,7 @@ public class BishClientServiceImpl implements BishClientService {
                                         }
                                         client.setUtm(utm);
                                     }
-                                    if (utmName.contains("Facebook")) {
+                                    if (utmName.contains("facebook")) {
                                         utm = bishUTMRepo.findByNameContainingIgnoringCase("Facebook").orElse(null);
                                         if (utm == null) {
                                             oshUTMRepo.save(new OshUTM(0, "Facebook"));
@@ -161,7 +161,7 @@ public class BishClientServiceImpl implements BishClientService {
                                         }
                                         client.setUtm(utm);
                                     }
-                                    if (utmName.contains("Google")) {
+                                    if (utmName.contains("google")) {
                                         utm = bishUTMRepo.findByNameContainingIgnoringCase("Google").orElse(null);
                                         if (utm == null) {
                                             oshUTMRepo.save(new OshUTM(0, "Google"));
@@ -169,7 +169,7 @@ public class BishClientServiceImpl implements BishClientService {
                                         }
                                         client.setUtm(utm);
                                     }
-                                    if (utmName.contains("Neobis")) {
+                                    if (utmName.contains("neobis")) {
                                         utm = bishUTMRepo.findByNameContainingIgnoringCase("Neobis").orElse(null);
                                         if (utm == null) {
                                             oshUTMRepo.save(new OshUTM(0, "Neobis"));

@@ -69,10 +69,10 @@ public class UserServiceImpl implements UserService {
         String position = userDTO.getPosition();
         if (user != null)
             throw new IllegalArgumentException("User with email " + userDTO.getEmail() + " already exists");
-        if (!city.equalsIgnoreCase("bishkek") || !city.equalsIgnoreCase("osh")) {
+        if (!city.toLowerCase().equals("bishkek") && !city.toLowerCase().equals("osh")) {
             throw new IllegalArgumentException("Invalid city");
         }
-        if (!position.equalsIgnoreCase("marketing") || !position.equalsIgnoreCase("management")) {
+        if (!position.toLowerCase().equals("marketing") && !position.toLowerCase().equals("management")) {
             throw new IllegalArgumentException("Invalid position");
         }
         String email = userDTO.getEmail().toLowerCase();

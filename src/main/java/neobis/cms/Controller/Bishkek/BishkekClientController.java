@@ -49,7 +49,7 @@ public class BishkekClientController {
 //                                    @RequestParam(defaultValue = "0") Integer pageNo,
 //                                    @RequestParam(defaultValue = "20") Integer pageSize
     ) {
-        // clientService.addClientsToDB();
+//         clientService.addClientsToDB();
         return clientService.getAllClientsFromDB(pageable);
     }
 
