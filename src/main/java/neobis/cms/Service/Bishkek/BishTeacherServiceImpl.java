@@ -1,22 +1,72 @@
 package neobis.cms.Service.Bishkek;
 
 import neobis.cms.Dto.TeacherDTO;
+import neobis.cms.Dto.WorkerDTO;
 import neobis.cms.Entity.Bishkek.BishTeachers;
+import neobis.cms.Entity.Bishkek.User;
 import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Bishkek.BishTeacherRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class BishTeacherServiceImpl implements BishTeacherService {
     @Autowired
     private BishTeacherRepo teacherRepo;
+    @Autowired
+    private UserService userService;
 
     @Override
-    public List<BishTeachers> getAllTeachers() {
-        return teacherRepo.findAll();
+    public Page<WorkerDTO> getWithPredicate(Pageable pageable, String position, String courseName) {
+        List<WorkerDTO> workers = new ArrayList<>();
+        List<BishTeachers> teachers;
+        List<User> users;
+        if (position != null) {
+            users = userService.getAllByPositionAndCity(position, "bishkek");
+            if (courseName != null) {
+                teachers = teacherRepo.findAllByPositionContainingAndCourseNameContaining(position, courseName);
+            } else {
+                teachers = teacherRepo.findAllByPositionContaining(position);
+            }
+        } else {
+            users = new ArrayList<>();
+            if (courseName != null)
+                teachers = teacherRepo.findAllByCourseNameContaining(courseName);
+            else
+                teachers = new ArrayList<>();
+        }
+
+        for (BishTeachers teacher : teachers) {
+            workers.add(new WorkerDTO(teacher.getName(), teacher.getSurname(), teacher.getEmail(), teacher.getPhoneNo(), teacher.getPosition(), teacher.getCourseName()));
+        }
+        for (User user : users) {
+            workers.add(new WorkerDTO(user.getName(), user.getSurname(), user.getEmail(), user.getPhoneNo(), user.getPosition(), null));
+        }
+        final int start = (int)pageable.getOffset();
+        final int end = Math.min((start + pageable.getPageSize()), workers.size());
+        return new PageImpl<>(workers.subList(start, end), pageable, workers.size());
+    }
+
+    @Override
+    public Page<WorkerDTO> getAllTeachers(Pageable pageable) {
+        List<BishTeachers> teachers = teacherRepo.findAll();
+        List<User> users = userService.getUsersByCity("bishkek");
+        List<WorkerDTO> workers = new ArrayList<>();
+        for (BishTeachers teacher : teachers) {
+            workers.add(new WorkerDTO(teacher.getName(), teacher.getSurname(), teacher.getEmail(), teacher.getPhoneNo(), teacher.getPosition(), teacher.getCourseName()));
+        }
+        for (User user : users) {
+            workers.add(new WorkerDTO(user.getName(), user.getSurname(), user.getEmail(), user.getPhoneNo(), user.getPosition(), null));
+        }
+        final int start = (int)pageable.getOffset();
+        final int end = Math.min((start + pageable.getPageSize()), workers.size());
+        return new PageImpl<>(workers.subList(start, end), pageable, workers.size());
     }
 
     @Override
@@ -37,23 +87,35 @@ public class BishTeacherServiceImpl implements BishTeacherService {
         BishTeachers teacher = new BishTeachers();
         teacher.setName(teacherDTO.getName());
         teacher.setSurname(teacherDTO.getSurname());
+        teacher.setEmail(teacherDTO.getEmail());
+        teacher.setPhoneNo(teacherDTO.getPhoneNo());
+        teacher.setPosition(teacherDTO.getPosition());
+        teacher.setCourseName(teacherDTO.getCourseName());
+        teacher.setStartDate(teacherDTO.getStartDate());
+        teacher.setEndDate(teacherDTO.getEndDate());
         return teacherRepo.save(teacher);
     }
 
     @Override
     public BishTeachers updateTeacherInfo(long id, TeacherDTO teacherDTO) {
         BishTeachers teacher = teacherRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Teacher id " + id + " was not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Teacher with id " + id + " has not found"));
         teacher.setName(teacherDTO.getName());
         teacher.setSurname(teacherDTO.getSurname());
+        teacher.setEmail(teacherDTO.getEmail());
+        teacher.setPhoneNo(teacherDTO.getPhoneNo());
+        teacher.setPosition(teacherDTO.getPosition());
+        teacher.setCourseName(teacherDTO.getCourseName());
+        teacher.setStartDate(teacherDTO.getStartDate());
+        teacher.setEndDate(teacherDTO.getEndDate());
         return teacherRepo.save(teacher);
     }
 
     @Override
     public String deleteTeacherById(long id) {
         BishTeachers teacher = teacherRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Teacher id " + id + " was not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Teacher id " + id + " has not found"));
         teacherRepo.delete(teacher);
-        return "Teacher id " + id + " has successfully deleted";
+        return "Teacher with id " + id + " has successfully deleted";
     }
 }

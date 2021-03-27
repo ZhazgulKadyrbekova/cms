@@ -16,9 +16,10 @@ public interface UserService {
     String createUser(UserDTO userDTO);
     List<User> getListOfUserToConfirm();
     List<User> getUsersByCity(String city);
+    List<User> getAllByPositionAndCity(String position, String city);
     String confirm(Long id);
     String activate(String activationCode);
-    String changePassword(UserPasswordsDTO userPasswordDTO);
+    String changePassword(String email, UserPasswordsDTO userPasswordDTO);
     String forgotPassword(String email);
     String setPassword(UserAuthDTO userAuthDTO);
     String reject(UserRejectDTO userRejectDTO);

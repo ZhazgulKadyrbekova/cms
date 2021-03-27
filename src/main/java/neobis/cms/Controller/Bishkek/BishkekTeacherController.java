@@ -1,13 +1,18 @@
 package neobis.cms.Controller.Bishkek;
 
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import neobis.cms.Dto.ResponseMessage;
 import neobis.cms.Dto.TeacherDTO;
+import neobis.cms.Dto.WorkerDTO;
 import neobis.cms.Entity.Bishkek.BishTeachers;
 import neobis.cms.Service.Bishkek.BishTeacherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -21,8 +26,27 @@ public class BishkekTeacherController {
     private BishTeacherService teacherService;
 
     @GetMapping
-    public List<BishTeachers> getAll() {
-        return teacherService.getAllTeachers();
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "page", dataType = "int", paramType = "query",
+                    value = "Results page you want to retrieve (0...N)", defaultValue = "0"),
+            @ApiImplicitParam(name = "size", dataType = "int", paramType = "query",
+                    value = "Number of records per page.", defaultValue = "20")
+    })
+    public Page<WorkerDTO> getAll(Pageable pageable) {
+        return teacherService.getAllTeachers(pageable);
+    }
+
+    @GetMapping("/filter")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "page", dataType = "int", paramType = "query",
+                    value = "Results page you want to retrieve (0...N)", defaultValue = "0"),
+            @ApiImplicitParam(name = "size", dataType = "int", paramType = "query",
+                    value = "Number of records per page.", defaultValue = "20")
+    })
+    public Page<WorkerDTO> getAllWithPredicate(Pageable pageable,
+                                  @RequestParam(value = "position", required = false) String position,
+                                  @RequestParam(value = "courseName", required = false) String courseName) {
+        return teacherService.getWithPredicate(pageable, position, courseName);
     }
 
     @GetMapping("/{id}")

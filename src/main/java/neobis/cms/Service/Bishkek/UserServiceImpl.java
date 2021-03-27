@@ -53,6 +53,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<User> getAllByPositionAndCity(String position, String city) {
+        return userRepo.findAllByPositionContainingAndCityContaining(position, city);
+    }
+
+    @Override
     public List<User> getListOfUserToConfirm() {
         return userRepo.findAllByConfirmed(false);
     }
@@ -69,15 +74,19 @@ public class UserServiceImpl implements UserService {
         String position = userDTO.getPosition();
         if (user != null)
             throw new IllegalArgumentException("User with email " + userDTO.getEmail() + " already exists");
-        if (!city.toLowerCase().equals("bishkek") && !city.toLowerCase().equals("osh")) {
+        if (!city.equalsIgnoreCase("bishkek") && !city.equalsIgnoreCase("osh")) {
             throw new IllegalArgumentException("Invalid city");
         }
-        if (!position.toLowerCase().equals("marketing") && !position.toLowerCase().equals("management")) {
+        if (!position.equalsIgnoreCase("marketing") && !position.equalsIgnoreCase("management")) {
             throw new IllegalArgumentException("Invalid position");
         }
         String email = userDTO.getEmail().toLowerCase();
         if (email.startsWith("@") || email.endsWith("@") || !email.contains("@"))
             throw new IllegalArgumentException("Invalid email address");
+        if (userDTO.getPassword().length() < 8)
+            throw new IllegalArgumentException("Password is too short");
+        if (!isLetter(userDTO.getName()) && isLetter(userDTO.getSurname()))
+            throw new IllegalArgumentException("Name and surname can contain only letters");
 
         user = new User();
         user.setEmail(email);
@@ -98,6 +107,14 @@ public class UserServiceImpl implements UserService {
         user.setRole(role);
         userRepo.save(user);
         return "Profile info has been saved. After Admin confirmation you will get activation code to your email";
+    }
+
+    private boolean isLetter(String text) {
+        for (char character : text.toLowerCase().toCharArray()) {
+            if (!(character >= 'a' && character <= 'z'))
+                return false;
+        }
+        return true;
     }
 
     @Override
@@ -133,11 +150,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String changePassword(UserPasswordsDTO userPasswordDTO) {
-        User user = userRepo.findByEmailIgnoringCaseAndActive(userPasswordDTO.getEmail(), true);
+    public String changePassword(String email, UserPasswordsDTO userPasswordDTO) {
+        User user = userRepo.findByEmailIgnoringCaseAndActive(email, true);
         if (user == null)
-            throw new ResourceNotFoundException("User with email " + userPasswordDTO.getEmail() + " not found");
-        if (!encoder.matches(user.getPassword(), userPasswordDTO.getOldPassword()))
+            throw new ResourceNotFoundException("User with email " + email + " not found");
+        if (!encoder.matches(userPasswordDTO.getOldPassword(), user.getPassword()))
             return "Old password did not match with your current password";
         user.setPassword(encoder.encode(userPasswordDTO.getNewPassword()));
         userRepo.save(user);

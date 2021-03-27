@@ -24,11 +24,13 @@ public class UserController {
     private UserService userService;
 
     @GetMapping
-    public ResponseEntity getAll(@RequestParam(value = "email", required = false) String email) {
-        if (email == null)
-            return ResponseEntity.ok(userService.findAll());
-        else
-            return ResponseEntity.ok(userService.findByEmail(email));
+    public ResponseEntity<List<User>> getAll() {
+        return ResponseEntity.ok(userService.findAll());
+    }
+
+    @GetMapping("/email/{email}")
+    public ResponseEntity<User> getByEmail(@RequestParam(value = "email") String email) {
+        return ResponseEntity.ok(userService.findByEmail(email));
     }
 
     @GetMapping("/profile")
@@ -42,9 +44,9 @@ public class UserController {
     }
 
     @PostMapping("/changePassword")
-    public ResponseMessage changePassword(@RequestBody UserPasswordsDTO userPasswordDTO) {
-        log.info("User {} changed password", userPasswordDTO.getEmail());
-        return new ResponseMessage(userService.changePassword(userPasswordDTO));
+    public ResponseMessage changePassword(Principal principal, @RequestBody UserPasswordsDTO userPasswordDTO) {
+        log.info("User {} changed password", principal.getName());
+        return new ResponseMessage(userService.changePassword(principal.getName(), userPasswordDTO));
     }
 
 }
