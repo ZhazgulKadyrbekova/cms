@@ -42,12 +42,12 @@ public class OshTeacherServiceImpl implements OshTeacherService {
         List<User> users = new ArrayList<>();
         if (position != null && courseID != null) {
             OshTeachers teacher = coursesService.findCourseById(courseID).getTeacher();
-            if (teacher.getPosition().equals(position))
+            if (teacher.getPosition().equalsIgnoreCase(position))
                 teachers.add(teacher);
         } else if (courseID != null) {
             teachers.add(coursesService.findCourseById(courseID).getTeacher());
         } else if (position != null) {
-            teachers = teacherRepo.findAllByPositionContaining(position);
+            teachers = teacherRepo.findAllByPositionContainingIgnoringCase(position);
             users = userService.getAllByPositionAndCity(position, "osh");
         }
 

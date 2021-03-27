@@ -31,13 +31,13 @@ public class BishTeacherServiceImpl implements BishTeacherService {
         List<User> users = new ArrayList<>();
         if (position != null && courseID != null) {
             BishTeachers teacher = coursesService.findCourseById(courseID).getTeacher();
-            if (teacher.getPosition().equals(position))
+            if (teacher.getPosition().equalsIgnoreCase(position))
                 teachers.add(teacher);
         } else if (courseID != null) {
             teachers.add(coursesService.findCourseById(courseID).getTeacher());
         } else if (position != null) {
-            teachers = teacherRepo.findAllByPositionContaining(position);
-            users = userService.getAllByPositionAndCity(position, "osh");
+            teachers = teacherRepo.findAllByPositionContainingIgnoringCase(position);
+            users = userService.getAllByPositionAndCity(position, "bishkek");
         }
 
         for (BishTeachers teacher : teachers) {
