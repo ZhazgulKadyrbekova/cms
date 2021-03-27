@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import neobis.cms.Entity.Base;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
@@ -26,4 +27,24 @@ public class OshTeachers extends Base {
     @Column(name = "surname")
     private String surname;
 
+    @Column(name = "email", unique = true)
+    private String email;
+
+    @Column(name = "phone_no")
+    private String phoneNo;
+
+    @Column(name = "position")
+    private String position;
+
+    @Column(name = "course_name")
+    private String courseName;
+
+    @Column(name = "patent")
+    private String patent;
+
+    @Column(name = "start_date")
+    private LocalDate startDate;
+
+    @Column(name = "end_date")
+    private LocalDate endDate;
 }

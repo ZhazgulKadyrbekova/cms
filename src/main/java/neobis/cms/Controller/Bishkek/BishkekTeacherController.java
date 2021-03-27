@@ -7,14 +7,12 @@ import neobis.cms.Dto.TeacherDTO;
 import neobis.cms.Dto.WorkerDTO;
 import neobis.cms.Entity.Bishkek.BishTeachers;
 import neobis.cms.Service.Bishkek.BishTeacherService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin
 @RestController
@@ -45,19 +43,19 @@ public class BishkekTeacherController {
     })
     public Page<WorkerDTO> getAllWithPredicate(Pageable pageable,
                                   @RequestParam(value = "position", required = false) String position,
-                                  @RequestParam(value = "courseName", required = false) String courseName) {
-        return teacherService.getWithPredicate(pageable, position, courseName);
+                                  @RequestParam(value = "courseID", required = false) Long courseID) {
+        return teacherService.getWithPredicate(pageable, position, courseID);
     }
 
-    @GetMapping("/{id}")
-    public BishTeachers getById(@PathVariable long id) {
-        return teacherService.getTeacherById(id);
-    }
-
-    @GetMapping("/name/{name}")
-    public List<BishTeachers> getByName(@PathVariable String name) {
-        return teacherService.getTeachersByName(name);
-    }
+//    @GetMapping("/{id}")
+//    public BishTeachers getById(@PathVariable long id) {
+//        return teacherService.getTeacherById(id);
+//    }
+//
+//    @GetMapping("/name/{name}")
+//    public List<BishTeachers> getByName(@PathVariable String name) {
+//        return teacherService.getTeachersByName(name);
+//    }
 
     @PostMapping
     public BishTeachers addNewTeacher(@RequestBody TeacherDTO teacherDTO) {

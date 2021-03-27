@@ -21,25 +21,23 @@ public class BishTeacherServiceImpl implements BishTeacherService {
     private BishTeacherRepo teacherRepo;
     @Autowired
     private UserService userService;
+    @Autowired
+    private BishCoursesService coursesService;
 
     @Override
-    public Page<WorkerDTO> getWithPredicate(Pageable pageable, String position, String courseName) {
+    public Page<WorkerDTO> getWithPredicate(Pageable pageable, String position, Long courseID) {
         List<WorkerDTO> workers = new ArrayList<>();
-        List<BishTeachers> teachers;
-        List<User> users;
-        if (position != null) {
-            users = userService.getAllByPositionAndCity(position, "bishkek");
-            if (courseName != null) {
-                teachers = teacherRepo.findAllByPositionContainingAndCourseNameContaining(position, courseName);
-            } else {
-                teachers = teacherRepo.findAllByPositionContaining(position);
-            }
-        } else {
-            users = new ArrayList<>();
-            if (courseName != null)
-                teachers = teacherRepo.findAllByCourseNameContaining(courseName);
-            else
-                teachers = new ArrayList<>();
+        List<BishTeachers> teachers = new ArrayList<>();
+        List<User> users = new ArrayList<>();
+        if (position != null && courseID != null) {
+            BishTeachers teacher = coursesService.findCourseById(courseID).getTeacher();
+            if (teacher.getPosition().equals(position))
+                teachers.add(teacher);
+        } else if (courseID != null) {
+            teachers.add(coursesService.findCourseById(courseID).getTeacher());
+        } else if (position != null) {
+            teachers = teacherRepo.findAllByPositionContaining(position);
+            users = userService.getAllByPositionAndCity(position, "osh");
         }
 
         for (BishTeachers teacher : teachers) {

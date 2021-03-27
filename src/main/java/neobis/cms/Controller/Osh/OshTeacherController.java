@@ -1,15 +1,18 @@
 package neobis.cms.Controller.Osh;
 
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import neobis.cms.Dto.ResponseMessage;
 import neobis.cms.Dto.TeacherDTO;
+import neobis.cms.Dto.WorkerDTO;
 import neobis.cms.Entity.Osh.OshTeachers;
 import neobis.cms.Service.Osh.OshTeacherService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @CrossOrigin
 @RestController
@@ -21,19 +24,38 @@ public class OshTeacherController {
     private OshTeacherService teacherService;
 
     @GetMapping
-    public List<OshTeachers> getAll() {
-        return teacherService.getAllTeachers();
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "page", dataType = "int", paramType = "query",
+                    value = "Results page you want to retrieve (0...N)", defaultValue = "0"),
+            @ApiImplicitParam(name = "size", dataType = "int", paramType = "query",
+                    value = "Number of records per page.", defaultValue = "20")
+    })
+    public Page<WorkerDTO> getAll(Pageable pageable) {
+        return teacherService.getAll(pageable);
     }
 
-    @GetMapping("/{id}")
-    public OshTeachers getById(@PathVariable long id) {
-        return teacherService.getTeacherById(id);
+    @GetMapping("/filter")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "page", dataType = "int", paramType = "query",
+                    value = "Results page you want to retrieve (0...N)", defaultValue = "0"),
+            @ApiImplicitParam(name = "size", dataType = "int", paramType = "query",
+                    value = "Number of records per page.", defaultValue = "20")
+    })
+    public Page<WorkerDTO> getAllWithPredicate(Pageable pageable,
+                                               @RequestParam(value = "position", required = false) String position,
+                                               @RequestParam(value = "courseID", required = false) Long courseID) {
+        return teacherService.getWithPredicate(pageable, position, courseID);
     }
 
-    @GetMapping("/name/{name}")
-    public OshTeachers getByName(@PathVariable String name) {
-        return teacherService.getTeacherByName(name);
-    }
+//    @GetMapping("/{id}")
+//    public OshTeachers getById(@PathVariable long id) {
+//        return teacherService.getTeacherById(id);
+//    }
+//
+//    @GetMapping("/name/{name}")
+//    public OshTeachers getByName(@PathVariable String name) {
+//        return teacherService.getTeacherByName(name);
+//    }
 
     @PostMapping
     public OshTeachers addNewTeacher(@RequestBody TeacherDTO teacherDTO) {
