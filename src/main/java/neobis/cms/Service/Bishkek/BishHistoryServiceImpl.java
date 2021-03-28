@@ -61,27 +61,25 @@ public class BishHistoryServiceImpl implements BishHistoryService {
         List<StatisticResponse> responses = new ArrayList<>();
         List<String> statusList = new ArrayList<>();
         List<String> courseList = new ArrayList<>();
+        if (status_id == null && course_id == null) {
+        	for (BishStatuses status : statusesRepo.findAll()) 
+        	        statusList.add(status.getName());
+                for (BishCourses course : coursesService.findAll()) 
+	                courseList.add(course.getName());
+        }
         if (status_id != null) {
             for (long id : status_id) {
                 String statusName = statusesRepo.findById(id)
                         .orElseThrow(() -> new ResourceNotFoundException("Status with id " + id + " has not found")).getName();
                 statusList.add(statusName);
             }
-        } else {
-            for (BishStatuses status : statusesRepo.findAll()) {
-                statusList.add(status.getName());
-            }
-        }
+        } 
         if (course_id != null) {
             for (long id : course_id) {
                 String courseName = coursesService.findCourseById(id).getName();
                 courseList.add(courseName);
             }
-        } else {
-            for (BishCourses course : coursesService.findAll()) {
-                courseList.add(course.getName());
-            }
-        }
+        } 
 
         List<StatisticResponse.Dates> datesList;
         for (String status : statusList) {
