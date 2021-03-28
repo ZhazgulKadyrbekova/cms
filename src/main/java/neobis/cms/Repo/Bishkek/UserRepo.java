@@ -13,6 +13,6 @@ public interface UserRepo extends JpaRepository<User, Long> {
     User findByActivationCode(String activationCode);
     List<User> findAllByConfirmed(boolean isConfirmed);
     List<User> findAllByCityContainingIgnoringCase(String city);
-    List<User> findAllByPositionContainingAndCityContaining(String position, String city);
+    List<User> findAllByPositionContainingIgnoringCaseAndCityContainingIgnoringCase(String position, String city);
     void deleteByEmail(String email);
 }

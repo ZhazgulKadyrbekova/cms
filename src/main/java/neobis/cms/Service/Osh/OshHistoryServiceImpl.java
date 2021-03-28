@@ -1,7 +1,9 @@
 package neobis.cms.Service.Osh;
 
 import neobis.cms.Dto.StatisticResponse;
+import neobis.cms.Entity.Osh.OshCourses;
 import neobis.cms.Entity.Osh.OshHistory;
+import neobis.cms.Entity.Osh.OshStatuses;
 import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Osh.OshHistoryRepo;
 import neobis.cms.Repo.Osh.OshOccupationRepo;
@@ -65,11 +67,19 @@ public class OshHistoryServiceImpl implements OshHistoryService {
                         .orElseThrow(() -> new ResourceNotFoundException("Status with id " + id + " has not found")).getName();
                 statusList.add(statusName);
             }
+        } else {
+            for (OshStatuses status : statusesRepo.findAll()) {
+                statusList.add(status.getName());
+            }
         }
         if (course_id != null) {
             for (long id : course_id) {
                 String courseName = coursesService.findCourseById(id).getName();
                 courseList.add(courseName);
+            }
+        } else {
+            for (OshCourses course : coursesService.findAll()) {
+                courseList.add(course.getName());
             }
         }
 

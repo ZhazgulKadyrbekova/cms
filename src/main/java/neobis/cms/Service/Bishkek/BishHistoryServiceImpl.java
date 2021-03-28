@@ -1,7 +1,9 @@
 package neobis.cms.Service.Bishkek;
 
 import neobis.cms.Dto.StatisticResponse;
+import neobis.cms.Entity.Bishkek.BishCourses;
 import neobis.cms.Entity.Bishkek.BishHistory;
+import neobis.cms.Entity.Bishkek.BishStatuses;
 import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Bishkek.BishHistoryRepo;
 import neobis.cms.Repo.Bishkek.BishOccupationRepo;
@@ -65,11 +67,19 @@ public class BishHistoryServiceImpl implements BishHistoryService {
                         .orElseThrow(() -> new ResourceNotFoundException("Status with id " + id + " has not found")).getName();
                 statusList.add(statusName);
             }
+        } else {
+            for (BishStatuses status : statusesRepo.findAll()) {
+                statusList.add(status.getName());
+            }
         }
         if (course_id != null) {
             for (long id : course_id) {
                 String courseName = coursesService.findCourseById(id).getName();
                 courseList.add(courseName);
+            }
+        } else {
+            for (BishCourses course : coursesService.findAll()) {
+                courseList.add(course.getName());
             }
         }
 

@@ -54,7 +54,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getAllByPositionAndCity(String position, String city) {
-        return userRepo.findAllByPositionContainingAndCityContaining(position, city);
+        return userRepo.findAllByPositionContainingIgnoringCaseAndCityContainingIgnoringCase(position, city);
     }
 
     @Override
