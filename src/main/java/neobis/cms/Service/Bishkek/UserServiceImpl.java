@@ -16,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -54,7 +55,27 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getAllByPositionAndCity(String position, String city) {
-        return userRepo.findAllByPositionContainingIgnoringCaseAndCityContainingIgnoringCase(position, city);
+        return userRepo.findAllByPositionContainingIgnoringCaseAndCityContainingIgnoringCaseAndActiveAndConfirmed(position, city, true, true);
+    }
+
+    @Override
+    public List<User> getAllByName(String name) {
+        return userRepo.findAllByNameContainingIgnoringCaseAndActiveAndConfirmed(name, true, true);
+    }
+
+    @Override
+    public List<User> getAllBySurname(String surname) {
+        return userRepo.findAllBySurnameContainingIgnoringCaseAndActiveAndConfirmed(surname, true, true);
+    }
+
+    @Override
+    public List<User> getAllByPhoneNo(String phoneNo) {
+        return userRepo.findAllByPhoneNoContainingAndActiveAndConfirmed(phoneNo, true, true);
+    }
+
+    @Override
+    public List<User> getAllByEmail(String email) {
+        return userRepo.findAllByEmailContainingIgnoringCaseAndActiveAndConfirmed(email, true, true);
     }
 
     @Override
@@ -198,6 +219,18 @@ public class UserServiceImpl implements UserService {
             return "Rejected registration request has been successfully sent to user's email!";
         }
         return "We could not send rejected registration request to user's email.";
+    }
+
+    @Override
+    public List<Object> simpleSearch(String nameOrPhone) {
+        List<Object> users = new ArrayList<>();
+        for (String item : nameOrPhone.split(" ")) {
+            users.addAll(userRepo.findAllByNameContainingIgnoringCaseAndActiveAndConfirmed(item, true, true));
+            users.addAll(userRepo.findAllBySurnameContainingIgnoringCaseAndActiveAndConfirmed(item, true, true));
+        }
+        users.addAll(userRepo.findAllByPhoneNoContainingAndActiveAndConfirmed(nameOrPhone, true, true));
+        users.addAll(userRepo.findAllByEmailContainingIgnoringCaseAndActiveAndConfirmed(nameOrPhone, true, true));
+        return users;
     }
 }
 

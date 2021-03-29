@@ -75,7 +75,7 @@ public class AuthController {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(userAuthDTO.getEmail().toLowerCase(Locale.ROOT), userAuthDTO.getPassword()));
         } catch (Exception e) {
-            throw new Exception("Auth failed");
+            throw new Exception("Auth failed. Be sure to enter valid credentials.");
         }
         return new TokenDTO(jwtUtil.generateToken(userAuthDTO.getEmail()));
     }

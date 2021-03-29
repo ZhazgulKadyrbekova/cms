@@ -6,7 +6,7 @@ import neobis.cms.Entity.Osh.*;
 import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Bishkek.*;
 import neobis.cms.Repo.Osh.*;
-import neobis.cms.Search.GenericSpecification;
+import neobis.cms.Search.OshClientSpecification;
 import neobis.cms.Search.SearchCriteria;
 import neobis.cms.Search.SearchOperation;
 import neobis.cms.Service.Bishkek.BishPaymentService;
@@ -47,8 +47,8 @@ public class OshClientServiceImpl implements OshClientService {
 
     private final OshCoursesService coursesService;
 
-    private BishPaymentService bishPaymentService;
-    private OshPaymentService oshPaymentService;
+    private final BishPaymentService bishPaymentService;
+    private final OshPaymentService oshPaymentService;
 
     private final OshHistoryService historyService;
 
@@ -56,9 +56,6 @@ public class OshClientServiceImpl implements OshClientService {
 
     private final BishLeavingReasonRepo bishLeavingReasonRepo;
     private final OshLeavingReasonRepo oshLeavingReasonRepo;
-
-    private final String dataResourceUrl
-            = "https://neolabs.dev/mod/api/?api_key=e539509b630b27e47ac594d0dbba4e69&method=getLeads";
 
     public OshClientServiceImpl(BishClientRepo bishClientRepo, OshClientRepo oshClientRepo, BishStatusesRepo bishStatusesRepo,
                                 OshStatusesRepo oshStatusesRepo, BishOccupationRepo bishOccupationRepo, OshOccupationRepo oshOccupationRepo,
@@ -83,30 +80,11 @@ public class OshClientServiceImpl implements OshClientService {
     }
 
     @Override
-    public LocalDateTime getDateOfLastClient(List<OshClient> clients) {
-        if (clients.isEmpty())
-            return null;
-        OshClient client = clients.get(0);
-        return client.getDateCreated();
-    }
-
-    @Override
-    public String getNewClients(LocalDateTime dateTime) {
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MediaType.APPLICATION_OCTET_STREAM));
-        long epoch = dateTime.atZone(ZoneId.systemDefault()).toEpochSecond();// + 1L;
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(dataResourceUrl + "&date_from=" + epoch);
-        HttpEntity<String> httpEntity = new HttpEntity<>("", httpHeaders);
-        ResponseEntity<String> response = restTemplate.exchange(builder.build().toUri(), HttpMethod.GET, httpEntity, String.class);
-        return response.getBody();
-    }
-
-    @Override
     public String getNewClients() {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MediaType.APPLICATION_OCTET_STREAM));
+        String dataResourceUrl = "https://neolabs.dev/mod/api/?api_key=e539509b630b27e47ac594d0dbba4e69&method=getLeads&start=0&count=200";
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(dataResourceUrl);
         HttpEntity<String> httpEntity = new HttpEntity<>("", httpHeaders);
         ResponseEntity<String> response = restTemplate.exchange(builder.build().toUri(), HttpMethod.GET, httpEntity, String.class);
@@ -265,19 +243,14 @@ public class OshClientServiceImpl implements OshClientService {
         List<OshClient> clients = oshClientRepo.findAllByOrderByDateCreatedDesc();
         final int start = (int) pageable.getOffset();
         final  int end = Math.min((start + pageable.getPageSize()), clients.size());
-        final Page<OshClient> page = new PageImpl<>(clients.subList(start, end), pageable, clients.size());
 
-        return page;
+        return new PageImpl<>(clients.subList(start, end), pageable, clients.size());
     }
 
     @Override
     public void addClientsToDB() {
-        LocalDateTime dateTime = this.getDateOfLastClient(oshClientRepo.findAllByOrderByDateCreatedDesc());
         JSONObject data;
-        if (dateTime == null)
-            data = new JSONObject(this.getNewClients());
-        else
-            data = new JSONObject(this.getNewClients(dateTime));
+        data = new JSONObject(this.getNewClients());
         List<OshClient> clients = this.getClientsFromJson(data);
         for (OshClient client : clients) {
             if (!client.getFormName().equals("Набор в клуб"))
@@ -300,21 +273,22 @@ public class OshClientServiceImpl implements OshClientService {
     }
 
     @Override
-    public Page<OshClient> getWithPredicate(Pageable pageable, List<Long> status, List<Long> course, List<Long> occupation) {
-        GenericSpecification genericSpecification = new GenericSpecification<OshClient>();
+    public Page<OshClient> getWithPredicate(Pageable pageable, List<Long> status, List<Long> course, List<Long> occupation, List<Long> utm) {
+        OshClientSpecification<OshClient> oshClientOshClientSpecification = new OshClientSpecification<>();
         if (status != null)
-            genericSpecification.add(new SearchCriteria("status", status, SearchOperation.EQUAL));
+            oshClientOshClientSpecification.add(new SearchCriteria("status", status, SearchOperation.EQUAL));
         if (course != null)
-            genericSpecification.add(new SearchCriteria("course", course, SearchOperation.EQUAL));
+            oshClientOshClientSpecification.add(new SearchCriteria("course", course, SearchOperation.EQUAL));
         if (occupation != null)
-            genericSpecification.add(new SearchCriteria("occupation", occupation, SearchOperation.EQUAL));
-        List<OshClient> clients = oshClientRepo.findAll(genericSpecification);
+            oshClientOshClientSpecification.add(new SearchCriteria("occupation", occupation, SearchOperation.EQUAL));
+        if (utm != null)
+            oshClientOshClientSpecification.add(new SearchCriteria("utm", utm, SearchOperation.EQUAL));
+        List<OshClient> clients = oshClientRepo.findAll(oshClientOshClientSpecification);
 
         final int start = (int)pageable.getOffset();
         final int end = Math.min((start + pageable.getPageSize()), clients.size());
-        final Page<OshClient> page = new PageImpl<>(clients.subList(start, end), pageable, clients.size());
 
-        return page;
+        return new PageImpl<>(clients.subList(start, end), pageable, clients.size());
     }
 
     @Override
@@ -586,18 +560,14 @@ public class OshClientServiceImpl implements OshClientService {
     }
 
     @Override
-    public Page<OshClient> search(Pageable pageable, String nameOrPhone) {
-        List<OshClient> clients = new ArrayList<>();
+    public List<Object> simpleSearch(String nameOrPhone) {
+        List<Object> clients = new ArrayList<>();
         for (String item : nameOrPhone.split(" ")) {
             clients.addAll(oshClientRepo.findAllByNameContainingIgnoringCase(item));
             clients.addAll(oshClientRepo.findAllBySurnameContainingIgnoringCase(item));
         }
         clients.addAll(oshClientRepo.findAllByPhoneNoContaining(nameOrPhone));
 
-        final int start = (int) pageable.getOffset();
-        final  int end = Math.min((start + pageable.getPageSize()), clients.size());
-        final Page<OshClient> page = new PageImpl<>(clients.subList(start, end), pageable, clients.size());
-
-        return page;
+        return clients;
     }
 }

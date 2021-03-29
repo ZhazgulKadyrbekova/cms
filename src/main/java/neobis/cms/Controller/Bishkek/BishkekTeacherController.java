@@ -9,10 +9,11 @@ import neobis.cms.Entity.Bishkek.BishTeachers;
 import neobis.cms.Service.Bishkek.BishTeacherService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @CrossOrigin
 @RestController
@@ -20,8 +21,11 @@ import org.springframework.web.bind.annotation.*;
 public class BishkekTeacherController {
 
     private final Logger logger = LogManager.getLogger();
-    @Autowired
-    private BishTeacherService teacherService;
+    private final BishTeacherService teacherService;
+
+    public BishkekTeacherController(BishTeacherService teacherService) {
+        this.teacherService = teacherService;
+    }
 
     @GetMapping
     @ApiImplicitParams({
@@ -31,7 +35,7 @@ public class BishkekTeacherController {
                     value = "Number of records per page.", defaultValue = "20")
     })
     public Page<WorkerDTO> getAll(Pageable pageable) {
-        return teacherService.getAllTeachers(pageable);
+        return teacherService.getAllWorkers(pageable);
     }
 
     @GetMapping("/filter")
@@ -39,22 +43,22 @@ public class BishkekTeacherController {
             @ApiImplicitParam(name = "page", dataType = "int", paramType = "query",
                     value = "Results page you want to retrieve (0...N)", defaultValue = "0"),
             @ApiImplicitParam(name = "size", dataType = "int", paramType = "query",
-                    value = "Number of records per page.", defaultValue = "20")
-    })
-    public Page<WorkerDTO> getAllWithPredicate(Pageable pageable,
+                    value = "Number of records per page.", defaultValue = "20")})
+    public Page<WorkerDTO> filter(Pageable pageable,
                                   @RequestParam(value = "position", required = false) String position,
-                                  @RequestParam(value = "courseID", required = false) Long courseID) {
+                                  @RequestParam(value = "courseID", required = false) List<Long> courseID) {
         return teacherService.getWithPredicate(pageable, position, courseID);
     }
 
-//    @GetMapping("/{id}")
-//    public BishTeachers getById(@PathVariable long id) {
-//        return teacherService.getTeacherById(id);
-//    }
-//
-//    @GetMapping("/name/{name}")
-//    public List<BishTeachers> getByName(@PathVariable String name) {
-//        return teacherService.getTeachersByName(name);
+//    @GetMapping("/advancedSearch")
+//    @ApiImplicitParams({
+//            @ApiImplicitParam(name = "page", dataType = "int", paramType = "query",
+//                    value = "Results page you want to retrieve (0...N)", defaultValue = "0"),
+//            @ApiImplicitParam(name = "size", dataType = "int", paramType = "query",
+//                    value = "Number of records per page.", defaultValue = "20")})
+//    public Page<WorkerDTO> advancedSearch(Pageable pageable,
+//                                             @RequestParam(required = false) List<Long> course_id) {
+//        return teacherService.advancedSearch(pageable, course_id);
 //    }
 
     @PostMapping

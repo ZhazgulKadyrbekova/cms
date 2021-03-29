@@ -6,6 +6,8 @@ import neobis.cms.Dto.ClientDTO;
 import neobis.cms.Dto.ResponseMessage;
 import neobis.cms.Entity.Bishkek.BishClient;
 import neobis.cms.Service.Bishkek.BishClientService;
+import neobis.cms.Service.Bishkek.BishTeacherService;
+import neobis.cms.Service.Bishkek.UserService;
 import neobis.cms.Service.ExcelService;
 import neobis.cms.Util.ExcelUtilHelper;
 import org.apache.logging.log4j.LogManager;
@@ -13,6 +15,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -20,8 +23,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 
 @CrossOrigin
@@ -33,9 +38,14 @@ public class BishkekClientController {
 
     private final BishClientService clientService;
     private final ExcelService excelService;
-    public BishkekClientController(BishClientService clientService, ExcelService excelService) {
+    private final BishTeacherService teacherService;
+    private final UserService userService;
+
+    public BishkekClientController(BishClientService clientService, ExcelService excelService, BishTeacherService teacherService, UserService userService) {
         this.clientService = clientService;
         this.excelService = excelService;
+        this.teacherService = teacherService;
+        this.userService = userService;
     }
 
     @GetMapping
@@ -45,12 +55,23 @@ public class BishkekClientController {
             @ApiImplicitParam(name = "size", dataType = "int", paramType = "query",
                     value = "Number of records per page.", defaultValue = "20")
     })
-    public Page<BishClient> getAll(Pageable pageable
-//                                    @RequestParam(defaultValue = "0") Integer pageNo,
-//                                    @RequestParam(defaultValue = "20") Integer pageSize
-    ) {
+    public Page<BishClient> getAll(Pageable pageable) {
 //         clientService.addClientsToDB();
         return clientService.getAllClientsFromDB(pageable);
+    }
+
+    @GetMapping("/filter")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "page", dataType = "int", paramType = "query",
+                    value = "Results page you want to retrieve (0...N)", defaultValue = "0"),
+            @ApiImplicitParam(name = "size", dataType = "int", paramType = "query",
+                    value = "Number of records per page.", defaultValue = "20")})
+    public Page<BishClient> filter(Pageable pageable,
+                                             @RequestParam(required = false) List<Long> status_id,
+                                             @RequestParam(required = false) List<Long> course_id,
+                                             @RequestParam(required = false) List<Long> occupation_id,
+                                             @RequestParam(required = false) List<Long> utm_id ) {
+        return clientService.getWithPredicate(pageable, status_id, course_id, occupation_id, utm_id);
     }
 
     @GetMapping("/search")
@@ -58,32 +79,43 @@ public class BishkekClientController {
             @ApiImplicitParam(name = "page", dataType = "int", paramType = "query",
                     value = "Results page you want to retrieve (0...N)", defaultValue = "0"),
             @ApiImplicitParam(name = "size", dataType = "int", paramType = "query",
-                    value = "Number of records per page.", defaultValue = "20")
-    })
-    public Page<BishClient> getWithPredicate(Pageable pageable,
-//                                            @ApiParam(value="yyyy-MM-dd-HH:mm") @RequestParam(required = false) String dateAfter,
-//                                            @ApiParam(value="yyyy-MM-dd-HH:mm") @RequestParam(required = false) String dateBefore,
-                                             @RequestParam(required = false) String nameOrPhone,
-                                             @RequestParam(required = false) List<Long> status_id,
-                                             @RequestParam(required = false) List<Long> course_id,
-                                             @RequestParam(required = false) List<Long> occupation_id
-//                                             @RequestParam(required = false) String utm
-    ) {
-//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH:mm");
-//        LocalDateTime date1 = null, date2 = null;
-//        if (dateAfter != null)
-//        	date1 = LocalDateTime.parse(dateAfter, formatter);
-//        if (dateBefore != null)
-//            date2 = LocalDateTime.parse(dateBefore, formatter);
-        if (nameOrPhone != null)
-            return clientService.search(pageable, nameOrPhone);
-        return clientService.getWithPredicate(pageable, status_id, course_id, occupation_id);
+                    value = "Number of records per page.", defaultValue = "20"),
+            @ApiImplicitParam(name = "field", dataType = "string", paramType = "query", required = true,
+                    value = "Name, surname, email, phone number by which to search.")})
+    public Page<Object> search(Pageable pageable, @ApiIgnore @RequestParam String field) {
+        List<Object> responses = new ArrayList<>();
+        responses.addAll(clientService.simpleSearch(field));
+        responses.addAll(teacherService.simpleSearch(field));
+        responses.addAll(userService.simpleSearch(field));
+
+        final int start = (int)pageable.getOffset();
+        final int end = Math.min((start + pageable.getPageSize()), responses.size());
+
+        return new PageImpl<>(responses.subList(start, end), pageable, responses.size());
     }
 
+//    @GetMapping("/advancedSearch")
+//    @ApiImplicitParams({
+////            @ApiImplicitParam(name = "filter", dataType = "string", paramType = "query", required = true,
+////                    value = "In which data source to look for information. Can take values: [client], [student], [worker]. Only used in advanced search"),
+//            @ApiImplicitParam(name = "page", dataType = "int", paramType = "query",
+//                    value = "Results page you want to retrieve (0...N)", defaultValue = "0"),
+//            @ApiImplicitParam(name = "size", dataType = "int", paramType = "query",
+//                    value = "Number of records per page.", defaultValue = "20")})
+//    public Page<BishClient> advancedSearch(Pageable pageable,
+//                                         @RequestParam(required = false) List<Long> status_id,
+//                                         @RequestParam(required = false) List<Long> course_id,
+//                                         @RequestParam(required = false) List<Long> occupation_id) {
+//        List<BishClient> responses = clientService.advancedSearch(status_id, course_id, occupation_id);
+//        final int start = (int)pageable.getOffset();
+//        final int end = Math.min((start + pageable.getPageSize()), responses.size());
+//
+//        return new PageImpl<>(responses.subList(start, end), pageable, responses.size());
+//    }
+
     @GetMapping(value = "/export")
-//            produces = MediaType.APPLICATION_OCTET_STREAM)
     public ResponseEntity<Resource> getFile() {
-        String filename = "Clients.xlsx";
+        String filename = "clients-bishkek.xlsx";
         InputStreamResource file = new InputStreamResource(excelService.loadBishClients());
 
         return ResponseEntity.ok()
@@ -94,7 +126,6 @@ public class BishkekClientController {
 
     @GetMapping("/{id}")
     public BishClient getById(@PathVariable Long id) {
-//        clientService.addClientsToDB();
         return clientService.getClientById(id);
     }
 
@@ -120,15 +151,8 @@ public class BishkekClientController {
 
     @GetMapping("/status/{status_id}")
     public List<BishClient> getAllByStatus(@PathVariable Long status_id) {
-//        clientService.addClientsToDB();
         return clientService.getAllByStatus(status_id);
     }
-
-//    @GetMapping("/name/{name}")
-//    public List<BishClient> getAllByName(@PathVariable String name) {
-////        clientService.addClientsToDB();
-//        return clientService.getAllByName(name);
-//    }
 
     @PostMapping
     public BishClient addClient(@RequestBody ClientDTO clientDTO, Principal principal) {

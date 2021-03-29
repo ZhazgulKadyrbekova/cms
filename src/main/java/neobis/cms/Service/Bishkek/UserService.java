@@ -17,10 +17,15 @@ public interface UserService {
     List<User> getListOfUserToConfirm();
     List<User> getUsersByCity(String city);
     List<User> getAllByPositionAndCity(String position, String city);
+    List<User> getAllByName(String name);
+    List<User> getAllBySurname(String surname);
+    List<User> getAllByPhoneNo(String phoneNo);
+    List<User> getAllByEmail(String email);
     String confirm(Long id);
     String activate(String activationCode);
     String changePassword(String email, UserPasswordsDTO userPasswordDTO);
     String forgotPassword(String email);
     String setPassword(UserAuthDTO userAuthDTO);
     String reject(UserRejectDTO userRejectDTO);
+    List<Object> simpleSearch(String nameOrPhone);
 }

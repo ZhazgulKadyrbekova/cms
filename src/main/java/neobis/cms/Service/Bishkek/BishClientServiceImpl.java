@@ -9,7 +9,7 @@ import neobis.cms.Entity.Osh.OshUTM;
 import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Bishkek.*;
 import neobis.cms.Repo.Osh.*;
-import neobis.cms.Search.GenericSpecification;
+import neobis.cms.Search.BishClientSpecification;
 import neobis.cms.Search.SearchCriteria;
 import neobis.cms.Search.SearchOperation;
 import neobis.cms.Service.Osh.OshPaymentService;
@@ -44,8 +44,8 @@ public class BishClientServiceImpl implements BishClientService {
 
     private final BishCoursesService coursesService;
 
-    private  BishPaymentService bishPaymentService;
-    private  OshPaymentService oshPaymentService;
+    private final BishPaymentService bishPaymentService;
+    private final OshPaymentService oshPaymentService;
 
     private final BishHistoryService bishHistoryService;
 
@@ -53,10 +53,6 @@ public class BishClientServiceImpl implements BishClientService {
 
     private final BishLeavingReasonRepo bishLeavingReasonRepo;
     private final OshLeavingReasonRepo oshLeavingReasonRepo;
-
-    private final String dataResourceUrl
-//            = "https://neolabs.dev/mod/api/?api_key=e539509b630b27e47ac594d0dbba4e69&method=getLeads";
-            = "https://neolabs.dev/mod/api/?api_key=e539509b630b27e47ac594d0dbba4e69&method=getLeads&start=0&count=200";
 
     public BishClientServiceImpl(BishStatusesRepo statusesRepo, BishClientRepo bishClientRepo, OshClientRepo oshClientRepo, OshStatusesRepo oshStatusesRepo,
                                  BishOccupationRepo bishOccupationRepo, OshOccupationRepo oshOccupationRepo, BishUTMRepo bishUTMRepo, OshUTMRepo oshUTMRepo,
@@ -81,30 +77,11 @@ public class BishClientServiceImpl implements BishClientService {
     }
 
     @Override
-    public LocalDateTime getDateOfLastClient(List<BishClient> clients) {
-        if (clients.isEmpty())
-            return null;
-        BishClient client = clients.get(0);
-        return client.getDateCreated();
-    }
-
-    @Override
-    public String getNewClients(LocalDateTime dateTime) {
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MediaType.APPLICATION_OCTET_STREAM));
-        long epoch = dateTime.atZone(ZoneId.systemDefault()).toEpochSecond();// + 1L;
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(dataResourceUrl + "&date_from=" + epoch);
-        HttpEntity<String> httpEntity = new HttpEntity<>("", httpHeaders);
-        ResponseEntity<String> response = restTemplate.exchange(builder.build().toUri(), HttpMethod.GET, httpEntity, String.class);
-        return response.getBody();
-    }
-
-    @Override
     public String getNewClients() {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MediaType.APPLICATION_OCTET_STREAM));
+        String dataResourceUrl = "https://neolabs.dev/mod/api/?api_key=e539509b630b27e47ac594d0dbba4e69&method=getLeads&start=0&count=200";
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(dataResourceUrl);
         HttpEntity<String> httpEntity = new HttpEntity<>("", httpHeaders);
         ResponseEntity<String> response = restTemplate.exchange(builder.build().toUri(), HttpMethod.GET, httpEntity, String.class);
@@ -260,13 +237,6 @@ public class BishClientServiceImpl implements BishClientService {
 
     @Override
     public Page<BishClient> getAllClientsFromDB(Pageable pageable) {
-//        Pageable paging = PageRequest.of(pageNo, pageSize, Sort.by("dateUpdated").ascending().and(Sort.by("dateCreated").ascending()));
-//        Page<BishClient> pagedResult = bishClientRepo.findAll(paging);
-//        if(pagedResult.hasContent()) {
-//            return pagedResult.getContent();
-//        } else {
-//            return new ArrayList<BishClient>();
-//        }
         List<BishClient> clients = bishClientRepo.findAllByOrderByDateCreatedDesc();
         final int start = (int)pageable.getOffset();
         final int end = Math.min((start + pageable.getPageSize()), clients.size());
@@ -276,12 +246,8 @@ public class BishClientServiceImpl implements BishClientService {
 
     @Override
     public void addClientsToDB() {
-        LocalDateTime dateTime = this.getDateOfLastClient(bishClientRepo.findAllByOrderByDateCreatedDesc());
         JSONObject data;
-        if (dateTime == null)
-            data = new JSONObject(this.getNewClients());
-        else
-            data = new JSONObject(this.getNewClients(dateTime));
+        data = new JSONObject(this.getNewClients());
         List<BishClient> clients = this.getClientsFromJson(data);
         for (BishClient client : clients) {
             if (!client.getFormName().equals("Набор в клуб"))
@@ -304,49 +270,24 @@ public class BishClientServiceImpl implements BishClientService {
     }
 
     @Override
-    public Page<BishClient> getWithPredicate(Pageable pageable, List<Long> status, List<Long> course, List<Long> occupation) {
-        GenericSpecification genericSpecification = new GenericSpecification<BishClient>();
+    public Page<BishClient> getWithPredicate(Pageable pageable, List<Long> status, List<Long> course, List<Long> occupation, List<Long> utm) {
+        BishClientSpecification<BishClient> bishClientSpecification = new BishClientSpecification<>();
         if (status != null)
-            genericSpecification.add(new SearchCriteria("status", status, SearchOperation.EQUAL));
+            bishClientSpecification.add(new SearchCriteria("status", status, SearchOperation.EQUAL));
         if (course != null)
-            genericSpecification.add(new SearchCriteria("course", course, SearchOperation.EQUAL));
+            bishClientSpecification.add(new SearchCriteria("course", course, SearchOperation.EQUAL));
         if (occupation != null)
-            genericSpecification.add(new SearchCriteria("occupation", occupation, SearchOperation.EQUAL));
-        List<BishClient> clients = bishClientRepo.findAll(genericSpecification);
+            bishClientSpecification.add(new SearchCriteria("occupation", occupation, SearchOperation.EQUAL));
+        if (utm != null)
+            bishClientSpecification.add(new SearchCriteria("utm", utm, SearchOperation.EQUAL));
+        List<BishClient> clients = bishClientRepo.findAll(bishClientSpecification);
 
         final int start = (int)pageable.getOffset();
         final int end = Math.min((start + pageable.getPageSize()), clients.size());
-        final Page<BishClient> page = new PageImpl<>(clients.subList(start, end), pageable, clients.size());
 
-        return page;
+        return new PageImpl<>(clients.subList(start, end), pageable, clients.size());
     }
-/*
-    @Override
-    public List<BishClient> getWithPredicate(LocalDateTime dateAfter, LocalDateTime dateBefore, Long status, Long course, String occupation, String utm) {
-        GenericSpecification genericSpecification = new GenericSpecification<BishClient>();
-        if (dateAfter != null)
-            genericSpecification.add(new SearchCriteria("dateCreated", null, dateAfter, SearchOperation.GREATER_THAN_EQUAL));
-        if (dateBefore != null)
-            genericSpecification.add(new SearchCriteria("dateCreated", null, dateBefore, SearchOperation.LESS_THAN_EQUAL));
-        if (status != null)
-            genericSpecification.add(new SearchCriteria("status", "id", status, SearchOperation.EQUAL));
-        if (course != null)
-            genericSpecification.add(new SearchCriteria("course", "id", course, SearchOperation.EQUAL));
-        if (occupation != null)
-            genericSpecification.add(new SearchCriteria("occupation", null, occupation, SearchOperation.MATCH));
-        if (utm != null)
-            genericSpecification.add(new SearchCriteria("utm", null, utm, SearchOperation.MATCH));
-//        List<BishClient> clients = clientRepo.findAll((root, criteriaQuery, criteriaBuilder) ->
-//            criteriaBuilder.and(
-//                    criteriaBuilder.greaterThanOrEqualTo(root.get("dateCreated"), dateAfter),
-//                    criteriaBuilder.lessThanOrEqualTo(root.get("dateCreated"), dateBefore)
-//            )
-//        );
-        return clientRepo.findAll(genericSpecification);
-//        return clients;
-    }
-*/
-    @Override
+@Override
     public BishClient create(ClientDTO clientDTO, String userEmail) {
         User user = userService.findByEmail(userEmail);
 
@@ -620,18 +561,36 @@ public class BishClientServiceImpl implements BishClientService {
     }
 
     @Override
-    public Page<BishClient> search(Pageable pageable, String nameOrPhone) {
-        List<BishClient> clients = new ArrayList<>();
+    public List<Object> simpleSearch(String nameOrPhone) {
+        List<Object> clients = new ArrayList<>();
         for (String item : nameOrPhone.split(" ")) {
             clients.addAll(bishClientRepo.findAllByNameContainingIgnoringCase(item));
             clients.addAll(bishClientRepo.findAllBySurnameContainingIgnoringCase(item));
         }
         clients.addAll(bishClientRepo.findAllByPhoneNoContaining(nameOrPhone));
+        return clients;
+    }
 
-        final int start = (int)pageable.getOffset();
-        final int end = Math.min((start + pageable.getPageSize()), clients.size());
-        final Page<BishClient> page = new PageImpl<>(clients.subList(start, end), pageable, clients.size());
+    @Override
+    public List<BishClient> advancedSearch(List<Long> status, List<Long> course, List<Long> occupation) {
+        BishClientSpecification<BishClient> bishClientSpecification = new BishClientSpecification<>();
+        if (status != null)
+            bishClientSpecification.add(new SearchCriteria("status", status, SearchOperation.EQUAL));
+        if (course != null)
+            bishClientSpecification.add(new SearchCriteria("course", course, SearchOperation.EQUAL));
+        if (occupation != null)
+            bishClientSpecification.add(new SearchCriteria("occupation", occupation, SearchOperation.EQUAL));
+        return bishClientRepo.findAll(bishClientSpecification);
+    }
 
-        return page;
+    @Override
+    public List<BishClient> advancedStudentSearch(List<Long> course) {
+        BishClientSpecification<BishClient> bishClientSpecification = new BishClientSpecification<>();
+        if (bishStatusesRepo.findByNameContainingIgnoringCase("Студент") != null)
+            bishClientSpecification.add(new SearchCriteria("status",
+                    Collections.singletonList(bishStatusesRepo.findByNameContainingIgnoringCase("Студент").getID()), SearchOperation.EQUAL));
+        if (course != null)
+            bishClientSpecification.add(new SearchCriteria("course", course, SearchOperation.EQUAL));
+        return bishClientRepo.findAll(bishClientSpecification);
     }
 }

@@ -9,10 +9,11 @@ import neobis.cms.Entity.Osh.OshTeachers;
 import neobis.cms.Service.Osh.OshTeacherService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @CrossOrigin
 @RestController
@@ -20,8 +21,11 @@ import org.springframework.web.bind.annotation.*;
 public class OshTeacherController {
 
     private final Logger logger = LogManager.getLogger();
-    @Autowired
-    private OshTeacherService teacherService;
+    private final OshTeacherService teacherService;
+
+    public OshTeacherController(OshTeacherService teacherService) {
+        this.teacherService = teacherService;
+    }
 
     @GetMapping
     @ApiImplicitParams({
@@ -31,7 +35,7 @@ public class OshTeacherController {
                     value = "Number of records per page.", defaultValue = "20")
     })
     public Page<WorkerDTO> getAll(Pageable pageable) {
-        return teacherService.getAll(pageable);
+        return teacherService.getAllWorkers(pageable);
     }
 
     @GetMapping("/filter")
@@ -43,7 +47,7 @@ public class OshTeacherController {
     })
     public Page<WorkerDTO> getAllWithPredicate(Pageable pageable,
                                                @RequestParam(value = "position", required = false) String position,
-                                               @RequestParam(value = "courseID", required = false) Long courseID) {
+                                               @RequestParam(value = "courseID", required = false) List<Long> courseID) {
         return teacherService.getWithPredicate(pageable, position, courseID);
     }
 

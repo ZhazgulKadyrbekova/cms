@@ -9,11 +9,14 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface BishTeacherService {
-    Page<WorkerDTO> getWithPredicate(Pageable pageable, String position, Long courseID);
-    Page<WorkerDTO> getAllTeachers(Pageable pageable);
+    Page<WorkerDTO> getWithPredicate(Pageable pageable, String position, List<Long> courseID);
+    Page<WorkerDTO> getAllWorkers(Pageable pageable);
+    List<BishTeachers> getAllTeachers();
     BishTeachers getTeacherById(long id);
     List<BishTeachers> getTeachersByName(String name);
     BishTeachers addTeacher(TeacherDTO teacherDTO);
     BishTeachers updateTeacherInfo(long id, TeacherDTO teacherDTO);
     String deleteTeacherById(long id);
+    List<Object> simpleSearch(String nameOrPhone);
+    Page<WorkerDTO> advancedSearch(Pageable pageable, List<Long> course);
 }
