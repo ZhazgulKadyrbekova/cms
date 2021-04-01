@@ -2,12 +2,14 @@ package neobis.cms.Entity.Osh;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import neobis.cms.Entity.Base;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -32,8 +34,4 @@ public class OshPayment extends Base {
 
     @Column(name = "method")
     private String method;
-
-    @ManyToOne
-    @JoinColumn(name = "client_id", referencedColumnName = "client_id")
-    private OshClient client;
 }

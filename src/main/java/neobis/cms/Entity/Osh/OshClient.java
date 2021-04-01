@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -18,7 +19,7 @@ public class OshClient {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "client_id")
-    private long client_id;
+    private long clientID;
 
     private LocalDateTime dateCreated;
     private LocalDateTime dateUpdated;
@@ -57,9 +58,12 @@ public class OshClient {
     @Column(name = "laptop")
     private boolean laptop;
 
-    @ManyToOne
-    @JoinColumn(name = "course_id", referencedColumnName = "course_id")
-    private OshCourses course;
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "Client_Course",
+            joinColumns = @JoinColumn(name = "client_id"),
+            inverseJoinColumns = @JoinColumn(name = "course_id"))
+    private List<OshCourses> courses;
 
     @ManyToOne
     @JoinColumn(name = "utm_id", referencedColumnName = "utm_id")
@@ -83,4 +87,8 @@ public class OshClient {
     @ManyToOne
     @JoinColumn(name = "leaving_reason_id", referencedColumnName = "leaving_reason_id")
     private OshLeavingReason leavingReason;
+
+    @OneToMany
+    @JoinColumn(name = "payment_id")
+    private List<OshPayment> payments;
 }

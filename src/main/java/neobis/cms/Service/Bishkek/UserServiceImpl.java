@@ -16,9 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -222,8 +220,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<Object> simpleSearch(String nameOrPhone) {
-        List<Object> users = new ArrayList<>();
+    public Set<Object> simpleSearch(String nameOrPhone) {
+        Set<Object> users = new HashSet<>();
         for (String item : nameOrPhone.split(" ")) {
             users.addAll(userRepo.findAllByNameContainingIgnoringCaseAndActiveAndConfirmed(item, true, true));
             users.addAll(userRepo.findAllBySurnameContainingIgnoringCaseAndActiveAndConfirmed(item, true, true));

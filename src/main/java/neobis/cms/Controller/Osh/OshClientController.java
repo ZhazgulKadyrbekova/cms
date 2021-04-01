@@ -3,12 +3,11 @@ package neobis.cms.Controller.Osh;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import neobis.cms.Dto.ClientDTO;
+import neobis.cms.Dto.PaymentDTO;
 import neobis.cms.Dto.ResponseMessage;
 import neobis.cms.Entity.Osh.OshClient;
-import neobis.cms.Service.Bishkek.UserService;
 import neobis.cms.Service.ExcelService;
 import neobis.cms.Service.Osh.OshClientService;
-import neobis.cms.Service.Osh.OshTeacherService;
 import neobis.cms.Util.ExcelUtilHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,14 +37,10 @@ public class OshClientController {
 
     private final OshClientService clientService;
     private final ExcelService excelService;
-    private final OshTeacherService teacherService;
-    private final UserService userService;
 
-    public OshClientController(OshClientService clientService, ExcelService excelService, OshTeacherService teacherService, UserService userService) {
+    public OshClientController(OshClientService clientService, ExcelService excelService) {
         this.clientService = clientService;
         this.excelService = excelService;
-        this.teacherService = teacherService;
-        this.userService = userService;
     }
 
     @GetMapping
@@ -64,13 +59,20 @@ public class OshClientController {
             @ApiImplicitParam(name = "page", dataType = "int", paramType = "query",
                     value = "Results page you want to retrieve (0...N)", defaultValue = "0"),
             @ApiImplicitParam(name = "size", dataType = "int", paramType = "query",
-                    value = "Number of records per page.", defaultValue = "20")})
+                    value = "Number of records per page.", defaultValue = "20"),
+            @ApiImplicitParam(name = "field", dataType = "string", paramType = "query",
+                    value = "Name, surname, email, phone number by which to search.")})
     public Page<OshClient> filter(Pageable pageable,
+                                            @ApiIgnore @RequestParam(required = false) String field,
                                             @RequestParam(required = false) List<Long> status_id,
                                             @RequestParam(required = false) List<Long> course_id,
                                             @RequestParam(required = false) List<Long> occupation_id,
                                             @RequestParam(required = false) List<Long> utm_id ) {
-        return clientService.getWithPredicate(pageable, status_id, course_id, occupation_id, utm_id);
+        List<OshClient> clients = new ArrayList<>(clientService.getWithPredicate(field, status_id, course_id, occupation_id, utm_id));
+        final int start = (int)pageable.getOffset();
+        final int end = Math.min((start + pageable.getPageSize()), clients.size());
+
+        return new PageImpl<>(clients.subList(start, end), pageable, clients.size());
     }
 
     @GetMapping("/search")
@@ -81,11 +83,8 @@ public class OshClientController {
                     value = "Number of records per page.", defaultValue = "20"),
             @ApiImplicitParam(name = "field", dataType = "string", paramType = "query", required = true,
                     value = "Name, surname, email, phone number by which to search.")})
-    public Page<Object> search(Pageable pageable, @ApiIgnore @RequestParam String field) {
-        List<Object> responses = new ArrayList<>();
-        responses.addAll(clientService.simpleSearch(field));
-        responses.addAll(teacherService.simpleSearch(field));
-        responses.addAll(userService.simpleSearch(field));
+    public Page<OshClient> search(Pageable pageable, @ApiIgnore @RequestParam String field) {
+        List<OshClient> responses = new ArrayList<>(clientService.search(field));
 
         final int start = (int)pageable.getOffset();
         final int end = Math.min((start + pageable.getPageSize()), responses.size());
@@ -111,7 +110,7 @@ public class OshClientController {
 
     @PostMapping("/import")
     public ResponseEntity<ResponseMessage> importFile(@RequestParam("file")MultipartFile file) {
-        String message = "";
+        String message;
         if (ExcelUtilHelper.hasExcelFormat(file)) {
             try {
                 excelService.saveOshClients(file);
@@ -124,6 +123,7 @@ public class OshClientController {
                 return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new ResponseMessage(message));
             }
         }
+
         message = "Please, upload an excel file in xlsx format!";
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseMessage(message));
     }
@@ -153,6 +153,21 @@ public class OshClientController {
     @PutMapping("/{id}")
     public OshClient updateClient(Principal principal, @PathVariable Long id, @RequestBody ClientDTO clientDTO) {
         return clientService.updateClient(id, clientDTO, principal.getName());
+    }
+
+    @PostMapping("/{client_id}/payment")
+    public OshClient addPayment(Principal principal, @PathVariable("client_id") Long id, @RequestBody PaymentDTO paymentDTO) {
+        return clientService.addPayment(id, paymentDTO, principal.getName());
+    }
+
+    @PutMapping("/{client_id}/payment/{payment_id}")
+    public OshClient editPayment(Principal principal, @PathVariable("client_id") Long id, @RequestBody PaymentDTO paymentDTO, @PathVariable("payment_id") Long paymentID) {
+        return clientService.editPayment(id, paymentDTO, paymentID, principal.getName());
+    }
+
+    @DeleteMapping("/{client_id}/payment/{payment_id}")
+    public ResponseMessage deletePayment(Principal principal, @PathVariable("client_id") Long id, @PathVariable("payment_id") Long paymentID) {
+        return clientService.deletePayment(id, paymentID, principal.getName());
     }
 
 }

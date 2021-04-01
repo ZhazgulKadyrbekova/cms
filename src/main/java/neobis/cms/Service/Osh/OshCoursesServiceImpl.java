@@ -4,18 +4,19 @@ import neobis.cms.Dto.CoursesDTO;
 import neobis.cms.Entity.Osh.OshCourses;
 import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Osh.OshCoursesRepo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class OshCoursesServiceImpl implements OshCoursesService {
-    @Autowired
-    private OshCoursesRepo coursesRepo;
+    private final OshCoursesRepo coursesRepo;
+    private final OshTeacherService teacherService;
 
-    @Autowired
-    private OshTeacherService teacherService;
+    public OshCoursesServiceImpl(OshCoursesRepo coursesRepo, OshTeacherService teacherService) {
+        this.coursesRepo = coursesRepo;
+        this.teacherService = teacherService;
+    }
 
     @Override
     public OshCourses findCourseByFormName(String formName) {
@@ -83,5 +84,13 @@ public class OshCoursesServiceImpl implements OshCoursesService {
                 .orElseThrow(() -> new ResourceNotFoundException("Course with id " + id + " has not found"));
         coursesRepo.delete(course);
         return "Course with id " + id + " has not found";
+    }
+
+    @Override
+    public OshCourses setTeacher(long courseID, long teacherID) {
+        OshCourses course = coursesRepo.findById(courseID)
+                .orElseThrow(() -> new ResourceNotFoundException("Course with id " + courseID + " has not found"));
+        course.setTeacher(teacherService.getTeacherById(teacherID));
+        return coursesRepo.save(course);
     }
 }

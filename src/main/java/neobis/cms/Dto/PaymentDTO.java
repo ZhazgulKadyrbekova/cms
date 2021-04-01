@@ -15,6 +15,4 @@ public class PaymentDTO {
     private BigDecimal price;
     private boolean done;
     private String method;
-    private long client;
-
 }

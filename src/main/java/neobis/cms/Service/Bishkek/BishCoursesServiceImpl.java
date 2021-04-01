@@ -4,19 +4,20 @@ import neobis.cms.Dto.CoursesDTO;
 import neobis.cms.Entity.Bishkek.BishCourses;
 import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Bishkek.BishCoursesRepo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class BishCoursesServiceImpl implements BishCoursesService{
-    @Autowired
-    private BishCoursesRepo coursesRepo;
+    private final BishCoursesRepo coursesRepo;
+    private final BishTeacherService teacherService;
+    public BishCoursesServiceImpl(BishCoursesRepo coursesRepo, BishTeacherService teacherRepo) {
+        this.coursesRepo = coursesRepo;
+        this.teacherService = teacherRepo;
+    }
 
-    @Autowired
-    private BishTeacherService teacherService;
-/*
+    /*
     @Override
     public BishCourses findCourseByFormName(String formName) {
         if (formName.equals("Заявка с quiz"))
@@ -88,5 +89,13 @@ public class BishCoursesServiceImpl implements BishCoursesService{
                 .orElseThrow(() -> new ResourceNotFoundException("Course with id " + id + " has not found"));
         coursesRepo.delete(course);
         return "Course with id " + id + " has not found";
+    }
+
+    @Override
+    public BishCourses setTeacher(long courseID, long teacherID) {
+        BishCourses course = coursesRepo.findById(courseID)
+                .orElseThrow(() -> new ResourceNotFoundException("Course with id " + courseID + " has not found"));
+        course.setTeacher(teacherService.getTeacherById(teacherID));
+        return coursesRepo.save(course);
     }
 }

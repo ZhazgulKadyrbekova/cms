@@ -18,5 +18,6 @@ public interface BishClientRepo extends JpaRepository<BishClient, Long>, JpaSpec
     List<BishClient> findAllByNameContainingIgnoringCase(String name);
     List<BishClient> findAllBySurnameContainingIgnoringCase(String surname);
     List<BishClient> findAllByPhoneNoContaining(String phoneNo);
+    List<BishClient> findAllByEmailContainingIgnoringCase(String email);
     BishClient findByNameContainingIgnoringCase(String name);
 }

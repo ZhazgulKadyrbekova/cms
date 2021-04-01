@@ -15,7 +15,7 @@ public class TeacherDTO {
     private String surname;
     private String email;
     private String phoneNo;
-    private String courseName;
+    private long course;
     private String position;
     private String patent;
     private LocalDate startDate;

@@ -13,4 +13,5 @@ public interface BishCoursesService {
     BishCourses addCourse(CoursesDTO courseDTO);
     BishCourses updateCourse(long id, CoursesDTO courseDTO);
     String deleteCourse(long id);
+    BishCourses setTeacher(long courseID, long teacherID);
 }

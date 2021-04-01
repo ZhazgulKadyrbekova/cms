@@ -1,13 +1,17 @@
 package neobis.cms.Entity.Bishkek;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import neobis.cms.Entity.Base;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.util.List;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -33,4 +37,8 @@ public class BishCourses extends Base {
     @ManyToOne
     @JoinColumn(name = "teacher_id", referencedColumnName = "teacher_id")
     private BishTeachers teacher;
+
+    @JsonIgnore
+    @ManyToMany(mappedBy = "courses")
+    private List<BishClient> clients;
 }

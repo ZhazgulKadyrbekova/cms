@@ -2,17 +2,21 @@ package neobis.cms.Service.Bishkek;
 
 import neobis.cms.Dto.TeacherDTO;
 import neobis.cms.Dto.WorkerDTO;
+import neobis.cms.Entity.Bishkek.BishCourses;
 import neobis.cms.Entity.Bishkek.BishTeachers;
 import neobis.cms.Entity.Bishkek.User;
 import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Bishkek.BishTeacherRepo;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class BishTeacherServiceImpl implements BishTeacherService {
@@ -20,7 +24,7 @@ public class BishTeacherServiceImpl implements BishTeacherService {
     private final UserService userService;
     private final BishCoursesService coursesService;
 
-    public BishTeacherServiceImpl(BishTeacherRepo teacherRepo, UserService userService, BishCoursesService coursesService) {
+    public BishTeacherServiceImpl(BishTeacherRepo teacherRepo, UserService userService, @Lazy BishCoursesService coursesService) {
         this.teacherRepo = teacherRepo;
         this.userService = userService;
         this.coursesService = coursesService;
@@ -39,10 +43,38 @@ public class BishTeacherServiceImpl implements BishTeacherService {
         return workers;
     }
 
+    private Set<WorkerDTO> toWorkers(Set<BishTeachers> teachers, Set<User> users) {
+        Set<WorkerDTO> workers = new HashSet<>();
+
+        for (BishTeachers teacher : teachers)
+            workers.add(new WorkerDTO(teacher.getName(), teacher.getSurname(), teacher.getEmail(), teacher.getPhoneNo(), teacher.getPosition(),
+                    teacher.getCourseName()));
+
+        for (User user : users)
+            workers.add(new WorkerDTO(user.getName(), user.getSurname(), user.getEmail(), user.getPhoneNo(), user.getPosition(), null));
+
+        return workers;
+    }
+
     @Override
-    public Page<WorkerDTO> getWithPredicate(Pageable pageable, String position, List<Long> courseID) {
-        List<BishTeachers> teachers = new ArrayList<>();
-        List<User> users = new ArrayList<>();
+    public Set<WorkerDTO> getWithPredicate(String field, String position, List<Long> courseID) {
+        Set<BishTeachers> teachers = new HashSet<>();
+        Set<User> users = new HashSet<>();
+
+        if (field != null) {
+            for (String item : field.split(" ")) {
+                teachers.addAll(teacherRepo.findAllByNameContainingIgnoringCase(item));
+                users.addAll(userService.getAllByName(item));
+
+                teachers.addAll(teacherRepo.findAllBySurnameContainingIgnoringCase(item));
+                users.addAll(userService.getAllBySurname(item));
+            }
+            teachers.addAll(teacherRepo.findAllByPhoneNoContaining(field));
+            users.addAll(userService.getAllByPhoneNo(field));
+            teachers.addAll(teacherRepo.findAllByEmailContainingIgnoringCase(field));
+            users.addAll(userService.getAllByEmail(field));
+        }
+
         if (position != null && courseID != null) {
             for (long course : courseID) {
                 BishTeachers teacher = coursesService.findCourseById(course).getTeacher();
@@ -53,14 +85,11 @@ public class BishTeacherServiceImpl implements BishTeacherService {
             for (long course : courseID)
                 teachers.add(coursesService.findCourseById(course).getTeacher());
         } else if (position != null) {
-            teachers = teacherRepo.findAllByPositionContainingIgnoringCase(position);
-            users = userService.getAllByPositionAndCity(position, "bishkek");
+            teachers.addAll(teacherRepo.findAllByPositionContainingIgnoringCase(position));
+            users.addAll(userService.getAllByPositionAndCity(position, "bishkek"));
         }
-        List<WorkerDTO> workers = toWorkers(teachers, users);
+        return toWorkers(teachers, users);
 
-        final int start = (int)pageable.getOffset();
-        final int end = Math.min((start + pageable.getPageSize()), workers.size());
-        return new PageImpl<>(workers.subList(start, end), pageable, workers.size());
     }
 
     @Override
@@ -98,9 +127,12 @@ public class BishTeacherServiceImpl implements BishTeacherService {
         teacher.setEmail(teacherDTO.getEmail());
         teacher.setPhoneNo(teacherDTO.getPhoneNo());
         teacher.setPosition(teacherDTO.getPosition());
-        teacher.setCourseName(teacherDTO.getCourseName());
         teacher.setStartDate(teacherDTO.getStartDate());
         teacher.setEndDate(teacherDTO.getEndDate());
+        if (teacherDTO.getCourse() != 0) {
+            BishCourses course = coursesService.setTeacher(teacherDTO.getCourse(), teacher.getID());
+            teacher.setCourseName(course.getName());
+        }
         return teacher;
     }
 
@@ -126,14 +158,19 @@ public class BishTeacherServiceImpl implements BishTeacherService {
     }
 
     @Override
-    public List<Object> simpleSearch(String nameOrPhone) {
-        List<Object> teachers = new ArrayList<>();
+    public Set<Object> simpleSearch(String nameOrPhone) {
+        Set<Object> teachers = new HashSet<>();
         for (String item : nameOrPhone.split(" ")) {
             teachers.addAll(teacherRepo.findAllByNameContainingIgnoringCase(item));
+            teachers.addAll(userService.getAllByName(item));
+
             teachers.addAll(teacherRepo.findAllBySurnameContainingIgnoringCase(item));
+            teachers.addAll(userService.getAllBySurname(item));
         }
         teachers.addAll(teacherRepo.findAllByPhoneNoContaining(nameOrPhone));
+        teachers.addAll(userService.getAllByPhoneNo(nameOrPhone));
         teachers.addAll(teacherRepo.findAllByEmailContainingIgnoringCase(nameOrPhone));
+        teachers.addAll(userService.getAllByEmail(nameOrPhone));
 
         return teachers;
     }

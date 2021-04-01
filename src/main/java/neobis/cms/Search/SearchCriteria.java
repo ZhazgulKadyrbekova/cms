@@ -10,7 +10,7 @@ import java.util.List;
 
 public class SearchCriteria {
     private String key;
-//    private String key2;
+    private String field;
     private List<Long> value;
     private SearchOperation operation;
 

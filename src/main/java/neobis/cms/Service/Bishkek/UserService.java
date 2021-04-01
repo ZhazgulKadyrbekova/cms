@@ -7,6 +7,7 @@ import neobis.cms.Dto.UserRejectDTO;
 import neobis.cms.Entity.Bishkek.User;
 
 import java.util.List;
+import java.util.Set;
 
 public interface UserService {
     List<User> findAll();
@@ -27,5 +28,5 @@ public interface UserService {
     String forgotPassword(String email);
     String setPassword(UserAuthDTO userAuthDTO);
     String reject(UserRejectDTO userRejectDTO);
-    List<Object> simpleSearch(String nameOrPhone);
+    Set<Object> simpleSearch(String nameOrPhone);
 }

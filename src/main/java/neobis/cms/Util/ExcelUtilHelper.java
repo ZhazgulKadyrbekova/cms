@@ -1,8 +1,10 @@
 package neobis.cms.Util;
 
 import neobis.cms.Entity.Bishkek.BishClient;
+import neobis.cms.Entity.Bishkek.BishCourses;
 import neobis.cms.Entity.Bishkek.BishOccupation;
 import neobis.cms.Entity.Osh.OshClient;
+import neobis.cms.Entity.Osh.OshCourses;
 import neobis.cms.Entity.Osh.OshOccupation;
 import neobis.cms.Repo.Bishkek.BishLeavingReasonRepo;
 import neobis.cms.Repo.Bishkek.BishOccupationRepo;
@@ -53,20 +55,20 @@ public class ExcelUtilHelper {
     public ExcelUtilHelper(BishStatusesRepo bishStatusesRepo, OshStatusesRepo oshStatusesRepo, BishOccupationRepo bishOccupationRepo,
         OshOccupationRepo oshOccupationRepo, BishCoursesService bishCoursesService, OshCoursesService oshCoursesService, BishUTMRepo 
         bishUTMRepo, OshUTMRepo oshUTMRepo, BishLeavingReasonRepo bishLeavingReasonRepo, OshLeavingReasonRepo oshLeavingReasonRepo) {
-        this.bishStatusesRepo = bishStatusesRepo;
-        this.oshStatusesRepo = oshStatusesRepo;
-        this.bishOccupationRepo = bishOccupationRepo;
-        this.oshOccupationRepo = oshOccupationRepo;
-        this.bishCoursesService = bishCoursesService;
-        this.oshCoursesService = oshCoursesService;
-        this.bishUTMRepo = bishUTMRepo;
-        this.oshUTMRepo = oshUTMRepo;
-        this.bishLeavingReasonRepo = bishLeavingReasonRepo;
-        this.oshLeavingReasonRepo = oshLeavingReasonRepo;
+        ExcelUtilHelper.bishStatusesRepo = bishStatusesRepo;
+        ExcelUtilHelper.oshStatusesRepo = oshStatusesRepo;
+        ExcelUtilHelper.bishOccupationRepo = bishOccupationRepo;
+        ExcelUtilHelper.oshOccupationRepo = oshOccupationRepo;
+        ExcelUtilHelper.bishCoursesService = bishCoursesService;
+        ExcelUtilHelper.oshCoursesService = oshCoursesService;
+        ExcelUtilHelper.bishUTMRepo = bishUTMRepo;
+        ExcelUtilHelper.oshUTMRepo = oshUTMRepo;
+        ExcelUtilHelper.bishLeavingReasonRepo = bishLeavingReasonRepo;
+        ExcelUtilHelper.oshLeavingReasonRepo = oshLeavingReasonRepo;
     }
 
     public static ByteArrayInputStream bishClientsToExcel(List<BishClient> clients) {
-        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream();) {
+        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Sheet sheet = workbook.createSheet(SHEET);
 
             Row headerRow = sheet.createRow(0);
@@ -81,7 +83,7 @@ public class ExcelUtilHelper {
             for (BishClient client : clients) {
                 Row row = sheet.createRow(rowIdx++);
 
-                row.createCell(0).setCellValue(client.getClient_id());
+                row.createCell(0).setCellValue(client.getClientID());
                 row.createCell(1).setCellValue(client.getDateCreated() != null ? client.getDateCreated().toString() : null);
                 row.createCell(2).setCellValue(client.getDateUpdated() != null ? client.getDateUpdated().toString() : null);
                 row.createCell(3).setCellValue(client.getPhoneNo() != null ? client.getPhoneNo() : null);
@@ -93,7 +95,15 @@ public class ExcelUtilHelper {
                 row.createCell(9).setCellValue(client.getTarget());
                 row.createCell(10).setCellValue(client.isExperience());
                 row.createCell(11).setCellValue(client.isLaptop());
-                row.createCell(12).setCellValue(client.getCourse() != null ? client.getCourse().getName() : null);
+                String courseName = null;
+                if (client.getCourses() != null) {
+                    StringBuilder courses = new StringBuilder();
+                    for (BishCourses course : client.getCourses()) {
+                        courses.append(course.getName()).append(", ");
+                    }
+                    courseName = courses.toString();
+                }
+                row.createCell(12).setCellValue(courseName);
                 row.createCell(13).setCellValue(client.getUtm() != null ? client.getUtm().getName() : null);
                 row.createCell(14).setCellValue(client.getDescription());
                 row.createCell(15).setCellValue(client.getCity());
@@ -111,7 +121,7 @@ public class ExcelUtilHelper {
     }
 
     public static ByteArrayInputStream oshClientsToExcel(List<OshClient> clients) {
-        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream();) {
+        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Sheet sheet = workbook.createSheet(SHEET);
 
             Row headerRow = sheet.createRow(0);
@@ -126,7 +136,7 @@ public class ExcelUtilHelper {
             for (OshClient client : clients) {
                 Row row = sheet.createRow(rowIdx++);
 
-                row.createCell(0).setCellValue(client.getClient_id());
+                row.createCell(0).setCellValue(client.getClientID());
                 row.createCell(1).setCellValue(client.getDateCreated().toString());
                 row.createCell(2).setCellValue(client.getDateUpdated() != null ? client.getDateUpdated().toString() : null);
                 row.createCell(3).setCellValue(client.getPhoneNo() != null ? client.getPhoneNo() : null);
@@ -138,7 +148,15 @@ public class ExcelUtilHelper {
                 row.createCell(9).setCellValue(client.getTarget());
                 row.createCell(10).setCellValue(client.isExperience());
                 row.createCell(11).setCellValue(client.isLaptop());
-                row.createCell(12).setCellValue(client.getCourse() != null ? client.getCourse().getName() : null);
+                String courseName = null;
+                if (client.getCourses() != null) {
+                    StringBuilder courses = new StringBuilder();
+                    for (OshCourses course : client.getCourses()) {
+                        courses.append(course.getName()).append(", ");
+                    }
+                    courseName = courses.toString();
+                }
+                row.createCell(12).setCellValue(courseName);
                 row.createCell(13).setCellValue(client.getUtm() != null ? client.getUtm().getName() : null);
                 row.createCell(14).setCellValue(client.getDescription());
                 row.createCell(15).setCellValue(client.getCity());
@@ -156,10 +174,7 @@ public class ExcelUtilHelper {
     }
 
     public static boolean hasExcelFormat(MultipartFile file) {
-        if (!TYPE.equals(file.getContentType())) {
-            return false;
-        }
-        return true;
+        return TYPE.equals(file.getContentType());
     }
 
     public static List<BishClient> excelToBishClients(InputStream is) {
@@ -168,7 +183,7 @@ public class ExcelUtilHelper {
 
             Sheet sheet = workbook.getSheet(SHEET);
             Iterator<Row> rows = sheet.iterator();
-            List<BishClient> clients = new ArrayList<BishClient>();
+            List<BishClient> clients = new ArrayList<>();
 
             int rowNumber = 0;
             while (rows.hasNext()) {
@@ -236,8 +251,13 @@ public class ExcelUtilHelper {
                             break;
                         case 12:
                             System.out.println("course\t\t" + currentCell.getStringCellValue());
-                            if (currentCell.getStringCellValue() != null && !currentCell.getStringCellValue().isEmpty() && !currentCell.getStringCellValue().equals(""))
-                                bishClient.setCourse(bishCoursesService.findCourseByName(currentCell.getStringCellValue()));
+                            if (currentCell.getStringCellValue() != null && !currentCell.getStringCellValue().isEmpty()
+                                    && !currentCell.getStringCellValue().equals("")) {
+                                List<BishCourses> courses = new ArrayList<>();
+                                for (String courseName : currentCell.getStringCellValue().split(", "))
+                                    courses.add(bishCoursesService.findCourseByName(courseName));
+                                bishClient.setCourses(courses);
+                            }
                             break;
                         case 13:
                             System.out.println("utm\t\t" + currentCell.getStringCellValue());
@@ -289,7 +309,7 @@ public class ExcelUtilHelper {
 
             Sheet sheet = workbook.getSheet(SHEET);
             Iterator<Row> rows = sheet.iterator();
-            List<OshClient> clients = new ArrayList<OshClient>();
+            List<OshClient> clients = new ArrayList<>();
 
             int rowNumber = 0;
             while (rows.hasNext()) {
@@ -336,7 +356,7 @@ public class ExcelUtilHelper {
                         case 8:
                             System.out.println("occupation\t\t" + currentCell.getStringCellValue());
                             if (currentCell.getStringCellValue() != null && !currentCell.getStringCellValue().isEmpty() && !currentCell.getStringCellValue().equals("")) {
-                                OshOccupation occupation = oshOccupationRepo.findByNameContainingIgnoringCase((String) currentCell.getStringCellValue());
+                                OshOccupation occupation = oshOccupationRepo.findByNameContainingIgnoringCase(currentCell.getStringCellValue());
                                 client.setOccupation(occupation);
                                 // client.setOccupation(oshOccupationRepo.findByNameContainingIgnoringCase(currentCell.getStringCellValue()).orElse(null));
                             }
@@ -351,9 +371,14 @@ public class ExcelUtilHelper {
                             client.setLaptop(currentCell.getBooleanCellValue());
                             break;
                         case 12:
-                            System.out.println("Course\t\t" + currentCell.getStringCellValue());
-                            if (currentCell.getStringCellValue() != null && !currentCell.getStringCellValue().isEmpty() && !currentCell.getStringCellValue().equals(""))
-                                client.setCourse(oshCoursesService.findCourseByName(currentCell.getStringCellValue()));
+                            System.out.println("course\t\t" + currentCell.getStringCellValue());
+                            if (currentCell.getStringCellValue() != null && !currentCell.getStringCellValue().isEmpty()
+                                    && !currentCell.getStringCellValue().equals("")) {
+                                List<OshCourses> courses = new ArrayList<>();
+                                for (String courseName : currentCell.getStringCellValue().split(", "))
+                                    courses.add(oshCoursesService.findCourseByName(courseName));
+                                client.setCourses(courses);
+                            }
                             break;
                         case 13:
                             System.out.println("UTM\t\t" + currentCell.getStringCellValue());
@@ -374,12 +399,10 @@ public class ExcelUtilHelper {
                                     LocalDateTime.parse(currentCell.getStringCellValue()));
                             break;
                         case 18:
-                            System.out.println("Prepayment\t\t" + currentCell.getStringCellValue());
                             if (currentCell.getStringCellValue() != null && !currentCell.getStringCellValue().isEmpty() && !currentCell.getStringCellValue().equals(""))
                                 client.setPrepayment(BigDecimal.valueOf(Integer.parseInt(currentCell.getStringCellValue())));
                             break;
                         case 19:
-                            System.out.println("LeavingReaso\t\t" + currentCell.getStringCellValue());
                             if (currentCell.getStringCellValue() != null && !currentCell.getStringCellValue().isEmpty() && !currentCell.getStringCellValue().equals(""))
                                 client.setLeavingReason(oshLeavingReasonRepo.findByNameContainingIgnoringCase(currentCell.getStringCellValue()).orElse(null));
                             break;

@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -21,7 +22,7 @@ public class ClientDTO {
     private String target;
     private boolean experience;
     private boolean laptop;
-    private long course;
+    private List<Long> courses;
     private String description;
     private LocalDateTime timer;
     private BigDecimal prepayment;

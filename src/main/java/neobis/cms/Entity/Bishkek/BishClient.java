@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -18,7 +19,7 @@ public class BishClient {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "client_id")
-    private long client_id;
+    private long clientID;
 
     private LocalDateTime dateCreated;
     private LocalDateTime dateUpdated;
@@ -57,9 +58,12 @@ public class BishClient {
     @Column(name = "laptop")
     private boolean laptop;
 
-    @ManyToOne
-    @JoinColumn(name = "course_id", referencedColumnName = "course_id")
-    private BishCourses course;
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "Client_Course",
+            joinColumns = @JoinColumn(name = "client_id"),
+            inverseJoinColumns = @JoinColumn(name = "course_id"))
+    private List<BishCourses> courses;
 
     @ManyToOne
     @JoinColumn(name = "utm_id", referencedColumnName = "utm_id")
@@ -83,4 +87,8 @@ public class BishClient {
     @ManyToOne
     @JoinColumn(name = "leaving_reason_id", referencedColumnName = "leaving_reason_id")
     private BishLeavingReason leavingReason;
+
+    @OneToMany
+    @JoinColumn(name = "payment_id")
+    private List<BishPayment> payments;
 }
