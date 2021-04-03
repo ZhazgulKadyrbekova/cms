@@ -27,11 +27,12 @@ public class BishPayment extends Base {
     @Column(name = "done")
     private boolean done;
 
-    @Column(name = "method")
-    private String method;
+    @ManyToOne
+    @JoinColumn(name = "method_id")
+    private BishMethod method;
 
     @Override
     public String toString() {
-        return "month=" + month + ", price=" + price.toString() + ", done=" + done + ", method=" + method;
+        return "month=" + month + ", price=" + price.toString() + ", done=" + done + ", method=" + method.getName();
     }
 }

@@ -16,4 +16,5 @@ public class WorkerDTO {
     private String phoneNo;
     private String position;
     private String courseName;
+    private String table;
 }

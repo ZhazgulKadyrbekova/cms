@@ -11,11 +11,9 @@ import java.util.List;
 @Service
 public class OshCoursesServiceImpl implements OshCoursesService {
     private final OshCoursesRepo coursesRepo;
-    private final OshTeacherService teacherService;
 
-    public OshCoursesServiceImpl(OshCoursesRepo coursesRepo, OshTeacherService teacherService) {
+    public OshCoursesServiceImpl(OshCoursesRepo coursesRepo) {
         this.coursesRepo = coursesRepo;
-        this.teacherService = teacherService;
     }
 
     @Override
@@ -62,8 +60,6 @@ public class OshCoursesServiceImpl implements OshCoursesService {
         OshCourses course = new OshCourses();
         course.setName(courseDTO.getName());
         course.setPrice(courseDTO.getPrice());
-        course.setDescription(courseDTO.getDescription());
-        course.setTeacher(teacherService.getTeacherById(courseDTO.getTeacher()));
         return coursesRepo.save(course);
     }
 
@@ -73,8 +69,6 @@ public class OshCoursesServiceImpl implements OshCoursesService {
                 .orElseThrow(() -> new ResourceNotFoundException("Course with id " + id + " has not found"));
         course.setName(courseDTO.getName());
         course.setPrice(courseDTO.getPrice());
-        course.setDescription(courseDTO.getDescription());
-        course.setTeacher(teacherService.getTeacherById(courseDTO.getTeacher()));
         return coursesRepo.save(course);
     }
 
@@ -88,13 +82,5 @@ public class OshCoursesServiceImpl implements OshCoursesService {
             return "Courses were successfully deleted";
         else
             return "Course with ID " + courses.get(0) + " was successfully deleted";
-    }
-
-    @Override
-    public OshCourses setTeacher(long courseID, long teacherID) {
-        OshCourses course = coursesRepo.findById(courseID)
-                .orElseThrow(() -> new ResourceNotFoundException("Course with id " + courseID + " has not found"));
-        course.setTeacher(teacherService.getTeacherById(teacherID));
-        return coursesRepo.save(course);
     }
 }

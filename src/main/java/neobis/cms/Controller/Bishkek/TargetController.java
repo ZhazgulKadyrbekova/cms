@@ -24,6 +24,17 @@ public class TargetController {
         return bishTargetRepo.findAll();
     }
 
+    @PostMapping
+    public BishTarget addTarget(@RequestBody TargetDTO targetDTO) {
+        OshTarget oshTarget = new OshTarget();
+        BishTarget bishTarget = new BishTarget();
+
+        oshTarget.setName(targetDTO.getName());
+        oshTargetRepo.save(oshTarget);
+        bishTarget.setName(targetDTO.getName());
+        return bishTargetRepo.save(bishTarget);
+    }
+
     @PutMapping("/{id}")
     public BishTarget updatePosition(@RequestBody TargetDTO targetDTO, @PathVariable Long id) {
         OshTarget oshTarget = oshTargetRepo.findById(id)

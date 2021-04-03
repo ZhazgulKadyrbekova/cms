@@ -26,11 +26,8 @@ public class OshCourses extends Base {
     @Column(name = "price")
     private BigDecimal price;
 
-    @Column(name = "description")
-    private String description;
-
-    @ManyToOne
-    @JoinColumn(name = "teacher_id")
+    @JsonIgnore
+    @OneToOne(mappedBy = "course")
     private OshTeachers teacher;
 
     @JsonIgnore

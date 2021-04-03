@@ -41,11 +41,11 @@ public class BishTeacherServiceImpl implements BishTeacherService {
         for (BishTeachers teacher : teachers)
             workers.add(new WorkerDTO(teacher.getName(), teacher.getSurname(), teacher.getPatronymic(),
                     teacher.getEmail(), teacher.getPhoneNo(), teacher.getPosition().getName(),
-                    teacher.getCourseName()));
+                    teacher.getCourse().getName(), "teacher"));
 
         for (User user : users)
             workers.add(new WorkerDTO(user.getName(), user.getSurname(), user.getPatronymic(), user.getEmail(),
-                    user.getPhoneNo(), user.getPosition().getName(), null));
+                    user.getPhoneNo(), user.getPosition().getName(), null, "user"));
 
         return workers;
     }
@@ -56,11 +56,11 @@ public class BishTeacherServiceImpl implements BishTeacherService {
         for (BishTeachers teacher : teachers)
             workers.add(new WorkerDTO(teacher.getName(), teacher.getSurname(), teacher.getPatronymic(),
                     teacher.getEmail(), teacher.getPhoneNo(), teacher.getPosition().getName(),
-                    teacher.getCourseName()));
+                    teacher.getCourse().getName(), "teacher"));
 
         for (User user : users)
             workers.add(new WorkerDTO(user.getName(), user.getSurname(), user.getPatronymic(), user.getEmail(),
-                    user.getPhoneNo(), user.getPosition().getName(), null));
+                    user.getPhoneNo(), user.getPosition().getName(), null, "user"));
 
         return workers;
     }
@@ -150,8 +150,8 @@ public class BishTeacherServiceImpl implements BishTeacherService {
             teacher.setPosition(position);
         }
         if (teacherDTO.getCourse() != 0) {
-            BishCourses course = coursesService.setTeacher(teacherDTO.getCourse(), teacher.getID());
-            teacher.setCourseName(course.getName());
+            BishCourses course = coursesService.findCourseById(teacherDTO.getCourse());
+            teacher.setCourse(course);
         }
         return teacher;
     }
@@ -193,23 +193,5 @@ public class BishTeacherServiceImpl implements BishTeacherService {
         teachers.addAll(userService.getAllByEmail(nameOrPhone));
 
         return teachers;
-    }
-
-    @Override
-    public Page<WorkerDTO> advancedSearch(Pageable pageable, List<Long> courseList) {
-        List<WorkerDTO> workers = new ArrayList<>();
-        if (courseList != null) {
-            for (long courseID : courseList) {
-                BishTeachers teacher = coursesService.findCourseById(courseID).getTeacher();
-                workers.add(new WorkerDTO(teacher.getName(), teacher.getSurname(), teacher.getPatronymic(),
-                        teacher.getEmail(), teacher.getPhoneNo(), teacher.getPosition().getName(), teacher.getCourseName()));
-            }
-            final int start = (int)pageable.getOffset();
-            final int end = Math.min((start + pageable.getPageSize()), workers.size());
-            return new PageImpl<>(workers.subList(start, end), pageable, workers.size());
-        } else {
-            return this.getAllWorkers(pageable);
-        }
-
     }
 }

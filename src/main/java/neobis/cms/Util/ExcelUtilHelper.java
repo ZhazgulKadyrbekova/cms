@@ -43,10 +43,11 @@ public class ExcelUtilHelper {
     static private OshLeavingReasonRepo oshLeavingReasonRepo;
     static private BishTargetRepo bishTargetRepo;
     static private OshTargetRepo oshTargetRepo;
-
+    static private BishMethodRepo bishMethodRepo;
+    static private OshMethodRepo oshMethodRepo;
     public ExcelUtilHelper(BishStatusesRepo bishStatusesRepo, OshStatusesRepo oshStatusesRepo, BishOccupationRepo bishOccupationRepo,
                            OshOccupationRepo oshOccupationRepo, BishCoursesService bishCoursesService, OshCoursesService oshCoursesService, BishUTMRepo
-                                   bishUTMRepo, OshUTMRepo oshUTMRepo, BishLeavingReasonRepo bishLeavingReasonRepo, OshLeavingReasonRepo oshLeavingReasonRepo, BishTargetRepo bishTargetRepo, OshTargetRepo oshTargetRepo) {
+                                   bishUTMRepo, OshUTMRepo oshUTMRepo, BishLeavingReasonRepo bishLeavingReasonRepo, OshLeavingReasonRepo oshLeavingReasonRepo, BishTargetRepo bishTargetRepo, OshTargetRepo oshTargetRepo, BishMethodRepo bishMethodRepo, OshMethodRepo oshMethodRepo) {
         ExcelUtilHelper.bishStatusesRepo = bishStatusesRepo;
         ExcelUtilHelper.oshStatusesRepo = oshStatusesRepo;
         ExcelUtilHelper.bishOccupationRepo = bishOccupationRepo;
@@ -59,6 +60,8 @@ public class ExcelUtilHelper {
         ExcelUtilHelper.oshLeavingReasonRepo = oshLeavingReasonRepo;
         ExcelUtilHelper.bishTargetRepo = bishTargetRepo;
         ExcelUtilHelper.oshTargetRepo = oshTargetRepo;
+        ExcelUtilHelper.bishMethodRepo = bishMethodRepo;
+        ExcelUtilHelper.oshMethodRepo = oshMethodRepo;
     }
 
     public static ByteArrayInputStream bishClientsToExcel(List<BishClient> clients) {
@@ -307,7 +310,8 @@ public class ExcelUtilHelper {
                                    if (item.contains("month")) {
                                        payment.setMonth(item.substring(6));
                                    } else if (item.contains("method")) {
-                                       payment.setMethod(item.substring(7));
+                                       BishMethod bishMethod = bishMethodRepo.findByNameContainingIgnoringCase(item.substring(7));
+                                       payment.setMethod(bishMethod);
                                    } else if (item.contains("done")) {
                                        payment.setDone(Boolean.parseBoolean(item.substring(7)));
                                    } else if (item.contains("price")) {
@@ -448,7 +452,8 @@ public class ExcelUtilHelper {
                                     if (item.contains("month")) {
                                         payment.setMonth(item.substring(6));
                                     } else if (item.contains("method")) {
-                                        payment.setMethod(item.substring(7));
+                                        OshMethod oshMethod = oshMethodRepo.findByNameContainingIgnoringCase(item.substring(7));
+                                        payment.setMethod(oshMethod);
                                     } else if (item.contains("done")) {
                                         payment.setDone(Boolean.parseBoolean(item.substring(7)));
                                     } else if (item.contains("price")) {

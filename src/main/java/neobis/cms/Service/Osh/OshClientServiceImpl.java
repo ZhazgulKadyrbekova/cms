@@ -57,11 +57,13 @@ public class OshClientServiceImpl implements OshClientService {
     private final BishTargetRepo bishTargetRepo;
     private final OshTargetRepo oshTargetRepo;
 
+    private final BishMethodRepo bishMethodRepo;
+    private final OshMethodRepo oshMethodRepo;
     public OshClientServiceImpl(BishClientRepo bishClientRepo, OshClientRepo oshClientRepo, BishStatusesRepo bishStatusesRepo,
                                 OshStatusesRepo oshStatusesRepo, BishOccupationRepo bishOccupationRepo, OshOccupationRepo oshOccupationRepo,
                                 BishUTMRepo bishUTMRepo, OshUTMRepo oshUTMRepo, OshCoursesService coursesService, BishPaymentRepo bishPaymentService,
                                 OshPaymentRepo oshPaymentService, OshHistoryService historyService, UserService userService,
-                                BishLeavingReasonRepo bishLeavingReasonRepo, OshLeavingReasonRepo oshLeavingReasonRepo, BishTargetRepo bishTargetRepo, OshTargetRepo oshTargetRepo) {
+                                BishLeavingReasonRepo bishLeavingReasonRepo, OshLeavingReasonRepo oshLeavingReasonRepo, BishTargetRepo bishTargetRepo, OshTargetRepo oshTargetRepo, BishMethodRepo bishMethodRepo, OshMethodRepo oshMethodRepo) {
         this.bishClientRepo = bishClientRepo;
         this.oshClientRepo = oshClientRepo;
         this.bishStatusesRepo = bishStatusesRepo;
@@ -79,6 +81,8 @@ public class OshClientServiceImpl implements OshClientService {
         this.oshLeavingReasonRepo = oshLeavingReasonRepo;
         this.bishTargetRepo = bishTargetRepo;
         this.oshTargetRepo = oshTargetRepo;
+        this.bishMethodRepo = bishMethodRepo;
+        this.oshMethodRepo = oshMethodRepo;
     }
 
     @Override
@@ -584,7 +588,8 @@ public class OshClientServiceImpl implements OshClientService {
             bishPayment.setMonth(oshPayment.getMonth());
             bishPayment.setPrice(oshPayment.getPrice());
             bishPayment.setDone(oshPayment.isDone());
-            bishPayment.setMethod(oshPayment.getMethod());
+            OshMethod oshMethod = oshPayment.getMethod();
+            bishPayment.setMethod(bishMethodRepo.findByNameContainingIgnoringCase(oshMethod.getName()));
             bishPayments.add(bishPaymentRepo.save(bishPayment));
 
 //            Third step is inside of second step - delete payments of oshClient
@@ -638,7 +643,8 @@ public class OshClientServiceImpl implements OshClientService {
         payment.setMonth(paymentDTO.getMonth());
         payment.setPrice(paymentDTO.getPrice());
         payment.setDone(paymentDTO.isDone());
-        payment.setMethod(paymentDTO.getMethod());
+        payment.setMethod(oshMethodRepo.findById(paymentDTO.getMethodID()).orElseThrow(() ->
+                new ResourceNotFoundException("Method with ID " + paymentDTO.getMethodID() + " has not found")));
         payments.add(oshPaymentRepo.save(payment));
         client.setPayments(payments);
         return oshClientRepo.save(client);
@@ -657,7 +663,9 @@ public class OshClientServiceImpl implements OshClientService {
         payment.setMonth(paymentDTO.getMonth());
         payment.setPrice(paymentDTO.getPrice());
         payment.setDone(paymentDTO.isDone());
-        payment.setMethod(paymentDTO.getMethod());
+        payment.setMethod(oshMethodRepo.findById(paymentDTO.getMethodID()).orElseThrow(() ->
+                new ResourceNotFoundException("Method with ID " + paymentDTO.getMethodID() + " has not found")));
+        oshPaymentRepo.save(payment);
         return client;
     }
 

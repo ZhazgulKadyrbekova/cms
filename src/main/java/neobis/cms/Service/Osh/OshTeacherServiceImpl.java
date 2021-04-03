@@ -45,11 +45,11 @@ public class OshTeacherServiceImpl implements OshTeacherService {
         for (OshTeachers teacher : teachers)
             workers.add(new WorkerDTO(teacher.getName(), teacher.getSurname(), teacher.getPatronymic(),
                     teacher.getEmail(), teacher.getPhoneNo(), teacher.getPosition().getName(),
-                    teacher.getCourseName()));
+                    teacher.getCourse().getName(), "teacher"));
 
         for (User user : users)
             workers.add(new WorkerDTO(user.getName(), user.getSurname(), user.getPatronymic(), user.getEmail(),
-                    user.getPhoneNo(), user.getPosition().getName(), null));
+                    user.getPhoneNo(), user.getPosition().getName(), null, "user"));
 
         return workers;
     }
@@ -60,11 +60,11 @@ public class OshTeacherServiceImpl implements OshTeacherService {
         for (OshTeachers teacher : teachers)
             workers.add(new WorkerDTO(teacher.getName(), teacher.getSurname(), teacher.getPatronymic(),
                     teacher.getEmail(), teacher.getPhoneNo(), teacher.getPosition().getName(),
-                    teacher.getCourseName()));
+                    teacher.getCourse().getName(), "teacher"));
 
         for (User user : users)
             workers.add(new WorkerDTO(user.getName(), user.getSurname(), user.getPatronymic(), user.getEmail(),
-                    user.getPhoneNo(), user.getPosition().getName(), null));
+                    user.getPhoneNo(), user.getPosition().getName(), null, "user"));
 
         return workers;
     }
@@ -162,8 +162,8 @@ public class OshTeacherServiceImpl implements OshTeacherService {
             teacher.setPosition(position);
         }
         if (teacherDTO.getCourse() != 0) {
-            OshCourses course = coursesService.setTeacher(teacherDTO.getCourse(), teacher.getID());
-            teacher.setCourseName(course.getName());
+            OshCourses course = coursesService.findCourseById(teacherDTO.getCourse());
+            teacher.setCourse(course);
         }
         return teacher;
     }

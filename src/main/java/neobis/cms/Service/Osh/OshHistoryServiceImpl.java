@@ -9,7 +9,6 @@ import neobis.cms.Repo.Osh.OshHistoryRepo;
 import neobis.cms.Repo.Osh.OshOccupationRepo;
 import neobis.cms.Repo.Osh.OshStatusesRepo;
 import neobis.cms.Repo.Osh.OshUTMRepo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -24,20 +23,19 @@ import java.util.Map;
 
 @Service
 public class OshHistoryServiceImpl implements OshHistoryService {
-    @Autowired
-    private OshHistoryRepo historyRepo;
+    private final OshHistoryRepo historyRepo;
+    private final OshStatusesRepo statusesRepo;
+    private final OshOccupationRepo occupationRepo;
+    private final OshUTMRepo utmRepo;
+    private final OshCoursesService coursesService;
 
-    @Autowired
-    private OshStatusesRepo statusesRepo;
-
-    @Autowired
-    private OshOccupationRepo occupationRepo;
-
-    @Autowired
-    private OshUTMRepo utmRepo;
-
-    @Autowired
-    private OshCoursesService coursesService;
+    public OshHistoryServiceImpl(OshHistoryRepo historyRepo, OshStatusesRepo statusesRepo, OshOccupationRepo occupationRepo, OshUTMRepo utmRepo, OshCoursesService coursesService) {
+        this.historyRepo = historyRepo;
+        this.statusesRepo = statusesRepo;
+        this.occupationRepo = occupationRepo;
+        this.utmRepo = utmRepo;
+        this.coursesService = coursesService;
+    }
 
     @Override
     public OshHistory create(OshHistory oshHistory) {
@@ -50,9 +48,8 @@ public class OshHistoryServiceImpl implements OshHistoryService {
 
         final int start = (int)pageable.getOffset();
         final int end = Math.min((start + pageable.getPageSize()), histories.size());
-        final Page<OshHistory> page = new PageImpl<>(histories.subList(start, end), pageable, histories.size());
 
-        return page;
+        return new PageImpl<>(histories.subList(start, end), pageable, histories.size());
     }
 
     @Override

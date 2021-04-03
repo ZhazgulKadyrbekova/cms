@@ -26,14 +26,11 @@ public class BishCourses extends Base {
     @Column(name = "price")
     private BigDecimal price;
 
-    @Column(name = "description")
-    private String description;
-
-    @ManyToOne
-    @JoinColumn(name = "teacher_id")
-    private BishTeachers teacher;
-
     @JsonIgnore
     @ManyToMany(mappedBy = "courses")
     private List<BishClient> clients;
+
+    @JsonIgnore
+    @OneToOne(mappedBy = "course")
+    private BishTeachers teacher;
 }

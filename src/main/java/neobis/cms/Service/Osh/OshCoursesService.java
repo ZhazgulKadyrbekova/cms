@@ -13,5 +13,4 @@ public interface OshCoursesService {
     OshCourses addCourse(CoursesDTO courseDTO);
     OshCourses updateCourse(long id, CoursesDTO courseDTO);
     String deleteCourse(List<Long> courses);
-    OshCourses setTeacher(long courseID, long teacherID);
 }

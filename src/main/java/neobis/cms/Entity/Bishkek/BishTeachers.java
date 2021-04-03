@@ -37,9 +37,6 @@ public class BishTeachers extends Base {
     @JoinColumn(name = "position_id")
     private BishPosition position;
 
-    @Column(name = "course_name")
-    private String courseName;
-
     @Column(name = "patent")
     private String patent;
 
@@ -48,4 +45,11 @@ public class BishTeachers extends Base {
 
     @Column(name = "end_date")
     private LocalDate endDate;
+
+    @OneToOne
+    private BishCourses course;
+
+    @Column(name = "description")
+    private String description;
+
 }

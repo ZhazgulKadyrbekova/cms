@@ -9,7 +9,6 @@ import neobis.cms.Repo.Bishkek.BishHistoryRepo;
 import neobis.cms.Repo.Bishkek.BishOccupationRepo;
 import neobis.cms.Repo.Bishkek.BishStatusesRepo;
 import neobis.cms.Repo.Bishkek.BishUTMRepo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -24,20 +23,19 @@ import java.util.Map;
 
 @Service
 public class BishHistoryServiceImpl implements BishHistoryService {
-    @Autowired
-    private BishHistoryRepo bishHistoryRepo;
+    private final BishHistoryRepo bishHistoryRepo;
+    private final BishStatusesRepo statusesRepo;
+    private final BishOccupationRepo occupationRepo;
+    private final BishUTMRepo utmRepo;
+    private final BishCoursesService coursesService;
 
-    @Autowired
-    private BishStatusesRepo statusesRepo;
-
-    @Autowired
-    private BishOccupationRepo occupationRepo;
-
-    @Autowired
-    private BishUTMRepo utmRepo;
-
-    @Autowired
-    private BishCoursesService coursesService;
+    public BishHistoryServiceImpl(BishHistoryRepo bishHistoryRepo, BishStatusesRepo statusesRepo, BishOccupationRepo occupationRepo, BishUTMRepo utmRepo, BishCoursesService coursesService) {
+        this.bishHistoryRepo = bishHistoryRepo;
+        this.statusesRepo = statusesRepo;
+        this.occupationRepo = occupationRepo;
+        this.utmRepo = utmRepo;
+        this.coursesService = coursesService;
+    }
 
     @Override
     public BishHistory create(BishHistory bishHistory) {
@@ -50,9 +48,8 @@ public class BishHistoryServiceImpl implements BishHistoryService {
 
         final int start = (int)pageable.getOffset();
         final int end = Math.min((start + pageable.getPageSize()), histories.size());
-        final Page<BishHistory> page = new PageImpl<>(histories.subList(start, end), pageable, histories.size());
 
-        return page;
+        return new PageImpl<>(histories.subList(start, end), pageable, histories.size());
     }
 
     @Override
@@ -128,13 +125,6 @@ public class BishHistoryServiceImpl implements BishHistoryService {
             responses.add(response);
         }
 
-//        List<BishHistory> histories = bishHistoryRepo.findAllByDateCreatedBetweenAndActionContaining(dateAfter, dateBefore, action);
-//        List<BishHistory> list1 =
-//        List<StatisticResponse> responses = new ArrayList<>();
-//        List<BishHistory> histories = bishHistoryRepo.findAllByDateCreatedBetween(dateAfter, dateBefore);
-//        for (BishHistory history : histories) {
-//
-//        }
         return responses;
     }
 }

@@ -37,9 +37,6 @@ public class OshTeachers extends Base {
     @JoinColumn(name = "position_id")
     private OshPosition position;
 
-    @Column(name = "course_name")
-    private String courseName;
-
     @Column(name = "patent")
     private String patent;
 
@@ -48,4 +45,10 @@ public class OshTeachers extends Base {
 
     @Column(name = "end_date")
     private LocalDate endDate;
+
+    @OneToOne
+    private OshCourses course;
+
+    @Column(name = "description")
+    private String description;
 }

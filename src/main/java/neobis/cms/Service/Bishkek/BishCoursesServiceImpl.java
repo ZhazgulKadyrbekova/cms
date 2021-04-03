@@ -11,38 +11,16 @@ import java.util.List;
 @Service
 public class BishCoursesServiceImpl implements BishCoursesService{
     private final BishCoursesRepo coursesRepo;
-    private final BishTeacherService teacherService;
-    public BishCoursesServiceImpl(BishCoursesRepo coursesRepo, BishTeacherService teacherRepo) {
-        this.coursesRepo = coursesRepo;
-        this.teacherService = teacherRepo;
-    }
 
-    /*
-    @Override
-    public BishCourses findCourseByFormName(String formName) {
-        if (formName.equals("Заявка с quiz"))
-            return null;
-        formName = formName.substring(7);
-        if (formName.contains("PM"))
-            return coursesRepo.findByNameContainingIgnoringCase("project manager");
-        if (formName.contains("Java"))
-            return coursesRepo.findByNameContainingIgnoringCase("java");
-        if (formName.contains("JS"))
-            return coursesRepo.findByNameContainingIgnoringCase("javascript");
-        if (formName.contains("python"))
-            return coursesRepo.findByNameContainingIgnoringCase("python");
-        if (formName.contains("design"))
-            return coursesRepo.findByNameContainingIgnoringCase("design");
-        if (formName.contains("olympiad"))
-            return coursesRepo.findByNameContainingIgnoringCase("olympiad");
-        return null;
+    public BishCoursesServiceImpl(BishCoursesRepo coursesRepo) {
+        this.coursesRepo = coursesRepo;
     }
-*/
 
     @Override
     public BishCourses findCourseByName(String name) {
         return coursesRepo.findByNameContainingIgnoringCase(name);
     }
+
     @Override
     public BishCourses findCourseById(long id) {
         return coursesRepo.findById(id)
@@ -67,8 +45,6 @@ public class BishCoursesServiceImpl implements BishCoursesService{
         BishCourses course = new BishCourses();
         course.setName(courseDTO.getName());
         course.setPrice(courseDTO.getPrice());
-        course.setDescription(courseDTO.getDescription());
-        course.setTeacher(teacherService.getTeacherById(courseDTO.getTeacher()));
         return coursesRepo.save(course);
     }
 
@@ -78,8 +54,6 @@ public class BishCoursesServiceImpl implements BishCoursesService{
                 .orElseThrow(() -> new ResourceNotFoundException("Course with id " + id + " has not found"));
         course.setName(courseDTO.getName());
         course.setPrice(courseDTO.getPrice());
-        course.setDescription(courseDTO.getDescription());
-        course.setTeacher(teacherService.getTeacherById(courseDTO.getTeacher()));
         return coursesRepo.save(course);
     }
 
@@ -93,13 +67,5 @@ public class BishCoursesServiceImpl implements BishCoursesService{
             return "Courses were successfully deleted";
         else
             return "Course with ID " + courses.get(0) + " was successfully deleted";
-    }
-
-    @Override
-    public BishCourses setTeacher(long courseID, long teacherID) {
-        BishCourses course = coursesRepo.findById(courseID)
-                .orElseThrow(() -> new ResourceNotFoundException("Course with id " + courseID + " has not found"));
-        course.setTeacher(teacherService.getTeacherById(teacherID));
-        return coursesRepo.save(course);
     }
 }

@@ -19,5 +19,4 @@ public interface BishTeacherService {
     BishTeachers updateTeacherInfo(long id, TeacherDTO teacherDTO);
     String deleteTeacherById(long id);
     Set<Object> simpleSearch(String nameOrPhone);
-    Page<WorkerDTO> advancedSearch(Pageable pageable, List<Long> course);
 }

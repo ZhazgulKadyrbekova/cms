@@ -14,5 +14,5 @@ public class PaymentDTO {
     private String month;
     private BigDecimal price;
     private boolean done;
-    private String method;
+    private long methodID;
 }

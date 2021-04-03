@@ -21,4 +21,5 @@ public class TeacherDTO {
     private String patent;
     private LocalDate startDate;
     private LocalDate endDate;
+    private String description;
 }
