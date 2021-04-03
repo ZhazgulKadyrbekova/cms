@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.MediaType;
 
 import java.util.List;
 import java.util.Locale;
@@ -66,6 +67,11 @@ public class AuthController {
 
     @PostMapping("/setPassword")
     public ResponseMessage setPassword(@RequestBody UserAuthDTO userAuthDTO) {
+        return new ResponseMessage(userService.setPassword(userAuthDTO));
+    }
+    
+    @RequestMapping(value = "/setPassword2", method = RequestMethod.POST,consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ResponseMessage setPasswor2d(UserAuthDTO userAuthDTO) {
         return new ResponseMessage(userService.setPassword(userAuthDTO));
     }
 
