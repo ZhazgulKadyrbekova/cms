@@ -1,14 +1,10 @@
 package neobis.cms.Entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Data
@@ -16,6 +12,12 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @MappedSuperclass
 public class Base {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private long ID;
+
     @Column(name = "date_created")
     private LocalDateTime dateCreated;
     @Column(name = "date_updated")

@@ -3,9 +3,11 @@ package neobis.cms.Service.Bishkek;
 import neobis.cms.Dto.TeacherDTO;
 import neobis.cms.Dto.WorkerDTO;
 import neobis.cms.Entity.Bishkek.BishCourses;
+import neobis.cms.Entity.Bishkek.BishPosition;
 import neobis.cms.Entity.Bishkek.BishTeachers;
 import neobis.cms.Entity.Bishkek.User;
 import neobis.cms.Exception.ResourceNotFoundException;
+import neobis.cms.Repo.Bishkek.BishPositionRepo;
 import neobis.cms.Repo.Bishkek.BishTeacherRepo;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
@@ -23,22 +25,27 @@ public class BishTeacherServiceImpl implements BishTeacherService {
     private final BishTeacherRepo teacherRepo;
     private final UserService userService;
     private final BishCoursesService coursesService;
+    private final BishPositionRepo positionRepo;
 
-    public BishTeacherServiceImpl(BishTeacherRepo teacherRepo, UserService userService, @Lazy BishCoursesService coursesService) {
+    public BishTeacherServiceImpl(BishTeacherRepo teacherRepo, UserService userService, @Lazy BishCoursesService
+            coursesService, BishPositionRepo positionRepo) {
         this.teacherRepo = teacherRepo;
         this.userService = userService;
         this.coursesService = coursesService;
+        this.positionRepo = positionRepo;
     }
 
     private List<WorkerDTO> toWorkers(List<BishTeachers> teachers, List<User> users) {
         List<WorkerDTO> workers = new ArrayList<>();
 
         for (BishTeachers teacher : teachers)
-            workers.add(new WorkerDTO(teacher.getName(), teacher.getSurname(), teacher.getEmail(), teacher.getPhoneNo(), teacher.getPosition(),
+            workers.add(new WorkerDTO(teacher.getName(), teacher.getSurname(), teacher.getPatronymic(),
+                    teacher.getEmail(), teacher.getPhoneNo(), teacher.getPosition().getName(),
                     teacher.getCourseName()));
 
         for (User user : users)
-            workers.add(new WorkerDTO(user.getName(), user.getSurname(), user.getEmail(), user.getPhoneNo(), user.getPosition(), null));
+            workers.add(new WorkerDTO(user.getName(), user.getSurname(), user.getPatronymic(), user.getEmail(),
+                    user.getPhoneNo(), user.getPosition().getName(), null));
 
         return workers;
     }
@@ -47,17 +54,19 @@ public class BishTeacherServiceImpl implements BishTeacherService {
         Set<WorkerDTO> workers = new HashSet<>();
 
         for (BishTeachers teacher : teachers)
-            workers.add(new WorkerDTO(teacher.getName(), teacher.getSurname(), teacher.getEmail(), teacher.getPhoneNo(), teacher.getPosition(),
+            workers.add(new WorkerDTO(teacher.getName(), teacher.getSurname(), teacher.getPatronymic(),
+                    teacher.getEmail(), teacher.getPhoneNo(), teacher.getPosition().getName(),
                     teacher.getCourseName()));
 
         for (User user : users)
-            workers.add(new WorkerDTO(user.getName(), user.getSurname(), user.getEmail(), user.getPhoneNo(), user.getPosition(), null));
+            workers.add(new WorkerDTO(user.getName(), user.getSurname(), user.getPatronymic(), user.getEmail(),
+                    user.getPhoneNo(), user.getPosition().getName(), null));
 
         return workers;
     }
 
     @Override
-    public Set<WorkerDTO> getWithPredicate(String field, String position, List<Long> courseID) {
+    public Set<WorkerDTO> getWithPredicate(String field, List<Long> positionID, List<Long> courseID) {
         Set<BishTeachers> teachers = new HashSet<>();
         Set<User> users = new HashSet<>();
 
@@ -75,18 +84,24 @@ public class BishTeacherServiceImpl implements BishTeacherService {
             users.addAll(userService.getAllByEmail(field));
         }
 
-        if (position != null && courseID != null) {
+        if (positionID != null && courseID != null) {
             for (long course : courseID) {
                 BishTeachers teacher = coursesService.findCourseById(course).getTeacher();
-                if (teacher.getPosition().equalsIgnoreCase(position))
-                    teachers.add(teacher);
+                for (long position : positionID) {
+                    if (teacher.getPosition().getID() == position)
+                        teachers.add(teacher);
+                }
             }
         } else if (courseID != null) {
             for (long course : courseID)
                 teachers.add(coursesService.findCourseById(course).getTeacher());
-        } else if (position != null) {
-            teachers.addAll(teacherRepo.findAllByPositionContainingIgnoringCase(position));
-            users.addAll(userService.getAllByPositionAndCity(position, "bishkek"));
+        } else if (positionID != null) {
+            for (long position : positionID) {
+                BishPosition bishPosition = positionRepo.findById(position).orElseThrow(() ->
+                        new ResourceNotFoundException("Position with ID " + position + " has not found"));
+                teachers.addAll(teacherRepo.findAllByPosition(bishPosition));
+                users.addAll(userService.getAllByPositionAndCity(bishPosition, "bishkek"));
+            }
         }
         return toWorkers(teachers, users);
 
@@ -124,11 +139,16 @@ public class BishTeacherServiceImpl implements BishTeacherService {
     private BishTeachers teacherToDTO(BishTeachers teacher, TeacherDTO teacherDTO) {
         teacher.setName(teacherDTO.getName());
         teacher.setSurname(teacherDTO.getSurname());
+        teacher.setPatronymic(teacherDTO.getPatronymic());
         teacher.setEmail(teacherDTO.getEmail());
         teacher.setPhoneNo(teacherDTO.getPhoneNo());
-        teacher.setPosition(teacherDTO.getPosition());
         teacher.setStartDate(teacherDTO.getStartDate());
         teacher.setEndDate(teacherDTO.getEndDate());
+        if (teacherDTO.getPosition() != 0) {
+            BishPosition position = positionRepo.findById(teacherDTO.getPosition()).orElseThrow(() ->
+                            new ResourceNotFoundException("Position with ID " + teacherDTO.getPosition() + " has not found"));
+            teacher.setPosition(position);
+        }
         if (teacherDTO.getCourse() != 0) {
             BishCourses course = coursesService.setTeacher(teacherDTO.getCourse(), teacher.getID());
             teacher.setCourseName(course.getName());
@@ -144,8 +164,8 @@ public class BishTeacherServiceImpl implements BishTeacherService {
 
     @Override
     public BishTeachers updateTeacherInfo(long id, TeacherDTO teacherDTO) {
-        BishTeachers teacher = teacherToDTO(teacherRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Teacher with id " + id + " has not found")), teacherDTO);
+        BishTeachers teacher = teacherToDTO(teacherRepo.findById(id).orElseThrow(() ->
+                new ResourceNotFoundException("Teacher with id " + id + " has not found")), teacherDTO);
         return teacherRepo.save(teacher);
     }
 
@@ -181,7 +201,8 @@ public class BishTeacherServiceImpl implements BishTeacherService {
         if (courseList != null) {
             for (long courseID : courseList) {
                 BishTeachers teacher = coursesService.findCourseById(courseID).getTeacher();
-                workers.add(new WorkerDTO(teacher.getName(), teacher.getSurname(), teacher.getEmail(), teacher.getPhoneNo(), teacher.getPosition(), teacher.getCourseName()));
+                workers.add(new WorkerDTO(teacher.getName(), teacher.getSurname(), teacher.getPatronymic(),
+                        teacher.getEmail(), teacher.getPhoneNo(), teacher.getPosition().getName(), teacher.getCourseName()));
             }
             final int start = (int)pageable.getOffset();
             final int end = Math.min((start + pageable.getPageSize()), workers.size());

@@ -1,5 +1,6 @@
 package neobis.cms.Repo.Bishkek;
 
+import neobis.cms.Entity.Bishkek.BishPosition;
 import neobis.cms.Entity.Bishkek.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -16,8 +17,8 @@ public interface UserRepo extends JpaRepository<User, Long> {
     List<User> findAllBySurnameContainingIgnoringCaseAndActiveAndConfirmed(String surname, boolean active, boolean confirmed);
     List<User> findAllByPhoneNoContainingAndActiveAndConfirmed(String phoneNo, boolean active, boolean confirmed);
     List<User> findAllByCityContainingIgnoringCase(String city);
-    List<User> findAllByPositionContainingIgnoringCaseAndCityContainingIgnoringCaseAndActiveAndConfirmed(String position,
-                                                                                                 String city, boolean active, boolean confirmed);
+    List<User> findAllByPositionAndCityContainingIgnoringCaseAndActiveAndConfirmed(BishPosition position,
+                                                                                   String city, boolean active, boolean confirmed);
     List<User> findAllByEmailContainingIgnoringCaseAndActiveAndConfirmed(String email, boolean active, boolean confirmed);
     void deleteByEmail(String email);
 }

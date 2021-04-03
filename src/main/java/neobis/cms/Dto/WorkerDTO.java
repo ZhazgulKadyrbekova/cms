@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 public class WorkerDTO {
     private String name;
     private String surname;
+    private String patronymic;
     private String email;
     private String phoneNo;
     private String position;

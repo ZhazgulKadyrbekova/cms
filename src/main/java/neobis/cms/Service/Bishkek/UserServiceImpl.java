@@ -4,30 +4,43 @@ import neobis.cms.Dto.UserAuthDTO;
 import neobis.cms.Dto.UserDTO;
 import neobis.cms.Dto.UserPasswordsDTO;
 import neobis.cms.Dto.UserRejectDTO;
+import neobis.cms.Entity.Bishkek.BishPosition;
 import neobis.cms.Entity.Bishkek.Role;
 import neobis.cms.Entity.Bishkek.User;
+import neobis.cms.Entity.Osh.OshPosition;
 import neobis.cms.Exception.IllegalArgumentException;
 import neobis.cms.Exception.ResourceNotFoundException;
+import neobis.cms.Repo.Bishkek.BishPositionRepo;
 import neobis.cms.Repo.Bishkek.RoleRepo;
 import neobis.cms.Repo.Bishkek.UserRepo;
+import neobis.cms.Repo.Osh.OshPositionRepo;
 import neobis.cms.Service.MailService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class UserServiceImpl implements UserService {
-    @Autowired
-    private UserRepo userRepo;
-    @Autowired
-    private RoleRepo roleRepo;
-    @Autowired
-    private MailService mailService;
-    @Autowired
-    private PasswordEncoder encoder;
+    private final UserRepo userRepo;
+    private final RoleRepo roleRepo;
+    private final MailService mailService;
+    private final PasswordEncoder encoder;
+    private final BishPositionRepo bishPositionRepo;
+    private final OshPositionRepo oshPositionRepo;
+
+    public UserServiceImpl(UserRepo userRepo, RoleRepo roleRepo, MailService mailService, PasswordEncoder encoder, BishPositionRepo bishPositionRepo, OshPositionRepo oshPositionRepo) {
+        this.userRepo = userRepo;
+        this.roleRepo = roleRepo;
+        this.mailService = mailService;
+        this.encoder = encoder;
+        this.bishPositionRepo = bishPositionRepo;
+        this.oshPositionRepo = oshPositionRepo;
+    }
 
     @Override
     public List<User> findAll() {
@@ -52,8 +65,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> getAllByPositionAndCity(String position, String city) {
-        return userRepo.findAllByPositionContainingIgnoringCaseAndCityContainingIgnoringCaseAndActiveAndConfirmed(position, city, true, true);
+    public List<User> getAllByPositionAndCity(BishPosition position, String city) {
+        return userRepo.findAllByPositionAndCityContainingIgnoringCaseAndActiveAndConfirmed(position, city, true, true);
     }
 
     @Override
@@ -90,13 +103,13 @@ public class UserServiceImpl implements UserService {
     public String createUser(UserDTO userDTO) {
         User user = userRepo.findByEmailIgnoringCase(userDTO.getEmail());
         String city = userDTO.getCity();
-        String position = userDTO.getPosition();
+        String positionName = userDTO.getPosition();
         if (user != null)
             throw new IllegalArgumentException("User with email " + userDTO.getEmail() + " already exists");
         if (!city.equalsIgnoreCase("bishkek") && !city.equalsIgnoreCase("osh")) {
             throw new IllegalArgumentException("Invalid city");
         }
-        if (!position.equalsIgnoreCase("marketing") && !position.equalsIgnoreCase("management")) {
+        if (!positionName.equalsIgnoreCase("marketing") && !positionName.equalsIgnoreCase("management")) {
             throw new IllegalArgumentException("Invalid position");
         }
         String email = userDTO.getEmail().toLowerCase();
@@ -109,16 +122,22 @@ public class UserServiceImpl implements UserService {
 
         user = new User();
         user.setEmail(email);
+        BishPosition position = bishPositionRepo.findByNameContainingIgnoringCase(positionName);
+        if (position == null) {
+            oshPositionRepo.save(new OshPosition(positionName));
+            position = bishPositionRepo.save(new BishPosition(positionName));
+        }
         user.setPosition(position);
         user.setCity(city);
         user.setName(userDTO.getName());
         user.setSurname(userDTO.getSurname());
+        user.setPatronymic(userDTO.getPatronymic());
         user.setPhoneNo(userDTO.getPhoneNo());
         user.setPassword(encoder.encode(userDTO.getPassword()));
         user.setActivationCode(null);
         user.setActive(false);
         user.setConfirmed(false);
-        String roleName = "ROLE_" + city.toUpperCase() + "_" + position.toUpperCase();
+        String roleName = "ROLE_" + city.toUpperCase() + "_" + positionName.toUpperCase();
         Role role = roleRepo.findByNameContainingIgnoringCase(roleName);
         if (role == null) {
             role = roleRepo.save(new Role(roleName));

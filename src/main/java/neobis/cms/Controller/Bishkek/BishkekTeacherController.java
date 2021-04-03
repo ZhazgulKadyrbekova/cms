@@ -51,9 +51,9 @@ public class BishkekTeacherController {
                     value = "Name, surname, email, phone number by which to search.")})
     public Page<WorkerDTO> filter(Pageable pageable,
                                   @ApiIgnore @RequestParam(required = false) String field,
-                                  @RequestParam(value = "position", required = false) String position,
+                                  @RequestParam(value = "position", required = false) List<Long> positionID,
                                   @RequestParam(value = "courseID", required = false) List<Long> courseID) {
-        List<WorkerDTO> workers = new ArrayList<>(teacherService.getWithPredicate(field, position, courseID));
+        List<WorkerDTO> workers = new ArrayList<>(teacherService.getWithPredicate(field, positionID, courseID));
 
         final int start = (int)pageable.getOffset();
         final int end = Math.min((start + pageable.getPageSize()), workers.size());

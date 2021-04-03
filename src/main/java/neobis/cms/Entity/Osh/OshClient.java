@@ -38,19 +38,23 @@ public class OshClient {
     @Column(name = "surname")
     private String surname;
 
+    @Column(name = "patronymic")
+    private String patronymic;
+
     @Column(name = "email")
     private String email;
 
     @ManyToOne
-    @JoinColumn(name = "status_id", referencedColumnName = "status_id")
+    @JoinColumn(name = "status_id")
     private OshStatuses status;
 
     @ManyToOne
-    @JoinColumn(name = "occupation_id", referencedColumnName = "occupation_id")
+    @JoinColumn(name = "occupation_id")
     private OshOccupation occupation;
 
-    @Column(name = "target")
-    private String target;
+    @ManyToOne
+    @JoinColumn(name = "target")
+    private OshTarget target;
 
     @Column(name = "experience")
     private boolean experience;
@@ -66,7 +70,7 @@ public class OshClient {
     private List<OshCourses> courses;
 
     @ManyToOne
-    @JoinColumn(name = "utm_id", referencedColumnName = "utm_id")
+    @JoinColumn(name = "utm_id")
     private OshUTM utm;
 
     @Column(name = "description")
@@ -85,7 +89,7 @@ public class OshClient {
     private BigDecimal prepayment;
 
     @ManyToOne
-    @JoinColumn(name = "leaving_reason_id", referencedColumnName = "leaving_reason_id")
+    @JoinColumn(name = "leaving_reason_id")
     private OshLeavingReason leavingReason;
 
     @OneToMany

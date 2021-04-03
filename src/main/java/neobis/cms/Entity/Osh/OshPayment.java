@@ -18,11 +18,6 @@ import java.math.BigDecimal;
 @Table(name = "Payment")
 public class OshPayment extends Base {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "payment_id")
-    private long ID;
-
     @Column(name = "month")
     private String month;
 
@@ -34,4 +29,9 @@ public class OshPayment extends Base {
 
     @Column(name = "method")
     private String method;
+
+    @Override
+    public String toString() {
+        return "month=" + month + ", price=" + price.toString() + ", done=" + done + ", method=" + method;
+    }
 }

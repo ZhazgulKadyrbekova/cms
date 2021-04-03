@@ -4,6 +4,7 @@ import neobis.cms.Dto.UserAuthDTO;
 import neobis.cms.Dto.UserDTO;
 import neobis.cms.Dto.UserPasswordsDTO;
 import neobis.cms.Dto.UserRejectDTO;
+import neobis.cms.Entity.Bishkek.BishPosition;
 import neobis.cms.Entity.Bishkek.User;
 
 import java.util.List;
@@ -17,7 +18,7 @@ public interface UserService {
     String createUser(UserDTO userDTO);
     List<User> getListOfUserToConfirm();
     List<User> getUsersByCity(String city);
-    List<User> getAllByPositionAndCity(String position, String city);
+    List<User> getAllByPositionAndCity(BishPosition position, String city);
     List<User> getAllByName(String name);
     List<User> getAllBySurname(String surname);
     List<User> getAllByPhoneNo(String phoneNo);

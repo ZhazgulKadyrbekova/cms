@@ -2,11 +2,13 @@ package neobis.cms.Entity.Bishkek;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import neobis.cms.Entity.Base;
 
 import javax.persistence.*;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -14,11 +16,6 @@ import javax.persistence.*;
 @Entity
 @Table(name = "UTM")
 public class BishUTM extends Base {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "utm_id")
-    private long ID;
 
     @Column(name = "name")
     private String name;

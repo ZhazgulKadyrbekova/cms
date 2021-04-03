@@ -1,5 +1,6 @@
 package neobis.cms.Repo.Osh;
 
+import neobis.cms.Entity.Osh.OshPosition;
 import neobis.cms.Entity.Osh.OshTeachers;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -9,9 +10,8 @@ import java.util.List;
 
 @Repository
 public interface OshTeacherRepo extends JpaRepository<OshTeachers, Long>, JpaSpecificationExecutor<OshTeachers> {
-    List<OshTeachers> findAllByPositionContainingIgnoringCaseAndCourseNameContainingIgnoringCase(String position, 
-    	String course);
-    List<OshTeachers> findAllByPositionContainingIgnoringCase(String position);
+//    List<OshTeachers> findAllByPositionContainingIgnoringCaseAndCourseNameContainingIgnoringCase(String position, String course);
+    List<OshTeachers> findAllByPosition(OshPosition position);
     List<OshTeachers> findAllByCourseNameContaining(String course);
     List<OshTeachers> findAllByEmailContainingIgnoringCase(String email);
     OshTeachers findByNameContainingIgnoringCase(String name);

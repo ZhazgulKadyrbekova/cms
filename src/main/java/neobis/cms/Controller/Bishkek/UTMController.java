@@ -1,13 +1,11 @@
 package neobis.cms.Controller.Bishkek;
 
 import neobis.cms.Dto.UtmDTO;
-import neobis.cms.Entity.Bishkek.BishStatuses;
 import neobis.cms.Entity.Bishkek.BishUTM;
 import neobis.cms.Entity.Osh.OshUTM;
 import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Bishkek.BishUTMRepo;
 import neobis.cms.Repo.Osh.OshUTMRepo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,8 +14,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/utm")
 public class UTMController {
-    @Autowired private BishUTMRepo bishUTMRepo;
-    @Autowired private OshUTMRepo oshUTMRepo;
+    private final BishUTMRepo bishUTMRepo;
+    private final OshUTMRepo oshUTMRepo;
+
+    public UTMController(BishUTMRepo bishUTMRepo, OshUTMRepo oshUTMRepo) {
+        this.bishUTMRepo = bishUTMRepo;
+        this.oshUTMRepo = oshUTMRepo;
+    }
 
     @GetMapping
     public List<BishUTM> getUTMs() {
@@ -26,8 +29,8 @@ public class UTMController {
 
     @PostMapping
     public BishUTM addOccupation(@RequestBody UtmDTO utmDTO) {
-        oshUTMRepo.save(new OshUTM(0, utmDTO.getName()));
-        return bishUTMRepo.save(new BishUTM(0, utmDTO.getName()));
+        oshUTMRepo.save(new OshUTM(utmDTO.getName()));
+        return bishUTMRepo.save(new BishUTM(utmDTO.getName()));
     }
 
     @GetMapping("/name/{name}")

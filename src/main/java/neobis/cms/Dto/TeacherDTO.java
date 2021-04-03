@@ -13,10 +13,11 @@ import java.time.LocalDate;
 public class TeacherDTO {
     private String name;
     private String surname;
+    private String patronymic;
     private String email;
     private String phoneNo;
     private long course;
-    private String position;
+    private long position;
     private String patent;
     private LocalDate startDate;
     private LocalDate endDate;

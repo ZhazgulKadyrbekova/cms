@@ -3,12 +3,14 @@ package neobis.cms.Entity.Bishkek;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import neobis.cms.Entity.Base;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
 
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
@@ -16,10 +18,6 @@ import javax.validation.constraints.Size;
 @Entity
 @Table(name = "users")
 public class User extends Base {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
-    private long ID;
 
     @Column(name = "email", unique = true)
     private String email;
@@ -33,8 +31,12 @@ public class User extends Base {
     @Column(name = "surname")
     private String surname;
 
-    @Column(name = "position")
-    private String position;
+    @Column(name = "patronymic")
+    private String patronymic;
+
+    @ManyToOne
+    @JoinColumn(name = "position_id")
+    private BishPosition position;
 
     @Column(name = "city")
     private String city;

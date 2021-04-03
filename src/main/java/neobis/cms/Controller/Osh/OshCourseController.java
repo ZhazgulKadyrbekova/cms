@@ -1,11 +1,8 @@
 package neobis.cms.Controller.Osh;
 
-import lombok.extern.log4j.Log4j2;
 import neobis.cms.Dto.CoursesDTO;
 import neobis.cms.Dto.ResponseMessage;
-import neobis.cms.Entity.Bishkek.BishCourses;
 import neobis.cms.Entity.Osh.OshCourses;
-import neobis.cms.Service.Bishkek.BishCoursesService;
 import neobis.cms.Service.Osh.OshCoursesService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -52,7 +49,7 @@ public class OshCourseController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseMessage deleteCourse(@PathVariable long id) {
+    public ResponseMessage deleteCourse(@PathVariable List<Long> id) {
         log.info("In Bishkek deleted course id {}", id);
         return new ResponseMessage(coursesService.deleteCourse(id));
     }

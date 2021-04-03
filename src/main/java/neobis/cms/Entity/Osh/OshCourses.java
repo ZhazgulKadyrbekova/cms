@@ -20,11 +20,6 @@ import java.util.List;
 @Table(name = "Courses")
 public class OshCourses extends Base {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "course_id")
-    private long ID;
-
     @Column(name = "name")
     private String name;
 
@@ -35,7 +30,7 @@ public class OshCourses extends Base {
     private String description;
 
     @ManyToOne
-    @JoinColumn(name = "teacher_id", referencedColumnName = "teacher_id")
+    @JoinColumn(name = "teacher_id")
     private OshTeachers teacher;
 
     @JsonIgnore

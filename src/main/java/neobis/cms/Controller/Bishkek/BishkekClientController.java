@@ -157,6 +157,12 @@ public class BishkekClientController {
         return clientService.updateClient(id, clientDTO, principal.getName());
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseMessage deleteClient(Principal principal, @PathVariable Long id) {
+        log.info("In Bishkek deleted existing client {}", id);
+        return clientService.deleteClient(id, principal.getName());
+    }
+
     @PostMapping("/{client_id}/payment")
     public BishClient addPayment(Principal principal, @PathVariable("client_id") Long id, @RequestBody PaymentDTO paymentDTO) {
         return clientService.addNewPayment(id, paymentDTO, principal.getName());

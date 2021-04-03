@@ -1,5 +1,6 @@
 package neobis.cms.Controller.Bishkek;
 
+import neobis.cms.Dto.ResponseMessage;
 import neobis.cms.Dto.StatusDTO;
 import neobis.cms.Entity.Bishkek.BishStatuses;
 import neobis.cms.Entity.Osh.OshStatuses;
@@ -40,8 +41,8 @@ public class StatusController {
 
     @PostMapping
     public BishStatuses addStatus(@RequestBody StatusDTO status) {
-        oshStatusesRepo.save(new OshStatuses(0, status.getName(), status.isDoska()));
-        return bishStatusesRepo.save(new BishStatuses(0, status.getName(), status.isDoska()));
+        oshStatusesRepo.save(new OshStatuses(status.getName(), status.isDoska()));
+        return bishStatusesRepo.save(new BishStatuses(status.getName(), status.isDoska()));
     }
 
     @PutMapping("/{id}")
@@ -57,5 +58,19 @@ public class StatusController {
         bishStatuses.setName(status.getName());
         bishStatuses.setDoska(status.isDoska());
         return bishStatusesRepo.save(bishStatuses);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseMessage deleteStatusByID(@PathVariable List<Long> id) {
+        for (long status : id) {
+            BishStatuses bishStatuses = bishStatusesRepo.findById(status)
+                    .orElseThrow(() -> new ResourceNotFoundException("Status with id " + status + " has not found"));
+            OshStatuses oshStatuses = oshStatusesRepo.findById(status)
+                    .orElseThrow(() -> new ResourceNotFoundException("Status with id " + status + " has not found"));
+
+            bishStatusesRepo.delete(bishStatuses);
+            oshStatusesRepo.delete(oshStatuses);
+        }
+        return new ResponseMessage("Status with ID " + id + " has been deleted");
     }
 }

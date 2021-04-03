@@ -16,10 +16,6 @@ import javax.persistence.*;
 @Entity
 @Table(name = "History")
 public class OshHistory extends Base {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "history_id")
-    private long ID;
 
     @Column(name = "user_full_name")
     private String fullName;

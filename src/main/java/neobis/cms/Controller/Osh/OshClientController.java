@@ -155,6 +155,12 @@ public class OshClientController {
         return clientService.updateClient(id, clientDTO, principal.getName());
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseMessage deleteClient(Principal principal, @PathVariable Long id) {
+        log.info("In Osh deleted existing client {}", id);
+        return clientService.deleteClient(id, principal.getName());
+    }
+
     @PostMapping("/{client_id}/payment")
     public OshClient addPayment(Principal principal, @PathVariable("client_id") Long id, @RequestBody PaymentDTO paymentDTO) {
         return clientService.addPayment(id, paymentDTO, principal.getName());

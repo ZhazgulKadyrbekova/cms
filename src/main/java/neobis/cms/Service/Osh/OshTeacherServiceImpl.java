@@ -4,8 +4,11 @@ import neobis.cms.Dto.TeacherDTO;
 import neobis.cms.Dto.WorkerDTO;
 import neobis.cms.Entity.Bishkek.User;
 import neobis.cms.Entity.Osh.OshCourses;
+import neobis.cms.Entity.Osh.OshPosition;
 import neobis.cms.Entity.Osh.OshTeachers;
 import neobis.cms.Exception.ResourceNotFoundException;
+import neobis.cms.Repo.Bishkek.BishPositionRepo;
+import neobis.cms.Repo.Osh.OshPositionRepo;
 import neobis.cms.Repo.Osh.OshTeacherRepo;
 import neobis.cms.Service.Bishkek.UserService;
 import org.springframework.context.annotation.Lazy;
@@ -24,22 +27,29 @@ public class OshTeacherServiceImpl implements OshTeacherService {
     private final OshTeacherRepo teacherRepo;
     private final UserService userService;
     private final OshCoursesService coursesService;
+    private final BishPositionRepo bishPositionRepo;
+    private final OshPositionRepo oshPositionRepo;
 
-    public OshTeacherServiceImpl(OshTeacherRepo teacherRepo, UserService userService, @Lazy OshCoursesService coursesService) {
+    public OshTeacherServiceImpl(OshTeacherRepo teacherRepo, UserService userService, @Lazy OshCoursesService
+            coursesService, BishPositionRepo bishPositionRepo, OshPositionRepo oshPositionRepo) {
         this.teacherRepo = teacherRepo;
         this.userService = userService;
         this.coursesService = coursesService;
+        this.bishPositionRepo = bishPositionRepo;
+        this.oshPositionRepo = oshPositionRepo;
     }
 
     private List<WorkerDTO> toWorkers(List<OshTeachers> teachers, List<User> users) {
         List<WorkerDTO> workers = new ArrayList<>();
 
         for (OshTeachers teacher : teachers)
-            workers.add(new WorkerDTO(teacher.getName(), teacher.getSurname(), teacher.getEmail(), teacher.getPhoneNo(), teacher.getPosition(),
+            workers.add(new WorkerDTO(teacher.getName(), teacher.getSurname(), teacher.getPatronymic(),
+                    teacher.getEmail(), teacher.getPhoneNo(), teacher.getPosition().getName(),
                     teacher.getCourseName()));
 
         for (User user : users)
-            workers.add(new WorkerDTO(user.getName(), user.getSurname(), user.getEmail(), user.getPhoneNo(), user.getPosition(), null));
+            workers.add(new WorkerDTO(user.getName(), user.getSurname(), user.getPatronymic(), user.getEmail(),
+                    user.getPhoneNo(), user.getPosition().getName(), null));
 
         return workers;
     }
@@ -48,17 +58,19 @@ public class OshTeacherServiceImpl implements OshTeacherService {
         Set<WorkerDTO> workers = new HashSet<>();
 
         for (OshTeachers teacher : teachers)
-            workers.add(new WorkerDTO(teacher.getName(), teacher.getSurname(), teacher.getEmail(), teacher.getPhoneNo(), teacher.getPosition(),
+            workers.add(new WorkerDTO(teacher.getName(), teacher.getSurname(), teacher.getPatronymic(),
+                    teacher.getEmail(), teacher.getPhoneNo(), teacher.getPosition().getName(),
                     teacher.getCourseName()));
 
         for (User user : users)
-            workers.add(new WorkerDTO(user.getName(), user.getSurname(), user.getEmail(), user.getPhoneNo(), user.getPosition(), null));
+            workers.add(new WorkerDTO(user.getName(), user.getSurname(), user.getPatronymic(), user.getEmail(),
+                    user.getPhoneNo(), user.getPosition().getName(), null));
 
         return workers;
     }
 
     @Override
-    public Set<WorkerDTO> getWithPredicate(String field, String position, List<Long> courseID) {
+    public Set<WorkerDTO> getWithPredicate(String field, List<Long> positionID, List<Long> courseID) {
         Set<OshTeachers> teachers = new HashSet<>();
         Set<User> users = new HashSet<>();
 
@@ -76,19 +88,27 @@ public class OshTeacherServiceImpl implements OshTeacherService {
             users.addAll(userService.getAllByEmail(field));
         }
 
-        if (position != null && courseID != null) {
+        if (positionID != null && courseID != null) {
             for (long course : courseID) {
                 OshTeachers teacher = coursesService.findCourseById(course).getTeacher();
-                if (teacher.getPosition().equalsIgnoreCase(position))
-                    teachers.add(teacher);
+                for (long position : positionID) {
+                    if (teacher.getPosition().getID() == position)
+                        teachers.add(teacher);
+                }
             }
         } else if (courseID != null) {
             for (long course : courseID) {
                 teachers.add(coursesService.findCourseById(course).getTeacher());
             }
-        } else if (position != null) {
-            teachers.addAll(teacherRepo.findAllByPositionContainingIgnoringCase(position));
-            users.addAll(userService.getAllByPositionAndCity(position, "osh"));
+        } else if (positionID != null) {
+            for (long position : positionID) {
+                OshPosition oshPosition = oshPositionRepo.findById(position).orElseThrow(() ->
+                                new ResourceNotFoundException("Position with ID " + position + " has not found"));
+                teachers.addAll(teacherRepo.findAllByPosition(oshPosition));
+
+                users.addAll(userService.getAllByPositionAndCity(bishPositionRepo
+                        .findByNameContainingIgnoringCase(oshPosition.getName()), "osh"));
+            }
         }
         return toWorkers(teachers, users);
     }
@@ -131,11 +151,16 @@ public class OshTeacherServiceImpl implements OshTeacherService {
     private OshTeachers teacherToDTO(OshTeachers teacher, TeacherDTO teacherDTO) {
         teacher.setName(teacherDTO.getName());
         teacher.setSurname(teacherDTO.getSurname());
+        teacher.setPatronymic(teacherDTO.getPatronymic());
         teacher.setEmail(teacherDTO.getEmail());
         teacher.setPhoneNo(teacherDTO.getPhoneNo());
-        teacher.setPosition(teacherDTO.getPosition());
         teacher.setStartDate(teacherDTO.getStartDate());
         teacher.setEndDate(teacherDTO.getEndDate());
+        if (teacherDTO.getPosition() != 0) {
+            OshPosition position = oshPositionRepo.findById(teacherDTO.getPosition()).orElseThrow(() ->
+                            new ResourceNotFoundException("Position with ID " + teacherDTO.getPosition() + " has not found"));
+            teacher.setPosition(position);
+        }
         if (teacherDTO.getCourse() != 0) {
             OshCourses course = coursesService.setTeacher(teacherDTO.getCourse(), teacher.getID());
             teacher.setCourseName(course.getName());

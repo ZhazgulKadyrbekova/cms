@@ -33,4 +33,5 @@ public interface OshClientService {
     OshClient addPayment(long clientID, PaymentDTO paymentDTO, String userEmail);
     OshClient editPayment(long clientID, PaymentDTO paymentDTO, long paymentID, String userEmail);
     ResponseMessage deletePayment(long clientID, long paymentID, String userEmail);
+    ResponseMessage deleteClient(long clientID, String userEmail);
 }

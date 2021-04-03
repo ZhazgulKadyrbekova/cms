@@ -2,12 +2,14 @@ package neobis.cms.Entity.Osh;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import neobis.cms.Entity.Base;
 
 import javax.persistence.*;
 import java.time.LocalDate;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,16 +18,14 @@ import java.time.LocalDate;
 @Table(name = "Teachers")
 public class OshTeachers extends Base {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "teacher_id")
-    private long ID;
-
     @Column(name = "name")
     private String name;
 
     @Column(name = "surname")
     private String surname;
+
+    @Column(name = "patronymic")
+    private String patronymic;
 
     @Column(name = "email", unique = true)
     private String email;
@@ -33,8 +33,9 @@ public class OshTeachers extends Base {
     @Column(name = "phone_no")
     private String phoneNo;
 
-    @Column(name = "position")
-    private String position;
+    @ManyToOne
+    @JoinColumn(name = "position_id")
+    private OshPosition position;
 
     @Column(name = "course_name")
     private String courseName;

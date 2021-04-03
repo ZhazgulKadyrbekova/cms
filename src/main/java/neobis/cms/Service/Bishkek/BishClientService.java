@@ -34,4 +34,5 @@ public interface BishClientService {
     BishClient addNewPayment(long clientID, PaymentDTO paymentDTO, String userEmail);
     BishClient editPayment(long clientID, PaymentDTO paymentDTO, long paymentID, String userEmail);
     ResponseMessage deletePayment(long clientID, long paymentID, String userEmail);
+    ResponseMessage deleteClient(long clientID, String userEmail);
 }

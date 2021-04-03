@@ -79,11 +79,15 @@ public class OshCoursesServiceImpl implements OshCoursesService {
     }
 
     @Override
-    public String deleteCourse(long id) {
-        OshCourses course = coursesRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Course with id " + id + " has not found"));
-        coursesRepo.delete(course);
-        return "Course with id " + id + " has not found";
+    public String deleteCourse(List<Long> courses) {
+        for (long courseID : courses) {
+            OshCourses course = this.findCourseById(courseID);
+            coursesRepo.delete(course);
+        }
+        if (courses.size() > 1)
+            return "Courses were successfully deleted";
+        else
+            return "Course with ID " + courses.get(0) + " was successfully deleted";
     }
 
     @Override

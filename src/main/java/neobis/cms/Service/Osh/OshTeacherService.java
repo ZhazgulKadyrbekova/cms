@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 public interface OshTeacherService {
-    Set<WorkerDTO> getWithPredicate(String field, String position, List<Long> courseID);
+    Set<WorkerDTO> getWithPredicate(String field, List<Long> positionID, List<Long> courseID);
     Page<WorkerDTO> getAllWorkers(Pageable pageable);
     List<OshTeachers> getAllTeachers();
     List<OshTeachers> getAllByName(String name);

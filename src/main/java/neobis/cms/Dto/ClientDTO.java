@@ -16,10 +16,11 @@ public class ClientDTO {
     private String phoneNo;
     private String name;
     private String surname;
+    private String patronymic;
     private String email;
     private long status;
     private long occupation;
-    private String target;
+    private long target;
     private boolean experience;
     private boolean laptop;
     private List<Long> courses;

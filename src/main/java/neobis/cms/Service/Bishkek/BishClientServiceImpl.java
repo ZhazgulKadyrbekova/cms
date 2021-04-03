@@ -4,10 +4,7 @@ import neobis.cms.Dto.ClientDTO;
 import neobis.cms.Dto.PaymentDTO;
 import neobis.cms.Dto.ResponseMessage;
 import neobis.cms.Entity.Bishkek.*;
-import neobis.cms.Entity.Osh.OshClient;
-import neobis.cms.Entity.Osh.OshOccupation;
-import neobis.cms.Entity.Osh.OshPayment;
-import neobis.cms.Entity.Osh.OshUTM;
+import neobis.cms.Entity.Osh.*;
 import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Bishkek.*;
 import neobis.cms.Repo.Osh.*;
@@ -56,11 +53,14 @@ public class BishClientServiceImpl implements BishClientService {
     private final BishLeavingReasonRepo bishLeavingReasonRepo;
     private final OshLeavingReasonRepo oshLeavingReasonRepo;
 
+    private final BishTargetRepo bishTargetRepo;
+    private final OshTargetRepo oshTargetRepo;
+
     public BishClientServiceImpl(BishStatusesRepo statusesRepo, BishClientRepo bishClientRepo, OshClientRepo oshClientRepo, OshStatusesRepo oshStatusesRepo,
                                  BishOccupationRepo bishOccupationRepo, OshOccupationRepo oshOccupationRepo, BishUTMRepo bishUTMRepo, OshUTMRepo oshUTMRepo,
                                  BishCoursesService coursesService, BishPaymentRepo bishPaymentService, OshPaymentRepo oshPaymentService,
                                  BishHistoryService bishHistoryService, UserService userService, BishLeavingReasonRepo bishLeavingReasonRepo,
-                                 OshLeavingReasonRepo oshLeavingReasonRepo) {
+                                 OshLeavingReasonRepo oshLeavingReasonRepo, BishTargetRepo bishTargetRepo, OshTargetRepo oshTargetRepo) {
         this.bishStatusesRepo = statusesRepo;
         this.bishClientRepo = bishClientRepo;
         this.oshClientRepo = oshClientRepo;
@@ -76,6 +76,8 @@ public class BishClientServiceImpl implements BishClientService {
         this.userService = userService;
         this.bishLeavingReasonRepo = bishLeavingReasonRepo;
         this.oshLeavingReasonRepo = oshLeavingReasonRepo;
+        this.bishTargetRepo = bishTargetRepo;
+        this.oshTargetRepo = oshTargetRepo;
     }
 
     @Override
@@ -113,7 +115,7 @@ public class BishClientServiceImpl implements BishClientService {
                     } else if (data.get(key) instanceof JSONObject) {
                         parseJson(data.getJSONObject(key), client);
                     } else {
-                        boolean target;
+                        boolean hasTarget;
                         boolean occupation;
                         boolean experience;
                         switch (key) {
@@ -127,32 +129,32 @@ public class BishClientServiceImpl implements BishClientService {
                                     if (utmName.contains("instagram")) {
                                         utm = bishUTMRepo.findByNameContainingIgnoringCase("Instagram").orElse(null);
                                         if (utm == null) {
-                                            oshUTMRepo.save(new OshUTM(0, "Instagram"));
-                                            utm = bishUTMRepo.save(new BishUTM(0, "Instagram"));
+                                            oshUTMRepo.save(new OshUTM("Instagram"));
+                                            utm = bishUTMRepo.save(new BishUTM("Instagram"));
                                         }
                                         client.setUtm(utm);
                                     }
                                     if (utmName.contains("facebook")) {
                                         utm = bishUTMRepo.findByNameContainingIgnoringCase("Facebook").orElse(null);
                                         if (utm == null) {
-                                            oshUTMRepo.save(new OshUTM(0, "Facebook"));
-                                            utm = bishUTMRepo.save(new BishUTM(0, "Facebook"));
+                                            oshUTMRepo.save(new OshUTM("Facebook"));
+                                            utm = bishUTMRepo.save(new BishUTM("Facebook"));
                                         }
                                         client.setUtm(utm);
                                     }
                                     if (utmName.contains("google")) {
                                         utm = bishUTMRepo.findByNameContainingIgnoringCase("Google").orElse(null);
                                         if (utm == null) {
-                                            oshUTMRepo.save(new OshUTM(0, "Google"));
-                                            utm = bishUTMRepo.save(new BishUTM(0, "Google"));
+                                            oshUTMRepo.save(new OshUTM("Google"));
+                                            utm = bishUTMRepo.save(new BishUTM("Google"));
                                         }
                                         client.setUtm(utm);
                                     }
                                     if (utmName.contains("neobis")) {
                                         utm = bishUTMRepo.findByNameContainingIgnoringCase("Neobis").orElse(null);
                                         if (utm == null) {
-                                            oshUTMRepo.save(new OshUTM(0, "Neobis"));
-                                            utm = bishUTMRepo.save(new BishUTM(0, "Neobis"));
+                                            oshUTMRepo.save(new OshUTM("Neobis"));
+                                            utm = bishUTMRepo.save(new BishUTM("Neobis"));
                                         }
                                         client.setUtm(utm);
                                     }
@@ -160,7 +162,7 @@ public class BishClientServiceImpl implements BishClientService {
                                 }
                                 break;
                             case "value" :
-                                target = (data.getString(key).equals("Освоить профессию программиста") ||
+                                hasTarget = (data.getString(key).equals("Освоить профессию программиста") ||
                                         data.getString(key).equals("Подготовиться к университету") ||
                                         data.getString(key).equals("Участвовать в олимпиадах") ||
                                         data.getString(key).equals("Повышение квалификации"));
@@ -168,15 +170,21 @@ public class BishClientServiceImpl implements BishClientService {
                                         data.getString(key).equals("Временно безработный") || data.getString(key).equals("Работающий") ||
                                         data.getString(key).equals("Предприниматель"));
                                 experience = data.getString(key).equals("Да");
-                                if (target) {
-                                    client.setTarget(data.getString(key));
+                                if (hasTarget) {
+                                    String targetName =data.getString(key);
+                                    BishTarget target = bishTargetRepo.findByNameContainingIgnoringCase(targetName);
+                                    if (target == null) {
+                                        oshTargetRepo.save(new OshTarget(targetName));
+                                        target = bishTargetRepo.save(new BishTarget(targetName));
+                                    }
+                                    client.setTarget(target);
                                 }
                                 if (occupation) {
                                     String occupationName = data.getString(key);
                                     BishOccupation bishOccupation = bishOccupationRepo.findByNameContainingIgnoringCase(occupationName);
                                     if (bishOccupation == null) {
-                                        oshOccupationRepo.save(new OshOccupation(0, occupationName));
-                                        bishOccupation = bishOccupationRepo.save(new BishOccupation(0, occupationName));
+                                        oshOccupationRepo.save(new OshOccupation(occupationName));
+                                        bishOccupation = bishOccupationRepo.save(new BishOccupation(occupationName));
                                     }
                                     client.setOccupation(bishOccupation);
                                 }
@@ -303,13 +311,16 @@ public class BishClientServiceImpl implements BishClientService {
         client.setPhoneNo(clientDTO.getPhoneNo());
         client.setName(clientDTO.getName());
         client.setSurname(clientDTO.getSurname());
+        client.setPatronymic(clientDTO.getPatronymic());
         client.setEmail(clientDTO.getEmail());
-        client.setTarget(clientDTO.getTarget());
         client.setExperience(clientDTO.isExperience());
         client.setLaptop(clientDTO.isLaptop());
         client.setDescription(clientDTO.getDescription());
         client.setCity("BISHKEK");
         client.setPrepayment(clientDTO.getPrepayment());
+        if (clientDTO.getTarget() != 0)
+            client.setTarget(bishTargetRepo.findById(clientDTO.getTarget())
+                    .orElseThrow(() -> new ResourceNotFoundException("Target with ID " + clientDTO.getTarget() + " has not found")));
         if (clientDTO.getLeavingReason() != 0)
             client.setLeavingReason(bishLeavingReasonRepo.findById(clientDTO.getLeavingReason())
                     .orElseThrow(() -> new ResourceNotFoundException("Reason with id " + clientDTO.getLeavingReason() + "has not found")));
@@ -498,13 +509,16 @@ public class BishClientServiceImpl implements BishClientService {
         client.setPhoneNo(clientDTO.getPhoneNo());
         client.setName(clientDTO.getName());
         client.setSurname(clientDTO.getSurname());
+        client.setPatronymic(clientDTO.getPatronymic());
         client.setEmail(clientDTO.getEmail());
-	    client.setTarget(clientDTO.getTarget());
         client.setExperience(clientDTO.isExperience());
         client.setLaptop(clientDTO.isLaptop());
 	    client.setDescription(clientDTO.getDescription());
         client.setCity("BISHKEK");
         client.setPrepayment(clientDTO.getPrepayment());
+        if (clientDTO.getTarget() != 0)
+            client.setTarget(bishTargetRepo.findById(clientDTO.getTarget())
+                    .orElseThrow(() -> new ResourceNotFoundException("Target with ID " + clientDTO.getTarget() + " has not found")));
         if (clientDTO.getLeavingReason() != 0)
             client.setLeavingReason(bishLeavingReasonRepo.findById(clientDTO.getLeavingReason())
                     .orElseThrow(() -> new ResourceNotFoundException("Reason with id " + clientDTO.getLeavingReason() + "has not found")));
@@ -547,7 +561,8 @@ public class BishClientServiceImpl implements BishClientService {
             oshClient.setStatus(oshStatusesRepo.findByNameContainingIgnoringCase(bishClient.getStatus().getName()));
         if (bishClient.getOccupation() != null)
             oshClient.setOccupation(oshOccupationRepo.findByNameContainingIgnoringCase(bishClient.getOccupation().getName()));
-        oshClient.setTarget(bishClient.getTarget());
+        if (bishClient.getTarget() != null)
+            oshClient.setTarget(oshTargetRepo.findByNameContainingIgnoringCase(bishClient.getTarget().getName()));
         oshClient.setExperience(bishClient.isExperience());
         oshClient.setLaptop(bishClient.isLaptop());
         if (bishClient.getUtm() != null)
@@ -641,8 +656,7 @@ public class BishClientServiceImpl implements BishClientService {
 */
     @Override
     public BishClient addNewPayment(long clientID, PaymentDTO paymentDTO, String userEmail) {
-        BishClient client = bishClientRepo.findById(clientID)
-                .orElseThrow(() -> new ResourceNotFoundException("Client with ID " + clientID + " has not found"));
+        BishClient client = this.getClientById(clientID);
         List<BishPayment> payments = client.getPayments();
         BishPayment payment = new BishPayment();
         payment.setMonth(paymentDTO.getMonth());
@@ -656,20 +670,18 @@ public class BishClientServiceImpl implements BishClientService {
 
     @Override
     public BishClient editPayment(long clientID, PaymentDTO paymentDTO, long paymentID, String userEmail) {
-        BishClient client = bishClientRepo.findById(clientID)
-                .orElseThrow(() -> new ResourceNotFoundException("Client with ID " + clientID + " has not found"));
+        BishClient client = this.getClientById(clientID);
         List<BishPayment> payments = client.getPayments();
         BishPayment payment = bishPaymentRepo.findById(paymentID)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment with ID " + paymentID + " has not found"));
-        payments.remove(payment);
+        if (!payments.contains(payment))
+            throw new ResourceNotFoundException("Payment with ID " + paymentID + " has not found in list of this client");
 
         payment.setMonth(paymentDTO.getMonth());
         payment.setPrice(paymentDTO.getPrice());
         payment.setDone(paymentDTO.isDone());
         payment.setMethod(paymentDTO.getMethod());
-        payments.add(bishPaymentRepo.save(payment));
-        client.setPayments(payments);
-        return bishClientRepo.save(client);
+        return client;
     }
 
     @Override
@@ -684,5 +696,14 @@ public class BishClientServiceImpl implements BishClientService {
         client.setPayments(payments);
         bishClientRepo.save(client);
         return new ResponseMessage("Payments of client with ID " + clientID + " has been updated");
+    }
+
+    @Override
+    public ResponseMessage deleteClient(long clientID, String userEmail) {
+        BishClient client = this.getClientById(clientID);
+        for (BishPayment payment : client.getPayments())
+            bishPaymentRepo.delete(payment);
+        bishClientRepo.delete(client);
+        return new ResponseMessage("Client with ID " + clientID + " has been deleted");
     }
 }

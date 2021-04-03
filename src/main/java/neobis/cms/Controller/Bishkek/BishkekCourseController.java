@@ -48,7 +48,7 @@ public class BishkekCourseController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseMessage deleteCourse(@PathVariable long id) {
+    public ResponseMessage deleteCourse(@PathVariable List<Long> id) {
         log.info("In Bishkek deleted course id {}", id);
         return new ResponseMessage(coursesService.deleteCourse(id));
     }

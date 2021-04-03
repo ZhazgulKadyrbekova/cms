@@ -18,16 +18,14 @@ import java.time.LocalDate;
 @Table(name = "Teachers")
 public class BishTeachers extends Base {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "teacher_id")
-    private long ID;
-
     @Column(name = "name")
     private String name;
 
     @Column(name = "surname")
     private String surname;
+
+    @Column(name = "patronymic")
+    private String patronymic;
 
     @Column(name = "email", unique = true)
     private String email;
@@ -35,8 +33,9 @@ public class BishTeachers extends Base {
     @Column(name = "phone_no")
     private String phoneNo;
 
-    @Column(name = "position")
-    private String position;
+    @ManyToOne
+    @JoinColumn(name = "position_id")
+    private BishPosition position;
 
     @Column(name = "course_name")
     private String courseName;
