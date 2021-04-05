@@ -5,6 +5,7 @@ import neobis.cms.Dto.PaymentDTO;
 import neobis.cms.Dto.ResponseMessage;
 import neobis.cms.Entity.Bishkek.*;
 import neobis.cms.Entity.Osh.*;
+import neobis.cms.Exception.IllegalArgumentException;
 import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Bishkek.*;
 import neobis.cms.Repo.Osh.*;
@@ -668,8 +669,14 @@ public class BishClientServiceImpl implements BishClientService {
         payment.setMonth(paymentDTO.getMonth());
         payment.setPrice(paymentDTO.getPrice());
         payment.setDone(paymentDTO.isDone());
-        payment.setMethod(bishMethodRepo.findById(paymentDTO.getMethodID()).orElseThrow(() ->
+        if (paymentDTO.getMethodID() != 0)
+            payment.setMethod(bishMethodRepo.findById(paymentDTO.getMethodID()).orElseThrow(() ->
                 new ResourceNotFoundException("Method with ID " + paymentDTO.getMethodID() + " has not found")));
+        BishCourses course = coursesService.findCourseById(paymentDTO.getCourseID());
+        if (paymentDTO.getCourseID() != 0 && client.getCourses().contains(course))
+            payment.setCourse(course);
+        else if (paymentDTO.getCourseID() != 0)
+            throw new IllegalArgumentException("Course with ID " + paymentDTO.getCourseID() + " not listed in client's course list");
         payments.add(bishPaymentRepo.save(payment));
         client.setPayments(payments);
         return bishClientRepo.save(client);
@@ -687,8 +694,14 @@ public class BishClientServiceImpl implements BishClientService {
         payment.setMonth(paymentDTO.getMonth());
         payment.setPrice(paymentDTO.getPrice());
         payment.setDone(paymentDTO.isDone());
-        payment.setMethod(bishMethodRepo.findById(paymentDTO.getMethodID()).orElseThrow(() ->
+        if (paymentDTO.getMethodID() != 0)
+            payment.setMethod(bishMethodRepo.findById(paymentDTO.getMethodID()).orElseThrow(() ->
                 new ResourceNotFoundException("Method with ID " + paymentDTO.getMethodID() + " has not found")));
+        BishCourses course = coursesService.findCourseById(paymentDTO.getCourseID());
+        if (paymentDTO.getCourseID() != 0 && client.getCourses().contains(course))
+            payment.setCourse(course);
+        else if (paymentDTO.getCourseID() != 0)
+            throw new IllegalArgumentException("Course with ID " + paymentDTO.getCourseID() + " not listed in client's course list");
         bishPaymentRepo.save(payment);
         return client;
     }
@@ -714,5 +727,11 @@ public class BishClientServiceImpl implements BishClientService {
             bishPaymentRepo.delete(payment);
         bishClientRepo.delete(client);
         return new ResponseMessage("Client with ID " + clientID + " has been deleted");
+    }
+
+    @Override
+    public List<BishCourses> getCourses(long clientID) {
+        BishClient client = this.getClientById(clientID);
+        return client.getCourses();
     }
 }

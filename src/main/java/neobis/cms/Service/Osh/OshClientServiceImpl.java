@@ -5,6 +5,7 @@ import neobis.cms.Dto.PaymentDTO;
 import neobis.cms.Dto.ResponseMessage;
 import neobis.cms.Entity.Bishkek.*;
 import neobis.cms.Entity.Osh.*;
+import neobis.cms.Exception.IllegalArgumentException;
 import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Bishkek.*;
 import neobis.cms.Repo.Osh.*;
@@ -643,8 +644,14 @@ public class OshClientServiceImpl implements OshClientService {
         payment.setMonth(paymentDTO.getMonth());
         payment.setPrice(paymentDTO.getPrice());
         payment.setDone(paymentDTO.isDone());
-        payment.setMethod(oshMethodRepo.findById(paymentDTO.getMethodID()).orElseThrow(() ->
+        if (paymentDTO.getMethodID() != 0)
+            payment.setMethod(oshMethodRepo.findById(paymentDTO.getMethodID()).orElseThrow(() ->
                 new ResourceNotFoundException("Method with ID " + paymentDTO.getMethodID() + " has not found")));
+        OshCourses course = coursesService.findCourseById(paymentDTO.getCourseID());
+        if (paymentDTO.getCourseID() != 0 && client.getCourses().contains(course))
+            payment.setCourse(course);
+        else if (paymentDTO.getCourseID() != 0)
+            throw new IllegalArgumentException("Course with ID " + paymentDTO.getCourseID() + " not listed in client's course list");
         payments.add(oshPaymentRepo.save(payment));
         client.setPayments(payments);
         return oshClientRepo.save(client);
@@ -663,8 +670,14 @@ public class OshClientServiceImpl implements OshClientService {
         payment.setMonth(paymentDTO.getMonth());
         payment.setPrice(paymentDTO.getPrice());
         payment.setDone(paymentDTO.isDone());
-        payment.setMethod(oshMethodRepo.findById(paymentDTO.getMethodID()).orElseThrow(() ->
-                new ResourceNotFoundException("Method with ID " + paymentDTO.getMethodID() + " has not found")));
+        if (paymentDTO.getMethodID() != 0)
+            payment.setMethod(oshMethodRepo.findById(paymentDTO.getMethodID()).orElseThrow(() ->
+                    new ResourceNotFoundException("Method with ID " + paymentDTO.getMethodID() + " has not found")));
+        OshCourses course = coursesService.findCourseById(paymentDTO.getCourseID());
+        if (paymentDTO.getCourseID() != 0 && client.getCourses().contains(course))
+            payment.setCourse(course);
+        else if (paymentDTO.getCourseID() != 0)
+            throw new IllegalArgumentException("Course with ID " + paymentDTO.getCourseID() + " not listed in client's course list");
         oshPaymentRepo.save(payment);
         return client;
     }
@@ -690,5 +703,11 @@ public class OshClientServiceImpl implements OshClientService {
             oshPaymentRepo.delete(payment);
         oshClientRepo.delete(client);
         return new ResponseMessage("Client with ID " + clientID + " has been deleted");
+    }
+
+    @Override
+    public List<OshCourses> getCourses(long clientID) {
+        OshClient client = this.getClientByID(clientID);
+        return client.getCourses();
     }
 }

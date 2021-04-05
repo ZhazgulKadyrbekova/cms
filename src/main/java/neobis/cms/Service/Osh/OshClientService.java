@@ -4,6 +4,7 @@ import neobis.cms.Dto.ClientDTO;
 import neobis.cms.Dto.PaymentDTO;
 import neobis.cms.Dto.ResponseMessage;
 import neobis.cms.Entity.Osh.OshClient;
+import neobis.cms.Entity.Osh.OshCourses;
 import org.json.JSONObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,4 +35,5 @@ public interface OshClientService {
     OshClient editPayment(long clientID, PaymentDTO paymentDTO, long paymentID, String userEmail);
     ResponseMessage deletePayment(long clientID, long paymentID, String userEmail);
     ResponseMessage deleteClient(long clientID, String userEmail);
+    List<OshCourses> getCourses(long clientID);
 }

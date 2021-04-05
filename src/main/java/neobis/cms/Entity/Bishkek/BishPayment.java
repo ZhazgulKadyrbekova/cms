@@ -31,6 +31,10 @@ public class BishPayment extends Base {
     @JoinColumn(name = "method_id")
     private BishMethod method;
 
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    private BishCourses course;
+
     @Override
     public String toString() {
         return "month=" + month + ", price=" + price.toString() + ", done=" + done + ", method=" + method.getName();

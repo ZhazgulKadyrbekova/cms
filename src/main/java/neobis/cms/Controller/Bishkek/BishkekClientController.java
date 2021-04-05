@@ -6,6 +6,7 @@ import neobis.cms.Dto.ClientDTO;
 import neobis.cms.Dto.PaymentDTO;
 import neobis.cms.Dto.ResponseMessage;
 import neobis.cms.Entity.Bishkek.BishClient;
+import neobis.cms.Entity.Bishkek.BishCourses;
 import neobis.cms.Service.Bishkek.BishClientService;
 import neobis.cms.Service.ExcelService;
 import neobis.cms.Util.ExcelUtilHelper;
@@ -51,7 +52,7 @@ public class BishkekClientController {
                     value = "Number of records per page.", defaultValue = "20")
     })
     public Page<BishClient> getAll(Pageable pageable) {
-//         clientService.addClientsToDB();
+         // clientService.addClientsToDB();
         return clientService.getAllClientsFromDB(pageable);
     }
 
@@ -143,6 +144,11 @@ public class BishkekClientController {
     @PutMapping("/{client_id}/status/{status_id}")
     public BishClient changeStatus(Principal principal, @PathVariable("client_id") Long id, @PathVariable("status_id") Long status_id) {
         return clientService.changeStatus(id, status_id, principal.getName());
+    }
+
+    @GetMapping("/{client_id}/courses")
+    public List<BishCourses> getClientCourses(@PathVariable("client_id") Long id) {
+        return clientService.getCourses(id);
     }
 
     @PutMapping("/{client_id}/city")

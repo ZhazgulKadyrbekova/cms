@@ -31,6 +31,10 @@ public class OshPayment extends Base {
     @JoinColumn(name = "method_id")
     private OshMethod method;
 
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    private OshCourses course;
+
     @Override
     public String toString() {
         return "month=" + month + ", price=" + price.toString() + ", done=" + done + ", method=" + method.getName();

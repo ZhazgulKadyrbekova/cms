@@ -15,4 +15,5 @@ public class PaymentDTO {
     private BigDecimal price;
     private boolean done;
     private long methodID;
+    private long courseID;
 }
