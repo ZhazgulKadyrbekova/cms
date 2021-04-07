@@ -60,6 +60,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/osh/history").hasRole("ADMIN")
                 .antMatchers(HttpMethod.POST, "/occupation").hasRole("ADMIN")
                 .antMatchers(HttpMethod.PUT, "/occupation").hasRole("ADMIN")
+                .antMatchers("/position").permitAll()
 
 
                 .anyRequest().authenticated()

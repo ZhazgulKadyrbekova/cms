@@ -39,9 +39,9 @@ public class BishTeacherServiceImpl implements BishTeacherService {
         List<WorkerDTO> workers = new ArrayList<>();
 
         for (BishTeachers teacher : teachers)
-            workers.add(new WorkerDTO(teacher.getName(), teacher.getSurname(), teacher.getPatronymic(),
-                    teacher.getEmail(), teacher.getPhoneNo(), teacher.getPosition().getName(),
-                    teacher.getCourse().getName(), "teacher"));
+            workers.add(new WorkerDTO(teacher.getName() != null ? teacher.getName() : null, teacher.getSurname() != null ? teacher.getSurname() : null, teacher.getPatronymic() != null ? teacher.getPatronymic() : null,
+                    teacher.getEmail() != null ? teacher.getEmail() : null, teacher.getPhoneNo() != null ? teacher.getPhoneNo() : null, teacher.getPosition() != null ? teacher.getPosition().getName() : null,
+                    teacher.getCourse() != null ? teacher.getCourse().getName() : null, "teacher"));
 
         for (User user : users)
             workers.add(new WorkerDTO(user.getName(), user.getSurname(), user.getPatronymic(), user.getEmail(),
@@ -54,12 +54,13 @@ public class BishTeacherServiceImpl implements BishTeacherService {
         Set<WorkerDTO> workers = new HashSet<>();
 
         for (BishTeachers teacher : teachers)
-            workers.add(new WorkerDTO(teacher.getName(), teacher.getSurname(), teacher.getPatronymic(),
-                    teacher.getEmail(), teacher.getPhoneNo(), teacher.getPosition().getName(),
-                    teacher.getCourse().getName(), "teacher"));
+            workers.add(new WorkerDTO(teacher.getName() != null ? teacher.getName() : null, teacher.getSurname() != null ? teacher.getSurname() : null, teacher.getPatronymic() != null ? teacher.getPatronymic() : null,
+                    teacher.getEmail() != null ? teacher.getEmail() : null, teacher.getPhoneNo() != null ? teacher.getPhoneNo() : null, teacher.getPosition() != null ? teacher.getPosition().getName() : null,
+                    teacher.getCourse().getName() != null ? teacher.getCourse().getName() : null, "teacher"));
+
 
         for (User user : users)
-            workers.add(new WorkerDTO(user.getName(), user.getSurname(), user.getPatronymic(), user.getEmail(),
+            workers.add(new WorkerDTO(user.getName(), user.getSurname(), user.getPatronymic() != null ? user.getPatronymic() : null, user.getEmail(),
                     user.getPhoneNo(), user.getPosition().getName(), null, "user"));
 
         return workers;
