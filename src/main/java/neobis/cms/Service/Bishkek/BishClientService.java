@@ -4,7 +4,6 @@ import neobis.cms.Dto.ClientDTO;
 import neobis.cms.Dto.PaymentDTO;
 import neobis.cms.Dto.ResponseMessage;
 import neobis.cms.Entity.Bishkek.BishClient;
-import neobis.cms.Entity.Bishkek.BishCourses;
 import org.json.JSONObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,5 +35,4 @@ public interface BishClientService {
     BishClient editPayment(long clientID, PaymentDTO paymentDTO, long paymentID, String userEmail);
     ResponseMessage deletePayment(long clientID, long paymentID, String userEmail);
     ResponseMessage deleteClient(long clientID, String userEmail);
-    List<BishCourses> getCourses(long clientID);
 }

@@ -7,9 +7,11 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import neobis.cms.Entity.Base;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import java.math.BigDecimal;
-import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -25,10 +27,6 @@ public class BishCourses extends Base {
 
     @Column(name = "price")
     private BigDecimal price;
-
-    @JsonIgnore
-    @ManyToMany(mappedBy = "courses")
-    private List<BishClient> clients;
 
     @JsonIgnore
     @OneToOne(mappedBy = "course")

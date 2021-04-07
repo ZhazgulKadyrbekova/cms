@@ -118,7 +118,7 @@ public class UserServiceImpl implements UserService {
         if (userDTO.getPassword().length() < 8)
             throw new IllegalArgumentException("Password is too short");
         if (!isLetter(userDTO.getName()) && isLetter(userDTO.getSurname()))
-            throw new IllegalArgumentException("Name and surname can contain only letters");
+            throw new IllegalArgumentException("Name and surname can only contain letters");
 
         user = new User();
         user.setEmail(email);
@@ -144,7 +144,7 @@ public class UserServiceImpl implements UserService {
         }
         user.setRole(role);
         userRepo.save(user);
-        return "Profile info has been saved. After Admin confirmation you will get activation code to your email";
+        return "The profile information has been saved. After confirmation by the administrator, you will receive a link to activate your account to your email.";
     }
 
     private boolean isLetter(String text) {
@@ -158,18 +158,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public String confirm(Long id) {
         User user = userRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User id " + id + " is not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User id " + id + " not found"));
         List<User> usersWaitingForConfirm = this.getListOfUserToConfirm();
         if (!usersWaitingForConfirm.contains(user))
-            throw new ResourceNotFoundException("User with id " + id + " is not contained in waiting list");
+            throw new ResourceNotFoundException("User ID " + id + " is not on the waitlist");
 
         user.setConfirmed(true);
         user.setActivationCode(UUID.randomUUID().toString());
 
         String message = "To activate your account visit link: https://cms4.herokuapp.com/authorization/activate/" + user.getActivationCode();
-        if (mailService.send(user.getEmail(), "Activation Code", message)) {
+        if (mailService.send(user.getEmail(), "Activation of Account", message)) {
             userRepo.save(user);
-            return "Activation code has been successfully sent to user's email!";
+            return "Activation link successfully sent to email " + user.getEmail();
         }
         return "We could not send activation code.";
     }
@@ -184,7 +184,7 @@ public class UserServiceImpl implements UserService {
 
         userRepo.save(user);
 
-        return "Account has been activated";
+        return "Account activated";
     }
 
     @Override
@@ -207,11 +207,11 @@ public class UserServiceImpl implements UserService {
         user.setActivationCode(UUID.randomUUID().toString());
 
         String message = "To restore your account visit link: http://cms4.herokuapp.com/authorization/setPassword/" + user.getActivationCode();
-        if (mailService.send(user.getEmail(), "Restoration Code", message)) {
+        if (mailService.send(user.getEmail(), "Account recovery", message)) {
             userRepo.save(user);
-            return "Restoration code has been successfully sent to your email!";
+            return "Recovery code successfully sent to email " + user.getEmail();
         }
-        return "We could not send activation code.";
+        return "We could not send recovery code.";
     }
 
     @Override
@@ -219,6 +219,8 @@ public class UserServiceImpl implements UserService {
         User user = userRepo.findByEmailIgnoringCaseAndActive(userAuthDTO.getEmail(), true);
         if (user == null)
             throw new ResourceNotFoundException("User with email " + userAuthDTO.getEmail() + " not found");
+        if (user.getPassword() != null)
+            throw new IllegalArgumentException("Please, enter your own credentials!");
         user.setPassword(encoder.encode(userAuthDTO.getPassword()));
         userRepo.save(user);
         return "You have successfully changed your password";
@@ -231,9 +233,9 @@ public class UserServiceImpl implements UserService {
         if (!usersWaitingForConfirm.contains(userRepo.findByEmailIgnoringCase(userRejectDTO.getEmail())))
             throw new ResourceNotFoundException("User with email " + userRejectDTO.getEmail() + " is not contained in waiting list");
         userRepo.deleteByEmail(userRejectDTO.getEmail());
-        String message = "Your registration request for email " + userRejectDTO.getEmail() + " was rejected by admin.\n Comment from admin: " + userRejectDTO.getDescription();
+        String message = "Your registration request via email " + userRejectDTO.getEmail() + " was rejected by the admin.\n Comment from admin: " + userRejectDTO.getDescription();
         if (mailService.send(userRejectDTO.getEmail(), "Rejected registration request", message)) {
-            return "Rejected registration request has been successfully sent to user's email!";
+            return "Rejected registration request has been successfully sent to email " + userRejectDTO.getEmail();
         }
         return "We could not send rejected registration request to user's email.";
     }

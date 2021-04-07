@@ -93,15 +93,7 @@ public class ExcelUtilHelper {
                 row.createCell(10).setCellValue(client.getTarget() != null ? client.getTarget().getName() : null);
                 row.createCell(11).setCellValue(client.isExperience());
                 row.createCell(12).setCellValue(client.isLaptop());
-                String courseName = null;
-                if (client.getCourses() != null) {
-                    StringBuilder courses = new StringBuilder();
-                    for (BishCourses course : client.getCourses()) {
-                        courses.append(course.getName()).append(", ");
-                    }
-                    courseName = courses.toString();
-                }
-                row.createCell(13).setCellValue(courseName);
+                row.createCell(13).setCellValue(client.getCourse() != null ? client.getCourse().getName() : null);
                 row.createCell(14).setCellValue(client.getUtm() != null ? client.getUtm().getName() : null);
                 row.createCell(15).setCellValue(client.getDescription());
                 row.createCell(16).setCellValue(client.getCity());
@@ -151,15 +143,7 @@ public class ExcelUtilHelper {
                 row.createCell(10).setCellValue(client.getTarget() != null ? client.getTarget().getName() : null);
                 row.createCell(11).setCellValue(client.isExperience());
                 row.createCell(12).setCellValue(client.isLaptop());
-                String courseName = null;
-                if (client.getCourses() != null) {
-                    StringBuilder courses = new StringBuilder();
-                    for (OshCourses course : client.getCourses()) {
-                        courses.append(course.getName()).append(", ");
-                    }
-                    courseName = courses.toString();
-                }
-                row.createCell(13).setCellValue(courseName);
+                row.createCell(13).setCellValue(client.getCourse() != null ? client.getCourse().getName() : null);
                 row.createCell(14).setCellValue(client.getUtm() != null ? client.getUtm().getName() : null);
                 row.createCell(15).setCellValue(client.getDescription());
                 row.createCell(16).setCellValue(client.getCity());
@@ -265,13 +249,8 @@ public class ExcelUtilHelper {
                             break;
                         case 13:
 //                            System.out.println("course\t\t" + currentCell.getStringCellValue());
-                            if (currentCell.getStringCellValue() != null && !currentCell.getStringCellValue().isEmpty()
-                                    && !currentCell.getStringCellValue().equals("")) {
-                                List<BishCourses> courses = new ArrayList<>();
-                                for (String courseName : currentCell.getStringCellValue().split(", "))
-                                    courses.add(bishCoursesService.findCourseByName(courseName));
-                                bishClient.setCourses(courses);
-                            }
+                            if (currentCell.getStringCellValue() != null && !currentCell.getStringCellValue().isEmpty() && !currentCell.getStringCellValue().equals(""))
+                                bishClient.setCourse(bishCoursesService.findCourseByName(currentCell.getStringCellValue()));
                             break;
                         case 14:
 //                            System.out.println("utm\t\t" + currentCell.getStringCellValue());
@@ -410,13 +389,8 @@ public class ExcelUtilHelper {
                             break;
                         case 13:
 //                            System.out.println("course\t\t" + currentCell.getStringCellValue());
-                            if (currentCell.getStringCellValue() != null && !currentCell.getStringCellValue().isEmpty()
-                                    && !currentCell.getStringCellValue().equals("")) {
-                                List<OshCourses> courses = new ArrayList<>();
-                                for (String courseName : currentCell.getStringCellValue().split(", "))
-                                    courses.add(oshCoursesService.findCourseByName(courseName));
-                                client.setCourses(courses);
-                            }
+                            if (currentCell.getStringCellValue() != null && !currentCell.getStringCellValue().isEmpty() && !currentCell.getStringCellValue().equals(""))
+                                client.setCourse(oshCoursesService.findCourseByName(currentCell.getStringCellValue()));
                             break;
                         case 14:
 //                            System.out.println("UTM\t\t" + currentCell.getStringCellValue());

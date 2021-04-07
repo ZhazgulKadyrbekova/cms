@@ -2,6 +2,7 @@ package neobis.cms.Service.Osh;
 
 import neobis.cms.Dto.TeacherDTO;
 import neobis.cms.Dto.WorkerDTO;
+import neobis.cms.Entity.Bishkek.BishPosition;
 import neobis.cms.Entity.Bishkek.User;
 import neobis.cms.Entity.Osh.OshCourses;
 import neobis.cms.Entity.Osh.OshPosition;
@@ -42,30 +43,80 @@ public class OshTeacherServiceImpl implements OshTeacherService {
     private List<WorkerDTO> toWorkers(List<OshTeachers> teachers, List<User> users) {
         List<WorkerDTO> workers = new ArrayList<>();
 
-        for (OshTeachers teacher : teachers)
-            workers.add(new WorkerDTO(teacher.getName(), teacher.getSurname(), teacher.getPatronymic(),
-                    teacher.getEmail(), teacher.getPhoneNo(), teacher.getPosition().getName(),
-                    teacher.getCourse().getName(), "teacher"));
-
-        for (User user : users)
-            workers.add(new WorkerDTO(user.getName(), user.getSurname(), user.getPatronymic(), user.getEmail(),
-                    user.getPhoneNo(), user.getPosition().getName(), null, "user"));
-
+        for (OshTeachers teacher : teachers) {
+            WorkerDTO worker = new WorkerDTO();
+            worker.setWorkerID(teacher.getID());
+            worker.setName(teacher.getName());
+            worker.setSurname(teacher.getSurname());
+            worker.setPatronymic(teacher.getPatronymic());
+            worker.setEmail(teacher.getEmail());
+            worker.setPhoneNo(teacher.getPhoneNo());
+            worker.setTable("Teacher");
+            worker.setPatent(teacher.getPatent());
+            worker.setStartDate(teacher.getStartDate());
+            worker.setEndDate(teacher.getEndDate());
+            OshPosition position = teacher.getPosition();
+            if (position != null)
+                worker.setPosition(position.getName());
+            OshCourses course = teacher.getCourse();
+            if (course != null)
+                worker.setCourseName(course.getName());
+            workers.add(worker);
+        }
+        for (User user : users) {
+            WorkerDTO worker = new WorkerDTO();
+            worker.setWorkerID(user.getID());
+            worker.setName(user.getName());
+            worker.setSurname(user.getSurname());
+            worker.setPatronymic(user.getPatronymic());
+            worker.setEmail(user.getEmail());
+            worker.setPhoneNo(user.getPhoneNo());
+            worker.setTable("User");
+            BishPosition position = user.getPosition();
+            if (position != null)
+                worker.setPosition(position.getName());
+            workers.add(worker);
+        }
         return workers;
     }
 
     private Set<WorkerDTO> toWorkers(Set<OshTeachers> teachers, Set<User> users) {
         Set<WorkerDTO> workers = new HashSet<>();
 
-        for (OshTeachers teacher : teachers)
-            workers.add(new WorkerDTO(teacher.getName(), teacher.getSurname(), teacher.getPatronymic(),
-                    teacher.getEmail(), teacher.getPhoneNo(), teacher.getPosition().getName(),
-                    teacher.getCourse().getName(), "teacher"));
-
-        for (User user : users)
-            workers.add(new WorkerDTO(user.getName(), user.getSurname(), user.getPatronymic(), user.getEmail(),
-                    user.getPhoneNo(), user.getPosition().getName(), null, "user"));
-
+        for (OshTeachers teacher : teachers) {
+            WorkerDTO worker = new WorkerDTO();
+            worker.setWorkerID(teacher.getID());
+            worker.setName(teacher.getName());
+            worker.setSurname(teacher.getSurname());
+            worker.setPatronymic(teacher.getPatronymic());
+            worker.setEmail(teacher.getEmail());
+            worker.setPhoneNo(teacher.getPhoneNo());
+            worker.setTable("Teacher");
+            worker.setPatent(teacher.getPatent());
+            worker.setStartDate(teacher.getStartDate());
+            worker.setEndDate(teacher.getEndDate());
+            OshPosition position = teacher.getPosition();
+            if (position != null)
+                worker.setPosition(position.getName());
+            OshCourses course = teacher.getCourse();
+            if (course != null)
+                worker.setCourseName(course.getName());
+            workers.add(worker);
+        }
+        for (User user : users) {
+            WorkerDTO worker = new WorkerDTO();
+            worker.setWorkerID(user.getID());
+            worker.setName(user.getName());
+            worker.setSurname(user.getSurname());
+            worker.setPatronymic(user.getPatronymic());
+            worker.setEmail(user.getEmail());
+            worker.setPhoneNo(user.getPhoneNo());
+            worker.setTable("User");
+            BishPosition position = user.getPosition();
+            if (position != null)
+                worker.setPosition(position.getName());
+            workers.add(worker);
+        }
         return workers;
     }
 
@@ -156,6 +207,7 @@ public class OshTeacherServiceImpl implements OshTeacherService {
         teacher.setPhoneNo(teacherDTO.getPhoneNo());
         teacher.setStartDate(teacherDTO.getStartDate());
         teacher.setEndDate(teacherDTO.getEndDate());
+        teacher.setDescription(teacherDTO.getDescription());
         if (teacherDTO.getPosition() != 0) {
             OshPosition position = oshPositionRepo.findById(teacherDTO.getPosition()).orElseThrow(() ->
                             new ResourceNotFoundException("Position with ID " + teacherDTO.getPosition() + " has not found"));

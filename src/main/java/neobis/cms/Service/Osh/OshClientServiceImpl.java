@@ -5,7 +5,6 @@ import neobis.cms.Dto.PaymentDTO;
 import neobis.cms.Dto.ResponseMessage;
 import neobis.cms.Entity.Bishkek.*;
 import neobis.cms.Entity.Osh.*;
-import neobis.cms.Exception.IllegalArgumentException;
 import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Bishkek.*;
 import neobis.cms.Repo.Osh.*;
@@ -352,23 +351,16 @@ public class OshClientServiceImpl implements OshClientService {
             historyOccupation.setAction("occupation");
             historyOccupation.setNewData(occupation.getName());
         }
-        if (clientDTO.getCourses() != null) {
-            List<OshCourses> courses = new ArrayList<>();
-            StringBuilder courseNames = new StringBuilder();
+        if (clientDTO.getCourse() != 0) {
+            OshCourses course = coursesService.findCourseById(clientDTO.getCourse());
+            if (course == null)
+                throw new ResourceNotFoundException("Course with id " + clientDTO.getCourse() + " has not found");
+            client.setCourse(course);
             historyCourse = new OshHistory();
             historyCourse.setFullName(user.getName() + " " + user.getSurname());
             historyCourse.setClientPhone(client.getPhoneNo());
             historyCourse.setAction("course");
-
-            for (long courseID : clientDTO.getCourses()) {
-                OshCourses course = coursesService.findCourseById(courseID);
-                if (course == null)
-                    throw new ResourceNotFoundException("Course with id " + courseID + " has not found");
-                courses.add(course);
-                courseNames.append(course.getName()).append(", ");
-            }
-            client.setCourses(courses);
-            historyCourse.setNewData(courseNames.toString());
+            historyCourse.setNewData(course.getName());
         }
         if (clientDTO.getUTM() != 0) {
             OshUTM utm = oshUTMRepo.findById(clientDTO.getUTM())
@@ -473,31 +465,17 @@ public class OshClientServiceImpl implements OshClientService {
             historyOccupation.setNewData(occupation.getName());
             client.setOccupation(occupation);
         }
-        if (clientDTO.getCourses() != null) {
+        if (clientDTO.getCourse() != 0) {
+            OshCourses course = coursesService.findCourseById(clientDTO.getCourse());
             historyCourse = new OshHistory();
             historyCourse.setFullName(user.getName() + " " + user.getSurname());
             historyCourse.setClientPhone(client.getPhoneNo());
             historyCourse.setAction("course");
-
-            List<OshCourses> courses = new ArrayList<>();
-            StringBuilder courseNames = new StringBuilder();
-            for (OshCourses course : client.getCourses()) {
-                courses.add(course);
-                courseNames.append(course.getName()).append(", ");
-            }
-            historyCourse.setOldData(courseNames.toString());
-
-            courses = new ArrayList<>();
-            courseNames = new StringBuilder();
-            for (long courseID : clientDTO.getCourses()) {
-                OshCourses course = coursesService.findCourseById(courseID);
-                if (course == null)
-                    throw new ResourceNotFoundException("Course with id " + courseID + " has not found");
-                courses.add(course);
-                courseNames.append(course.getName()).append(", ");
-            }
-            client.setCourses(courses);
-            historyCourse.setNewData(courseNames.toString());
+            OshCourses oldCourse = client.getCourse();
+            if (oldCourse != null)
+                historyCourse.setOldData(oldCourse.getName());
+            historyCourse.setNewData(course.getName());
+            client.setCourse(course);
         }
         if (clientDTO.getUTM() != 0) {
             OshUTM utm = oshUTMRepo.findById(clientDTO.getUTM())
@@ -508,7 +486,8 @@ public class OshClientServiceImpl implements OshClientService {
             historyUTM.setAction("UTM");
             OshUTM oldUTM = client.getUtm();
             if (oldUTM != null)
-                historyUTM.setNewData(utm.getName());
+                historyUTM.setOldData(oldUTM.getName());
+            historyUTM.setNewData(utm.getName());
             client.setUtm(utm);
         }
 
@@ -637,30 +616,39 @@ public class OshClientServiceImpl implements OshClientService {
 
     @Override
     public OshClient addPayment(long clientID, PaymentDTO paymentDTO, String userEmail) {
-        OshClient client = oshClientRepo.findById(clientID)
-                .orElseThrow(() -> new ResourceNotFoundException("Client with ID " + clientID + " has not found"));
+        User user = userService.findByEmail(userEmail);
+
+        OshClient client = this.getClientByID(clientID);
         List<OshPayment> payments = client.getPayments();
         OshPayment payment = new OshPayment();
         payment.setMonth(paymentDTO.getMonth());
         payment.setPrice(paymentDTO.getPrice());
         payment.setDone(paymentDTO.isDone());
+        OshCourses course = client.getCourse();
+        if (course == null)
+            throw new IllegalArgumentException("Enroll a student for a course before setting up payment");
+        payment.setCourse(course);
         if (paymentDTO.getMethodID() != 0)
             payment.setMethod(oshMethodRepo.findById(paymentDTO.getMethodID()).orElseThrow(() ->
                 new ResourceNotFoundException("Method with ID " + paymentDTO.getMethodID() + " has not found")));
-        OshCourses course = coursesService.findCourseById(paymentDTO.getCourseID());
-        if (paymentDTO.getCourseID() != 0 && client.getCourses().contains(course))
-            payment.setCourse(course);
-        else if (paymentDTO.getCourseID() != 0)
-            throw new IllegalArgumentException("Course with ID " + paymentDTO.getCourseID() + " not listed in client's course list");
         payments.add(oshPaymentRepo.save(payment));
         client.setPayments(payments);
-        return oshClientRepo.save(client);
+        client = oshClientRepo.save(client);
+
+        OshHistory history = new OshHistory();
+        history.setFullName(user.getName() + " " + user.getSurname());
+        history.setClientPhone(client.getPhoneNo());
+        history.setAction("add payment");
+        history.setNewData(course.getName() + " " + payment.getMonth());
+        historyService.create(history);
+        return client;
     }
 
     @Override
     public OshClient editPayment(long clientID, PaymentDTO paymentDTO, long paymentID, String userEmail) {
-        OshClient client = oshClientRepo.findById(clientID)
-                .orElseThrow(() -> new ResourceNotFoundException("Client with ID " + clientID + " has not found"));
+        User user = userService.findByEmail(userEmail);
+
+        OshClient client = this.getClientByID(clientID);
         List<OshPayment> payments = client.getPayments();
         OshPayment payment = oshPaymentRepo.findById(paymentID)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment with ID " + paymentID + " has not found"));
@@ -670,20 +658,28 @@ public class OshClientServiceImpl implements OshClientService {
         payment.setMonth(paymentDTO.getMonth());
         payment.setPrice(paymentDTO.getPrice());
         payment.setDone(paymentDTO.isDone());
+        OshCourses course = client.getCourse();
+        if (course == null)
+            throw new IllegalArgumentException("Enroll a student for a course before setting up payment");
+        payment.setCourse(course);
         if (paymentDTO.getMethodID() != 0)
             payment.setMethod(oshMethodRepo.findById(paymentDTO.getMethodID()).orElseThrow(() ->
                     new ResourceNotFoundException("Method with ID " + paymentDTO.getMethodID() + " has not found")));
-        OshCourses course = coursesService.findCourseById(paymentDTO.getCourseID());
-        if (paymentDTO.getCourseID() != 0 && client.getCourses().contains(course))
-            payment.setCourse(course);
-        else if (paymentDTO.getCourseID() != 0)
-            throw new IllegalArgumentException("Course with ID " + paymentDTO.getCourseID() + " not listed in client's course list");
         oshPaymentRepo.save(payment);
+
+        OshHistory history = new OshHistory();
+        history.setFullName(user.getName() + " " + user.getSurname());
+        history.setClientPhone(client.getPhoneNo());
+        history.setAction("update payment");
+        history.setNewData(course.getName() + " " + payment.getMonth());
+        historyService.create(history);
         return client;
     }
 
     @Override
     public ResponseMessage deletePayment(long clientID, long paymentID, String userEmail) {
+        User user = userService.findByEmail(userEmail);
+
         OshClient client = oshClientRepo.findById(clientID)
                 .orElseThrow(() -> new ResourceNotFoundException("Client with ID " + clientID + " has not found"));
         List<OshPayment> payments = client.getPayments();
@@ -693,21 +689,31 @@ public class OshClientServiceImpl implements OshClientService {
         payments.remove(payment);
         client.setPayments(payments);
         oshClientRepo.save(client);
+
+        OshHistory history = new OshHistory();
+        history.setFullName(user.getName() + " " + user.getSurname());
+        history.setClientPhone(client.getPhoneNo());
+        history.setAction("delete payment");
+        history.setNewData(payment.getCourse().getName() + " " + payment.getMonth());
+        historyService.create(history);
+
         return new ResponseMessage("Payments of client with ID " + clientID + " has been updated");
     }
 
     @Override
     public ResponseMessage deleteClient(long clientID, String userEmail) {
+        User user = userService.findByEmail(userEmail);
+
         OshClient client = this.getClientByID(clientID);
         for (OshPayment payment : client.getPayments())
             oshPaymentRepo.delete(payment);
         oshClientRepo.delete(client);
-        return new ResponseMessage("Client with ID " + clientID + " has been deleted");
-    }
 
-    @Override
-    public List<OshCourses> getCourses(long clientID) {
-        OshClient client = this.getClientByID(clientID);
-        return client.getCourses();
+        OshHistory history = new OshHistory();
+        history.setFullName(user.getName() + " " + user.getSurname());
+        history.setClientPhone(client.getPhoneNo());
+        history.setAction("delete client");
+        historyService.create(history);
+        return new ResponseMessage("Client with ID " + clientID + " has been deleted");
     }
 }

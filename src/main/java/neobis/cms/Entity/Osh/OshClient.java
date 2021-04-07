@@ -62,12 +62,9 @@ public class OshClient {
     @Column(name = "laptop")
     private boolean laptop;
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(
-            name = "Client_Course",
-            joinColumns = @JoinColumn(name = "client_id"),
-            inverseJoinColumns = @JoinColumn(name = "course_id"))
-    private List<OshCourses> courses;
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    private OshCourses course;
 
     @ManyToOne
     @JoinColumn(name = "utm_id")

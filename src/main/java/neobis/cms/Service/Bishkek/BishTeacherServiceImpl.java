@@ -38,30 +38,82 @@ public class BishTeacherServiceImpl implements BishTeacherService {
     private List<WorkerDTO> toWorkers(List<BishTeachers> teachers, List<User> users) {
         List<WorkerDTO> workers = new ArrayList<>();
 
-        for (BishTeachers teacher : teachers)
-            workers.add(new WorkerDTO(teacher.getName() != null ? teacher.getName() : null, teacher.getSurname() != null ? teacher.getSurname() : null, teacher.getPatronymic() != null ? teacher.getPatronymic() : null,
-                    teacher.getEmail() != null ? teacher.getEmail() : null, teacher.getPhoneNo() != null ? teacher.getPhoneNo() : null, teacher.getPosition() != null ? teacher.getPosition().getName() : null,
-                    teacher.getCourse() != null ? teacher.getCourse().getName() : null, "teacher"));
+        for (BishTeachers teacher : teachers) {
+            WorkerDTO worker = new WorkerDTO();
+            worker.setWorkerID(teacher.getID());
+            worker.setName(teacher.getName());
+            worker.setSurname(teacher.getSurname());
+            worker.setPatronymic(teacher.getPatronymic());
+            worker.setEmail(teacher.getEmail());
+            worker.setPhoneNo(teacher.getPhoneNo());
+            worker.setTable("Teacher");
+            worker.setPatent(teacher.getPatent());
+            worker.setStartDate(teacher.getStartDate());
+            worker.setEndDate(teacher.getEndDate());
+            BishPosition position = teacher.getPosition();
+            if (position != null)
+                worker.setPosition(position.getName());
+            BishCourses course = teacher.getCourse();
+            if (course != null)
+                worker.setCourseName(course.getName());
+            workers.add(worker);
+        }
 
-        for (User user : users)
-            workers.add(new WorkerDTO(user.getName(), user.getSurname(), user.getPatronymic(), user.getEmail(),
-                    user.getPhoneNo(), user.getPosition().getName(), null, "user"));
-
+        for (User user : users) {
+            WorkerDTO worker = new WorkerDTO();
+            worker.setWorkerID(user.getID());
+            worker.setName(user.getName());
+            worker.setSurname(user.getSurname());
+            worker.setPatronymic(user.getPatronymic());
+            worker.setEmail(user.getEmail());
+            worker.setPhoneNo(user.getPhoneNo());
+            worker.setTable("User");
+            BishPosition position = user.getPosition();
+            if (position != null)
+                worker.setPosition(position.getName());
+            workers.add(worker);
+        }
         return workers;
     }
 
     private Set<WorkerDTO> toWorkers(Set<BishTeachers> teachers, Set<User> users) {
         Set<WorkerDTO> workers = new HashSet<>();
 
-        for (BishTeachers teacher : teachers)
-            workers.add(new WorkerDTO(teacher.getName() != null ? teacher.getName() : null, teacher.getSurname() != null ? teacher.getSurname() : null, teacher.getPatronymic() != null ? teacher.getPatronymic() : null,
-                    teacher.getEmail() != null ? teacher.getEmail() : null, teacher.getPhoneNo() != null ? teacher.getPhoneNo() : null, teacher.getPosition() != null ? teacher.getPosition().getName() : null,
-                    teacher.getCourse().getName() != null ? teacher.getCourse().getName() : null, "teacher"));
+        for (BishTeachers teacher : teachers) {
+            WorkerDTO worker = new WorkerDTO();
+            worker.setWorkerID(teacher.getID());
+            worker.setName(teacher.getName());
+            worker.setSurname(teacher.getSurname());
+            worker.setPatronymic(teacher.getPatronymic());
+            worker.setEmail(teacher.getEmail());
+            worker.setPhoneNo(teacher.getPhoneNo());
+            worker.setTable("Teacher");
+            worker.setPatent(teacher.getPatent());
+            worker.setStartDate(teacher.getStartDate());
+            worker.setEndDate(teacher.getEndDate());
+            BishPosition position = teacher.getPosition();
+            if (position != null)
+                worker.setPosition(position.getName());
+            BishCourses course = teacher.getCourse();
+            if (course != null)
+                worker.setCourseName(course.getName());
+            workers.add(worker);
+        }
 
-
-        for (User user : users)
-            workers.add(new WorkerDTO(user.getName(), user.getSurname(), user.getPatronymic() != null ? user.getPatronymic() : null, user.getEmail(),
-                    user.getPhoneNo(), user.getPosition().getName(), null, "user"));
+        for (User user : users) {
+            WorkerDTO worker = new WorkerDTO();
+            worker.setWorkerID(user.getID());
+            worker.setName(user.getName());
+            worker.setSurname(user.getSurname());
+            worker.setPatronymic(user.getPatronymic());
+            worker.setEmail(user.getEmail());
+            worker.setPhoneNo(user.getPhoneNo());
+            worker.setTable("User");
+            BishPosition position = user.getPosition();
+            if (position != null)
+                worker.setPosition(position.getName());
+            workers.add(worker);
+        }
 
         return workers;
     }
@@ -137,7 +189,7 @@ public class BishTeacherServiceImpl implements BishTeacherService {
         return teachers;
     }
 
-    private BishTeachers teacherToDTO(BishTeachers teacher, TeacherDTO teacherDTO) {
+    private BishTeachers DTOToTeacher(BishTeachers teacher, TeacherDTO teacherDTO) {
         teacher.setName(teacherDTO.getName());
         teacher.setSurname(teacherDTO.getSurname());
         teacher.setPatronymic(teacherDTO.getPatronymic());
@@ -145,6 +197,7 @@ public class BishTeacherServiceImpl implements BishTeacherService {
         teacher.setPhoneNo(teacherDTO.getPhoneNo());
         teacher.setStartDate(teacherDTO.getStartDate());
         teacher.setEndDate(teacherDTO.getEndDate());
+        teacher.setDescription(teacherDTO.getDescription());
         if (teacherDTO.getPosition() != 0) {
             BishPosition position = positionRepo.findById(teacherDTO.getPosition()).orElseThrow(() ->
                             new ResourceNotFoundException("Position with ID " + teacherDTO.getPosition() + " has not found"));
@@ -159,13 +212,13 @@ public class BishTeacherServiceImpl implements BishTeacherService {
 
     @Override
     public BishTeachers addTeacher(TeacherDTO teacherDTO) {
-        BishTeachers teacher = teacherToDTO(new BishTeachers(), teacherDTO);
+        BishTeachers teacher = DTOToTeacher(new BishTeachers(), teacherDTO);
         return teacherRepo.save(teacher);
     }
 
     @Override
     public BishTeachers updateTeacherInfo(long id, TeacherDTO teacherDTO) {
-        BishTeachers teacher = teacherToDTO(teacherRepo.findById(id).orElseThrow(() ->
+        BishTeachers teacher = DTOToTeacher(teacherRepo.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException("Teacher with id " + id + " has not found")), teacherDTO);
         return teacherRepo.save(teacher);
     }

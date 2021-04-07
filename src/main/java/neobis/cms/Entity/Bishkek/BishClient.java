@@ -62,12 +62,9 @@ public class BishClient {
     @Column(name = "laptop")
     private boolean laptop;
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(
-            name = "Client_Course",
-            joinColumns = @JoinColumn(name = "client_id"),
-            inverseJoinColumns = @JoinColumn(name = "course_id"))
-    private List<BishCourses> courses;
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    private BishCourses course;
 
     @ManyToOne
     @JoinColumn(name = "utm_id")

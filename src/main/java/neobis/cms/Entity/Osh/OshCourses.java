@@ -29,8 +29,4 @@ public class OshCourses extends Base {
     @JsonIgnore
     @OneToOne(mappedBy = "course")
     private OshTeachers teacher;
-
-    @JsonIgnore
-    @ManyToMany(mappedBy = "courses")
-    private List<OshClient> clients;
 }

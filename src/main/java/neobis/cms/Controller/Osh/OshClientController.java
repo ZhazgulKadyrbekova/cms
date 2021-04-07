@@ -6,7 +6,6 @@ import neobis.cms.Dto.ClientDTO;
 import neobis.cms.Dto.PaymentDTO;
 import neobis.cms.Dto.ResponseMessage;
 import neobis.cms.Entity.Osh.OshClient;
-import neobis.cms.Entity.Osh.OshCourses;
 import neobis.cms.Service.ExcelService;
 import neobis.cms.Service.Osh.OshClientService;
 import neobis.cms.Util.ExcelUtilHelper;
@@ -143,11 +142,6 @@ public class OshClientController {
     @PutMapping("/{client_id}/status/{status_id}")
     public OshClient changeStatus(Principal principal, @PathVariable("client_id") Long id, @PathVariable("status_id") Long status_id) {
         return clientService.changeStatus(id, status_id, principal.getName());
-    }
-
-    @GetMapping("/{client_id}/courses")
-    public List<OshCourses> getClientCourses(@PathVariable("client_id") Long id) {
-        return clientService.getCourses(id);
     }
 
     @PutMapping("/{client_id}/city")
