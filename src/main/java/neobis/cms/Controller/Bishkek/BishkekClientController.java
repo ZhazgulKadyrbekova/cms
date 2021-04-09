@@ -51,7 +51,7 @@ public class BishkekClientController {
                     value = "Number of records per page.", defaultValue = "20")
     })
     public Page<BishClient> getAll(Pageable pageable) {
-         // clientService.addClientsToDB();
+//          clientService.addClientsToDB();
         return clientService.getAllClientsFromDB(pageable);
     }
 
