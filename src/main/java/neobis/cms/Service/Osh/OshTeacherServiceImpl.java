@@ -205,6 +205,7 @@ public class OshTeacherServiceImpl implements OshTeacherService {
         teacher.setPatronymic(teacherDTO.getPatronymic());
         teacher.setEmail(teacherDTO.getEmail());
         teacher.setPhoneNo(teacherDTO.getPhoneNo());
+        teacher.setPatent(teacherDTO.getPatent());
         teacher.setStartDate(teacherDTO.getStartDate());
         teacher.setEndDate(teacherDTO.getEndDate());
         teacher.setDescription(teacherDTO.getDescription());

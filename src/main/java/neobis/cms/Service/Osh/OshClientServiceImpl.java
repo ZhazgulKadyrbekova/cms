@@ -101,6 +101,8 @@ public class OshClientServiceImpl implements OshClientService {
     public OshClient create(OshClient client) {
 //        client.setStatus("New");
         client.setCity("Osh");
+        client.setDateCreated(LocalDateTime.now());
+        client.setTimer(LocalDateTime.now().plusHours(24L));
         return oshClientRepo.save(client);
     }
 
@@ -373,7 +375,9 @@ public class OshClientServiceImpl implements OshClientService {
             historyUTM.setNewData(utm.getName());
         }
 
-        if (clientDTO.getTimer() == null)
+        if (client.getStatus().getID() == 7)
+            client.setTimer(null);
+        else if (clientDTO.getTimer() == null)
             client.setTimer(LocalDateTime.now().plusHours(24L));
         else
             client.setTimer(clientDTO.getTimer());
@@ -419,9 +423,11 @@ public class OshClientServiceImpl implements OshClientService {
 
         client.setStatus(statuses);
 
-        if (client.getTimer() == null) {
+        if (client.getStatus().getID() == 7)
+            client.setTimer(null);
+        else if (client.getTimer() == null)
             client.setTimer(LocalDateTime.now().plusHours(24L));
-        } else if (client.getTimer().isAfter(LocalDateTime.now().plusHours(24L))){
+        else if (!client.getTimer().isAfter(LocalDateTime.now().plusHours(24L))){
             client.setTimer(LocalDateTime.now().plusHours(24L));
         }
 
@@ -508,14 +514,16 @@ public class OshClientServiceImpl implements OshClientService {
             client.setLeavingReason(oshLeavingReasonRepo.findById(clientDTO.getLeavingReason())
                     .orElseThrow((() -> new ResourceNotFoundException("Reason with id " + clientDTO.getLeavingReason() + "has not found"))));
 
-        if (client.getTimer() == null) {
-            if (clientDTO.getTimer() == null)
-                client.setTimer(LocalDateTime.now().plusHours(24L));
-            else
-                client.setTimer(clientDTO.getTimer());
-        } else if (!client.getTimer().isAfter(LocalDateTime.now().plusHours(24L))){
+        if (client.getStatus().getID() == 7)
+            client.setTimer(null);
+        else if (client.getTimer() == null && clientDTO.getTimer() == null)
+            client.setTimer(LocalDateTime.now().plusHours(24L));
+        else if (client.getTimer() == null)
+            client.setTimer(clientDTO.getTimer());
+        else if (!client.getTimer().isAfter(LocalDateTime.now().plusHours(24L))){
             client.setTimer(clientDTO.getTimer());
         }
+
         client = oshClientRepo.save(client);
         if (historyCourse != null && !historyCourse.getOldData().equals(historyCourse.getNewData()))
             historyService.create(historyCourse);
@@ -555,7 +563,7 @@ public class OshClientServiceImpl implements OshClientService {
         bishClient.setCity("OSH");
         bishClient.setFormName(oshClient.getFormName());
 //         TODO
-        bishClient.setTimer(oshClient.getTimer());
+        bishClient.setTimer(LocalDateTime.now().plusHours(24L));
         bishClient.setPrepayment(oshClient.getPrepayment());
         bishClient.setLeavingReason(bishLeavingReasonRepo.findByNameContainingIgnoringCase(bishClient.getLeavingReason().getName()).orElse(null));
         bishClientRepo.save(bishClient);

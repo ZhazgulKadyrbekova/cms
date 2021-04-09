@@ -102,6 +102,8 @@ public class BishClientServiceImpl implements BishClientService {
     public BishClient create(BishClient client) {
 //        client.setStatus("New");
         client.setCity("Bishkek");
+        client.setDateCreated(LocalDateTime.now());
+        client.setTimer(LocalDateTime.now().plusHours(24L));
         return bishClientRepo.save(client);
     }
 
@@ -374,10 +376,13 @@ public class BishClientServiceImpl implements BishClientService {
             historyUTM.setNewData(utm.getName());
         }
 
-        if (clientDTO.getTimer() == null)
+        if (client.getStatus().getID() == 7)
+            client.setTimer(null);
+        else if (clientDTO.getTimer() == null)
             client.setTimer(LocalDateTime.now().plusHours(24L));
         else
             client.setTimer(clientDTO.getTimer());
+
 
         client = bishClientRepo.save(client);
         if (historyCourse != null) bishHistoryService.create(historyCourse);
@@ -420,9 +425,11 @@ public class BishClientServiceImpl implements BishClientService {
 
         client.setStatus(statuses);
 
-        if (client.getTimer() == null) {
+        if (client.getStatus().getID() == 7)
+            client.setTimer(null);
+        else if (client.getTimer() == null)
             client.setTimer(LocalDateTime.now().plusHours(24L));
-        } else if (client.getTimer().isAfter(LocalDateTime.now().plusHours(24L))){
+        else if (!client.getTimer().isAfter(LocalDateTime.now().plusHours(24L))){
             client.setTimer(LocalDateTime.now().plusHours(24L));
         }
 
@@ -509,15 +516,16 @@ public class BishClientServiceImpl implements BishClientService {
             client.setLeavingReason(bishLeavingReasonRepo.findById(clientDTO.getLeavingReason())
                     .orElseThrow(() -> new ResourceNotFoundException("Reason with id " + clientDTO.getLeavingReason() + "has not found")));
 
-
-        if (client.getTimer() == null) {
-            if (clientDTO.getTimer() == null)
-                client.setTimer(LocalDateTime.now().plusHours(24L));
-            else
-                client.setTimer(clientDTO.getTimer());
-        } else if (!client.getTimer().isAfter(LocalDateTime.now().plusHours(24L))){
+        if (client.getStatus().getID() == 7)
+            client.setTimer(null);
+        else if (client.getTimer() == null && clientDTO.getTimer() == null)
+            client.setTimer(LocalDateTime.now().plusHours(24L));
+        else if (client.getTimer() == null)
+            client.setTimer(clientDTO.getTimer());
+        else if (!client.getTimer().isAfter(LocalDateTime.now().plusHours(24L))){
             client.setTimer(clientDTO.getTimer());
         }
+
         client = bishClientRepo.save(client);
         if (historyCourse != null && (historyCourse.getOldData() == null || !historyCourse.getOldData().equals(historyCourse.getNewData())))
             bishHistoryService.create(historyCourse);
@@ -557,7 +565,7 @@ public class BishClientServiceImpl implements BishClientService {
         oshClient.setCity("OSH");
         oshClient.setFormName(bishClient.getFormName());
 //         TODO
-        oshClient.setTimer(bishClient.getTimer());
+        oshClient.setTimer(LocalDateTime.now().plusHours(24L));
         oshClient.setPrepayment(bishClient.getPrepayment());
         oshClient.setLeavingReason(oshLeavingReasonRepo.findByNameContainingIgnoringCase(bishClient.getLeavingReason().getName()).orElse(null));
         oshClientRepo.save(oshClient);
