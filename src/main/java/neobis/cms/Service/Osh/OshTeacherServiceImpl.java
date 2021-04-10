@@ -7,6 +7,7 @@ import neobis.cms.Entity.Bishkek.User;
 import neobis.cms.Entity.Osh.OshCourses;
 import neobis.cms.Entity.Osh.OshPosition;
 import neobis.cms.Entity.Osh.OshTeachers;
+import neobis.cms.Exception.IllegalArgumentException;
 import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Bishkek.BishPositionRepo;
 import neobis.cms.Repo.Osh.OshPositionRepo;
@@ -216,6 +217,10 @@ public class OshTeacherServiceImpl implements OshTeacherService {
         }
         if (teacherDTO.getCourse() != 0) {
             OshCourses course = coursesService.findCourseById(teacherDTO.getCourse());
+            OshTeachers alreadyAssigned = teacherRepo.findByCourse(course);
+            if (alreadyAssigned != null)
+                throw new IllegalArgumentException("Course '" + course.getName() + "' with ID " + teacherDTO.getCourse()
+                        + " already has a teacher " + alreadyAssigned.getName() + " " + alreadyAssigned.getSurname());
             teacher.setCourse(course);
         }
         return teacher;

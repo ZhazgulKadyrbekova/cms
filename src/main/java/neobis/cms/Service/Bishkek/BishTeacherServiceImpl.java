@@ -6,6 +6,7 @@ import neobis.cms.Entity.Bishkek.BishCourses;
 import neobis.cms.Entity.Bishkek.BishPosition;
 import neobis.cms.Entity.Bishkek.BishTeachers;
 import neobis.cms.Entity.Bishkek.User;
+import neobis.cms.Exception.IllegalArgumentException;
 import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Bishkek.BishPositionRepo;
 import neobis.cms.Repo.Bishkek.BishTeacherRepo;
@@ -206,6 +207,10 @@ public class BishTeacherServiceImpl implements BishTeacherService {
         }
         if (teacherDTO.getCourse() != 0) {
             BishCourses course = coursesService.findCourseById(teacherDTO.getCourse());
+            BishTeachers alreadyAssigned = teacherRepo.findByCourse(course);
+            if (alreadyAssigned != null)
+                throw new IllegalArgumentException("Course '" + course.getName() + "' with ID " + teacherDTO.getCourse()
+                        + " already has a teacher " + alreadyAssigned.getName() + " " + alreadyAssigned.getSurname());
             teacher.setCourse(course);
         }
         return teacher;

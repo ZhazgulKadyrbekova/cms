@@ -1,5 +1,6 @@
 package neobis.cms.Repo.Bishkek;
 
+import neobis.cms.Entity.Bishkek.BishCourses;
 import neobis.cms.Entity.Bishkek.BishPosition;
 import neobis.cms.Entity.Bishkek.BishTeachers;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,8 +15,7 @@ public interface BishTeacherRepo extends JpaRepository<BishTeachers, Long>, JpaS
     List<BishTeachers> findAllBySurnameContainingIgnoringCase(String surname);
     List<BishTeachers> findAllByPhoneNoContaining(String phoneNo);
     BishTeachers findByNameContainingIgnoringCase(String name);
-//    List<BishTeachers> findAllByPositionAndCourseNameContainingIgnoringCase(String position, String courseName);
     List<BishTeachers> findAllByPosition(BishPosition position);
-//    List<BishTeachers> findAllByCourseNameContainingIgnoringCase(String course);
     List<BishTeachers> findAllByEmailContainingIgnoringCase(String email);
+    BishTeachers findByCourse(BishCourses course);
 }

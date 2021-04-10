@@ -1,5 +1,6 @@
 package neobis.cms.Repo.Osh;
 
+import neobis.cms.Entity.Osh.OshCourses;
 import neobis.cms.Entity.Osh.OshPosition;
 import neobis.cms.Entity.Osh.OshTeachers;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,4 +19,5 @@ public interface OshTeacherRepo extends JpaRepository<OshTeachers, Long>, JpaSpe
     List<OshTeachers> findAllByNameContainingIgnoringCase(String name);
     List<OshTeachers> findAllBySurnameContainingIgnoringCase(String name);
     List<OshTeachers> findAllByPhoneNoContaining(String phoneNo);
+    OshTeachers findByCourse(OshCourses course);
 }
