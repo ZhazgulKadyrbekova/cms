@@ -730,4 +730,78 @@ public class BishClientServiceImpl implements BishClientService {
 
         return new ResponseMessage("Client with ID " + clientID + " has been deleted");
     }
+
+    @Override
+    public BishClient parseClient(String data) {
+        BishClient client = new BishClient();
+        String[] properties = data.split("&");
+        for (String property : properties) {
+            List<String> keyValue = Arrays.asList(property.split("="));
+            switch (keyValue.get(0)) {
+                case "data[client][phone]" :
+                    client.setPhoneNo(keyValue.get(1));
+                    break;
+                case "data[form_name]" :
+                    client.setFormName(keyValue.get(1));
+                    break;
+                case "data[form_data][f27b7c6e2][value]" :
+                    BishTarget target = bishTargetRepo.findByNameContainingIgnoringCase(keyValue.get(1));
+                    if (target == null) {
+                        oshTargetRepo.save(new OshTarget(keyValue.get(1)));
+                        target = bishTargetRepo.save(new BishTarget(keyValue.get(1)));
+                    }
+                    client.setTarget(target);
+                    break;
+                case "data[form_data][f39494f11][value]" :
+                    BishOccupation occupation = bishOccupationRepo.findByNameContainingIgnoringCase(keyValue.get(1));
+                    if (occupation == null) {
+                        oshOccupationRepo.save(new OshOccupation(keyValue.get(1)));
+                        occupation = bishOccupationRepo.save(new BishOccupation(keyValue.get(1)));
+                    }
+                    client.setOccupation(occupation);
+                    break;
+                case "data[form_data][f8d5336ff][name]" :
+                    client.setExperience(keyValue.get(1).equals("Да"));
+                    break;
+                case  "data[utm][url]" :
+                    BishUTM utm;
+                    String utmName = keyValue.get(1);
+                    if (utmName.contains("instagram")) {
+                        utm = bishUTMRepo.findByNameContainingIgnoringCase("Instagram").orElse(null);
+                        if (utm == null) {
+                            oshUTMRepo.save(new OshUTM("Instagram"));
+                            utm = bishUTMRepo.save(new BishUTM("Instagram"));
+                        }
+                        client.setUtm(utm);
+                    } else if (utmName.contains("facebook")) {
+                        utm = bishUTMRepo.findByNameContainingIgnoringCase("Facebook").orElse(null);
+                        if (utm == null) {
+                            oshUTMRepo.save(new OshUTM("Facebook"));
+                            utm = bishUTMRepo.save(new BishUTM("Facebook"));
+                        }
+                        client.setUtm(utm);
+                    } else if (utmName.contains("google")) {
+                        utm = bishUTMRepo.findByNameContainingIgnoringCase("Google").orElse(null);
+                        if (utm == null) {
+                            oshUTMRepo.save(new OshUTM("Google"));
+                            utm = bishUTMRepo.save(new BishUTM("Google"));
+                        }
+                        client.setUtm(utm);
+                    } else if (utmName.contains("neobis")) {
+                        utm = bishUTMRepo.findByNameContainingIgnoringCase("Neobis").orElse(null);
+                        if (utm == null) {
+                            oshUTMRepo.save(new OshUTM("Neobis"));
+                            utm = bishUTMRepo.save(new BishUTM("Neobis"));
+                        }
+                        client.setUtm(utm);
+                    }
+                    break;
+            }
+            client.setCity("Bishkek");
+            client.setTimer(LocalDateTime.now().plusHours(24L));
+            client.setStatus(bishStatusesRepo.findById(1L).orElse(null));
+        }
+        return client;
+    }
+
 }
