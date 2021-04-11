@@ -25,7 +25,7 @@ public class WebhookController {
     public ResponseMessage addClientToDB(HttpEntity<String> httpEntity) {
         String body = httpEntity.getBody();
         try {
-            String result = URLDecoder.decode(body, StandardCharsets.UTF_8.name());
+            body = URLDecoder.decode(body, StandardCharsets.UTF_8.name());
         } catch (UnsupportedEncodingException e) {
             // not going to happen - value came from JDK's own StandardCharsets
             System.err.println(e.getMessage());
