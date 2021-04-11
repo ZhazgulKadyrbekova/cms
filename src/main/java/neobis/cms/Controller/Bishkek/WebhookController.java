@@ -20,6 +20,7 @@ public class WebhookController {
     @PostMapping
     public ResponseMessage addClientToDB(HttpEntity<String> httpEntity) {
         String body = httpEntity.getBody();
+        System.out.println(body);
         JSONObject object = new JSONObject(body);
         JSONObject data = (JSONObject) object.get("data");
         BishClient client = clientService.parseJson(data, new BishClient());

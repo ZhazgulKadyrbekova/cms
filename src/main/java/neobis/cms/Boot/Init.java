@@ -51,9 +51,9 @@ public class Init implements CommandLineRunner {
 //          if (role == null)
 //              role = roleRepo.save(new Role("ROLE_ADMIN"));
 //          service.createAdmin(new User("admin@gmail.com", "+996100100100", "Admin",  "Admin", "Admin",
-//                  null, null, true, null, true, "12345678", role));
+//                  null, "Bishkek", true, null, true, "12345678", role));
 //          service.createAdmin(new User("admin2@gmail.com", "+996100100100", "Admin",  "Admin", "Admin",
-//                  null, null, true, null, true, "12345678", role));
+//                  null, "Osh", true, null, true, "12345678", role));
 //
 //          bishStatusesRepo.save(new BishStatuses("Первый контакт", true));
 //          bishStatusesRepo.save(new BishStatuses("Перезвон", true));
