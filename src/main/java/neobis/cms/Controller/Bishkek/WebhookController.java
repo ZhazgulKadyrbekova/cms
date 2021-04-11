@@ -29,7 +29,6 @@ public class WebhookController {
             System.err.println(e.getMessage());
             e.printStackTrace();
         }
-        System.out.println(body);
         BishClient client = clientService.parseClient(body);
         clientService.create(client);
         return new ResponseMessage("Client data has been saved in database.");
