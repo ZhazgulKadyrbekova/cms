@@ -11,6 +11,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+
 @CrossOrigin
 @RestController
 @RequestMapping("/webhook")
@@ -20,6 +24,14 @@ public class WebhookController {
     @PostMapping
     public ResponseMessage addClientToDB(HttpEntity<String> httpEntity) {
         String body = httpEntity.getBody();
+        try {
+            String result = URLDecoder.decode(body, StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
+            // not going to happen - value came from JDK's own StandardCharsets
+            System.err.println(e.getMessage());
+            e.printStackTrace();
+        }
+//        URLDecoder.decode( body, "UTF-8" );
         System.out.println(body);
         JSONObject object = new JSONObject(body);
         JSONObject data = (JSONObject) object.get("data");
