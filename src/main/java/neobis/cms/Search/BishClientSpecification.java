@@ -36,8 +36,10 @@ public class BishClientSpecification<BishClient> implements Specification<BishCl
             else if (criteria.getOperation().equals(SearchOperation.MATCH))
                 fieldPredicatesList.add(builder.like(builder.lower(root.get(criteria.getKey())), "%" + criteria.getField().toLowerCase() + "%"));
         }
-        predicate = builder.or(fieldPredicatesList.toArray(new Predicate[0]));
-        predicates.add(predicate);
+        if (!fieldPredicatesList.isEmpty()) {
+            predicate = builder.or(fieldPredicatesList.toArray(new Predicate[0]));
+            predicates.add(predicate);
+        }
         predicates.toArray(new Predicate[0]);
         return builder.and(predicates.toArray(new Predicate[0]));
     }

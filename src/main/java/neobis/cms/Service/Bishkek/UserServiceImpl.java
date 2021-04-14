@@ -109,9 +109,15 @@ public class UserServiceImpl implements UserService {
         if (!city.equalsIgnoreCase("bishkek") && !city.equalsIgnoreCase("osh")) {
             throw new IllegalArgumentException("Invalid city");
         }
-        if (!positionName.equalsIgnoreCase("marketing") && !positionName.equalsIgnoreCase("management")) {
+        BishPosition position;
+        if (positionName.equalsIgnoreCase("marketing")) {
+            position = bishPositionRepo.findByNameContainingIgnoringCase("Маркетолог");
+        } else if (positionName.equalsIgnoreCase("management")) {
+            position = bishPositionRepo.findByNameContainingIgnoringCase("Менеджер");
+        } else {
             throw new IllegalArgumentException("Invalid position");
         }
+
         String email = userDTO.getEmail().toLowerCase();
         if (email.startsWith("@") || email.endsWith("@") || !email.contains("@"))
             throw new IllegalArgumentException("Invalid email address");
@@ -122,11 +128,6 @@ public class UserServiceImpl implements UserService {
 
         user = new User();
         user.setEmail(email);
-        BishPosition position = bishPositionRepo.findByNameContainingIgnoringCase(positionName);
-        if (position == null) {
-            oshPositionRepo.save(new OshPosition(positionName));
-            position = bishPositionRepo.save(new BishPosition(positionName));
-        }
         user.setPosition(position);
         user.setCity(city);
         user.setName(userDTO.getName());
