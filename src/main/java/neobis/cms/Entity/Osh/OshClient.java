@@ -89,7 +89,7 @@ public class OshClient {
     @JoinColumn(name = "leaving_reason_id")
     private OshLeavingReason leavingReason;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "payment_id")
     private List<OshPayment> payments;
 }

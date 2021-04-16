@@ -69,11 +69,6 @@ public class AuthController {
     public ResponseMessage setPassword(@RequestBody UserAuthDTO userAuthDTO) {
         return new ResponseMessage(userService.setPassword(userAuthDTO));
     }
-    
-    @RequestMapping(value = "/setPassword2", method = RequestMethod.POST,consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public ResponseMessage setPasswor2d(UserAuthDTO userAuthDTO) {
-        return new ResponseMessage(userService.setPassword(userAuthDTO));
-    }
 
     @PostMapping("/auth")
     public TokenDTO getToken(@RequestBody UserAuthDTO userAuthDTO) throws Exception {

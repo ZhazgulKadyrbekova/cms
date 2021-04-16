@@ -10,6 +10,7 @@ public interface OshCoursesService {
     OshCourses findCourseById(long id);
     List<OshCourses> findAll();
     OshCourses findCourseByName(String name);
+    List<OshCourses> findCoursesByName(String name);
     OshCourses addCourse(CoursesDTO courseDTO);
     OshCourses updateCourse(long id, CoursesDTO courseDTO);
     String deleteCourse(List<Long> courses);

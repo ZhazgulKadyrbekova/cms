@@ -1,7 +1,6 @@
 package neobis.cms.Repo.Osh;
 
-import neobis.cms.Entity.Osh.OshClient;
-import neobis.cms.Entity.Osh.OshStatuses;
+import neobis.cms.Entity.Osh.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -16,5 +15,9 @@ public interface OshClientRepo extends JpaRepository<OshClient, Long>, JpaSpecif
     List<OshClient> findAllBySurnameContainingIgnoringCase(String surname);
     List<OshClient> findAllByPhoneNoContaining(String phoneNo);
     List<OshClient> findAllByEmailContainingIgnoringCase(String email);
+    List<OshClient> findAllByOccupation(OshOccupation occupation);
+    List<OshClient> findAllByTarget(OshTarget target);
+    List<OshClient> findAllByCourse(OshCourses course);
+
     OshClient findByNameContainingIgnoringCase(String name);
 }

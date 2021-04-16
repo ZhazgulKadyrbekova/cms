@@ -6,7 +6,6 @@ import neobis.cms.Entity.Bishkek.BishCourses;
 import neobis.cms.Service.Bishkek.BishCoursesService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,8 +16,11 @@ import java.util.List;
 public class BishkekCourseController {
     private final Logger log = LogManager.getLogger();
 
-    @Autowired
-    private BishCoursesService coursesService;
+    private final BishCoursesService coursesService;
+
+    public BishkekCourseController(BishCoursesService coursesService) {
+        this.coursesService = coursesService;
+    }
 
     @GetMapping
     public List<BishCourses> getAll() {

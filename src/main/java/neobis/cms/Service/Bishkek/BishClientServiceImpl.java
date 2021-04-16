@@ -60,11 +60,14 @@ public class BishClientServiceImpl implements BishClientService {
     private final BishMethodRepo bishMethodRepo;
     private final OshMethodRepo oshMethodRepo;
 
-    public BishClientServiceImpl(BishStatusesRepo statusesRepo, BishClientRepo bishClientRepo, OshClientRepo oshClientRepo, OshStatusesRepo oshStatusesRepo,
-                                 BishOccupationRepo bishOccupationRepo, OshOccupationRepo oshOccupationRepo, BishUTMRepo bishUTMRepo, OshUTMRepo oshUTMRepo,
-                                 BishCoursesService coursesService, BishPaymentRepo bishPaymentService, OshPaymentRepo oshPaymentService,
-                                 BishHistoryService bishHistoryService, UserService userService, BishLeavingReasonRepo bishLeavingReasonRepo,
-                                 OshLeavingReasonRepo oshLeavingReasonRepo, BishTargetRepo bishTargetRepo, OshTargetRepo oshTargetRepo, BishMethodRepo bishMethodRepo, OshMethodRepo oshMethodRepo) {
+    public BishClientServiceImpl(BishStatusesRepo statusesRepo, BishClientRepo bishClientRepo, OshClientRepo
+                                 oshClientRepo, OshStatusesRepo oshStatusesRepo, BishOccupationRepo bishOccupationRepo,
+                                 OshOccupationRepo oshOccupationRepo, BishUTMRepo bishUTMRepo, OshUTMRepo oshUTMRepo,
+                                 BishCoursesService coursesService, BishPaymentRepo bishPaymentService, OshPaymentRepo
+                                 oshPaymentService, BishHistoryService bishHistoryService, UserService userService,
+                                 BishLeavingReasonRepo bishLeavingReasonRepo, OshLeavingReasonRepo oshLeavingReasonRepo,
+                                 BishTargetRepo bishTargetRepo, OshTargetRepo oshTargetRepo, BishMethodRepo bishMethodRepo,
+                                 OshMethodRepo oshMethodRepo) {
         this.bishStatusesRepo = statusesRepo;
         this.bishClientRepo = bishClientRepo;
         this.oshClientRepo = oshClientRepo;
@@ -567,7 +570,8 @@ public class BishClientServiceImpl implements BishClientService {
 //         TODO
         oshClient.setTimer(LocalDateTime.now().plusHours(24L));
         oshClient.setPrepayment(bishClient.getPrepayment());
-        oshClient.setLeavingReason(oshLeavingReasonRepo.findByNameContainingIgnoringCase(bishClient.getLeavingReason().getName()).orElse(null));
+        if (bishClient.getLeavingReason() != null)
+            oshClient.setLeavingReason(oshLeavingReasonRepo.findByNameContainingIgnoringCase(bishClient.getLeavingReason().getName()).orElse(null));
         oshClientRepo.save(oshClient);
 
 //        Second step - create all payments of bishClient

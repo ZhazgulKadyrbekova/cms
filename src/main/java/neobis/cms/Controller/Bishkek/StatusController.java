@@ -2,11 +2,16 @@ package neobis.cms.Controller.Bishkek;
 
 import neobis.cms.Dto.ResponseMessage;
 import neobis.cms.Dto.StatusDTO;
+import neobis.cms.Entity.Bishkek.BishClient;
 import neobis.cms.Entity.Bishkek.BishStatuses;
+import neobis.cms.Entity.Osh.OshClient;
 import neobis.cms.Entity.Osh.OshStatuses;
+import neobis.cms.Exception.IllegalArgumentException;
 import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Bishkek.BishStatusesRepo;
 import neobis.cms.Repo.Osh.OshStatusesRepo;
+import neobis.cms.Service.Bishkek.BishClientService;
+import neobis.cms.Service.Osh.OshClientService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,12 +21,15 @@ import java.util.List;
 @RequestMapping("/status")
 public class StatusController {
     private final BishStatusesRepo bishStatusesRepo;
-
     private final OshStatusesRepo oshStatusesRepo;
+    private final BishClientService bishClientService;
+    private final OshClientService oshClientService;
 
-    public StatusController(BishStatusesRepo bishStatusesRepo, OshStatusesRepo oshStatusesRepo) {
+    public StatusController(BishStatusesRepo bishStatusesRepo, OshStatusesRepo oshStatusesRepo, BishClientService bishClientService, OshClientService oshClientService) {
         this.bishStatusesRepo = bishStatusesRepo;
         this.oshStatusesRepo = oshStatusesRepo;
+        this.bishClientService = bishClientService;
+        this.oshClientService = oshClientService;
     }
 
     @GetMapping
@@ -63,13 +71,18 @@ public class StatusController {
     @DeleteMapping("/{id}")
     public ResponseMessage deleteStatusByID(@PathVariable List<Long> id) {
         for (long status : id) {
-            BishStatuses bishStatuses = bishStatusesRepo.findById(status)
+            BishStatuses bishStatus = bishStatusesRepo.findById(status)
                     .orElseThrow(() -> new ResourceNotFoundException("Status with id " + status + " has not found"));
-            OshStatuses oshStatuses = oshStatusesRepo.findById(status)
-                    .orElseThrow(() -> new ResourceNotFoundException("Status with id " + status + " has not found"));
+            List<BishClient> bishClients = bishClientService.getAllByStatus(status);
+            if (!bishClients.isEmpty())
+                throw new IllegalArgumentException("Статус " + bishStatus.getName() + "используется, не может быть удален.");
 
-            bishStatusesRepo.delete(bishStatuses);
-            oshStatusesRepo.delete(oshStatuses);
+            List<OshClient> oshClients = oshClientService.getAllByStatus(status);
+            if (!oshClients.isEmpty())
+                throw new IllegalArgumentException("Статус " + bishStatus.getName() + "используется, не может быть удален.");
+
+            bishStatusesRepo.delete(bishStatus);
+            oshStatusesRepo.deleteById(status);
         }
         return new ResponseMessage("Status with ID " + id + " has been deleted");
     }

@@ -11,7 +11,6 @@ import java.util.List;
 
 @Repository
 public interface OshTeacherRepo extends JpaRepository<OshTeachers, Long>, JpaSpecificationExecutor<OshTeachers> {
-//    List<OshTeachers> findAllByPositionContainingIgnoringCaseAndCourseNameContainingIgnoringCase(String position, String course);
     List<OshTeachers> findAllByPosition(OshPosition position);
     List<OshTeachers> findAllByCourseNameContaining(String course);
     List<OshTeachers> findAllByEmailContainingIgnoringCase(String email);

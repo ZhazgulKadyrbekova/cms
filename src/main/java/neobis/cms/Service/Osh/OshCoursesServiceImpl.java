@@ -1,9 +1,14 @@
 package neobis.cms.Service.Osh;
 
 import neobis.cms.Dto.CoursesDTO;
+import neobis.cms.Entity.Osh.OshClient;
 import neobis.cms.Entity.Osh.OshCourses;
+import neobis.cms.Entity.Osh.OshTeachers;
+import neobis.cms.Exception.IllegalArgumentException;
 import neobis.cms.Exception.ResourceNotFoundException;
+import neobis.cms.Repo.Osh.OshClientRepo;
 import neobis.cms.Repo.Osh.OshCoursesRepo;
+import neobis.cms.Repo.Osh.OshTeacherRepo;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,9 +16,13 @@ import java.util.List;
 @Service
 public class OshCoursesServiceImpl implements OshCoursesService {
     private final OshCoursesRepo coursesRepo;
+    private final OshTeacherRepo teacherRepo;
+    private final OshClientRepo clientRepo;
 
-    public OshCoursesServiceImpl(OshCoursesRepo coursesRepo) {
+    public OshCoursesServiceImpl(OshCoursesRepo coursesRepo, OshTeacherRepo teacherRepo, OshClientRepo clientRepo) {
         this.coursesRepo = coursesRepo;
+        this.teacherRepo = teacherRepo;
+        this.clientRepo = clientRepo;
     }
 
     @Override
@@ -56,6 +65,11 @@ public class OshCoursesServiceImpl implements OshCoursesService {
     }
 
     @Override
+    public List<OshCourses> findCoursesByName(String name) {
+        return coursesRepo.findAllByNameContainingIgnoringCase(name);
+    }
+
+    @Override
     public OshCourses addCourse(CoursesDTO courseDTO) {
         OshCourses course = new OshCourses();
         course.setName(courseDTO.getName());
@@ -76,6 +90,13 @@ public class OshCoursesServiceImpl implements OshCoursesService {
     public String deleteCourse(List<Long> courses) {
         for (long courseID : courses) {
             OshCourses course = this.findCourseById(courseID);
+            List<OshClient> clients = clientRepo.findAllByCourse(course);
+            if (!clients.isEmpty())
+                throw new IllegalArgumentException("Курс " + course.getName() + "используется, не может быть удален.");
+
+            OshTeachers teacher = course.getTeacher();
+            teacher.setCourse(null);
+            teacherRepo.save(teacher);
             coursesRepo.delete(course);
         }
         if (courses.size() > 1)

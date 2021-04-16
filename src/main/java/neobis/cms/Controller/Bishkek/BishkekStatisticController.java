@@ -3,7 +3,6 @@ package neobis.cms.Controller.Bishkek;
 import io.swagger.annotations.ApiParam;
 import neobis.cms.Dto.StatisticResponse;
 import neobis.cms.Service.Bishkek.BishHistoryService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -14,8 +13,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/bishkek/statistic")
 public class BishkekStatisticController {
-    @Autowired
-    private BishHistoryService historyService;
+    private final BishHistoryService historyService;
+
+    public BishkekStatisticController(BishHistoryService historyService) {
+        this.historyService = historyService;
+    }
 
     @GetMapping
     public List<StatisticResponse> getStatistic(@ApiParam(value="yyyy-MM-dd HH:mm") @RequestParam String dateAfter,

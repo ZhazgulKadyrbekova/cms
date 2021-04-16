@@ -15,13 +15,13 @@
     </Appenders>
     <Loggers>
 
-        <Root level="debug">
+        <Root level="info">
             <AppenderRef ref="STDOUT"/>
             <AppenderRef ref="LOGFILE"/>
         </Root>
 
 
-        <Logger name="neobis.cms" level="debug">
+        <Logger name="neobis.cms" level="info">
             <AppenderRef ref="LOGFILE"
                          level="info" />
         </Logger>

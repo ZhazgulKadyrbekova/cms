@@ -131,7 +131,7 @@ public class ExcelUtilHelper {
                 Row row = sheet.createRow(rowIdx++);
 
                 row.createCell(0).setCellValue(client.getClientID());
-                row.createCell(1).setCellValue(client.getDateCreated().toString());
+                row.createCell(1).setCellValue(client.getDateCreated() != null ? client.getDateCreated() .toString() : null);
                 row.createCell(2).setCellValue(client.getDateUpdated() != null ? client.getDateUpdated().toString() : null);
                 row.createCell(3).setCellValue(client.getPhoneNo() != null ? client.getPhoneNo() : null);
                 row.createCell(4).setCellValue(client.getName());

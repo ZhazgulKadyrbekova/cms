@@ -6,7 +6,6 @@ import neobis.cms.Entity.Osh.OshCourses;
 import neobis.cms.Service.Osh.OshCoursesService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,8 +17,11 @@ public class OshCourseController {
 
     private final Logger log = LogManager.getLogger();
 
-    @Autowired
-    private OshCoursesService coursesService;
+    private final OshCoursesService coursesService;
+
+    public OshCourseController(OshCoursesService coursesService) {
+        this.coursesService = coursesService;
+    }
 
     @GetMapping
     public List<OshCourses> getAll() {
@@ -32,8 +34,8 @@ public class OshCourseController {
     }
 
     @GetMapping("/name/{name}")
-    public OshCourses getByName(@PathVariable String name) {
-        return coursesService.findCourseByName(name);
+    public List<OshCourses> getByName(@PathVariable String name) {
+        return coursesService.findCoursesByName(name);
     }
 
     @PostMapping

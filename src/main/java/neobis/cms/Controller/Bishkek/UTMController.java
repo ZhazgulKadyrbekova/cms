@@ -28,7 +28,7 @@ public class UTMController {
     }
 
     @PostMapping
-    public BishUTM addOccupation(@RequestBody UtmDTO utmDTO) {
+    public BishUTM addUTM(@RequestBody UtmDTO utmDTO) {
         oshUTMRepo.save(new OshUTM(utmDTO.getName()));
         return bishUTMRepo.save(new BishUTM(utmDTO.getName()));
     }
@@ -39,7 +39,7 @@ public class UTMController {
     }
 
     @PutMapping("/{id}")
-    public BishUTM updateOccupationName(@RequestBody UtmDTO occupationDTO, @PathVariable Long id) {
+    public BishUTM updateUTMName(@RequestBody UtmDTO occupationDTO, @PathVariable Long id) {
         OshUTM oshUTM = oshUTMRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("UTM with id " + id + " has not found"));
         BishUTM bishUTM = bishUTMRepo.findById(id)

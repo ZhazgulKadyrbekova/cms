@@ -8,5 +8,6 @@ import java.util.List;
 
 @Repository
 public interface OshCoursesRepo extends JpaRepository<OshCourses, Long> {
+    List<OshCourses> findAllByNameContainingIgnoringCase(String name);
     OshCourses findByNameContainingIgnoringCase(String name);
 }

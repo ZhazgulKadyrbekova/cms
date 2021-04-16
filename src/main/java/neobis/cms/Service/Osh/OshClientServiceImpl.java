@@ -59,11 +59,14 @@ public class OshClientServiceImpl implements OshClientService {
 
     private final BishMethodRepo bishMethodRepo;
     private final OshMethodRepo oshMethodRepo;
-    public OshClientServiceImpl(BishClientRepo bishClientRepo, OshClientRepo oshClientRepo, BishStatusesRepo bishStatusesRepo,
-                                OshStatusesRepo oshStatusesRepo, BishOccupationRepo bishOccupationRepo, OshOccupationRepo oshOccupationRepo,
-                                BishUTMRepo bishUTMRepo, OshUTMRepo oshUTMRepo, OshCoursesService coursesService, BishPaymentRepo bishPaymentService,
-                                OshPaymentRepo oshPaymentService, OshHistoryService historyService, UserService userService,
-                                BishLeavingReasonRepo bishLeavingReasonRepo, OshLeavingReasonRepo oshLeavingReasonRepo, BishTargetRepo bishTargetRepo, OshTargetRepo oshTargetRepo, BishMethodRepo bishMethodRepo, OshMethodRepo oshMethodRepo) {
+    public OshClientServiceImpl(BishClientRepo bishClientRepo, OshClientRepo oshClientRepo, BishStatusesRepo
+                                bishStatusesRepo, OshStatusesRepo oshStatusesRepo, BishOccupationRepo bishOccupationRepo,
+                                OshOccupationRepo oshOccupationRepo, BishUTMRepo bishUTMRepo, OshUTMRepo oshUTMRepo,
+                                OshCoursesService coursesService, BishPaymentRepo bishPaymentService, OshPaymentRepo
+                                oshPaymentService, OshHistoryService historyService, UserService userService,
+                                BishLeavingReasonRepo bishLeavingReasonRepo, OshLeavingReasonRepo oshLeavingReasonRepo,
+                                BishTargetRepo bishTargetRepo, OshTargetRepo oshTargetRepo, BishMethodRepo
+                                bishMethodRepo, OshMethodRepo oshMethodRepo) {
         this.bishClientRepo = bishClientRepo;
         this.oshClientRepo = oshClientRepo;
         this.bishStatusesRepo = bishStatusesRepo;
@@ -90,7 +93,7 @@ public class OshClientServiceImpl implements OshClientService {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MediaType.APPLICATION_OCTET_STREAM));
-        String dataResourceUrl = "https://neolabs.dev/mod/api/?api_key=e539509b630b27e47ac594d0dbba4e69&method=getLeads&start=0&count=200";
+        String dataResourceUrl = "https://neolabs.dev/mod/api/?api_key=e539509b630b27e47ac594d0dbba4e69&method=getLeads&start=0&count=150";
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(dataResourceUrl);
         HttpEntity<String> httpEntity = new HttpEntity<>("", httpHeaders);
         ResponseEntity<String> response = restTemplate.exchange(builder.build().toUri(), HttpMethod.GET, httpEntity, String.class);
@@ -305,8 +308,7 @@ public class OshClientServiceImpl implements OshClientService {
             oshClientSpecification.add(new SearchCriteria("phoneNo", field, null, SearchOperation.MATCH));
             oshClientSpecification.add(new SearchCriteria("email", field, null, SearchOperation.MATCH));
         }
-        Set<OshClient> clients = new HashSet<>(oshClientRepo.findAll(oshClientSpecification));
-        return clients;
+        return new HashSet<>(oshClientRepo.findAll(oshClientSpecification));
     }
 
     @Override
@@ -525,13 +527,13 @@ public class OshClientServiceImpl implements OshClientService {
         }
 
         client = oshClientRepo.save(client);
-        if (historyCourse != null && !historyCourse.getOldData().equals(historyCourse.getNewData()))
+        if (historyCourse != null && (historyCourse.getOldData() == null || !historyCourse.getOldData().equals(historyCourse.getNewData())))
             historyService.create(historyCourse);
-        if (historyOccupation != null && !historyOccupation.getOldData().equals(historyOccupation.getNewData()))
+        if (historyOccupation != null && (historyOccupation.getOldData() == null || !historyOccupation.getOldData().equals(historyOccupation.getNewData())))
             historyService.create(historyOccupation);
-        if (historyUTM != null && !historyUTM.getOldData().equals(historyUTM.getNewData()))
+        if (historyUTM != null && (historyUTM.getOldData() == null || !historyUTM.getOldData().equals(historyUTM.getNewData())))
             historyService.create(historyUTM);
-        if (historyStatus != null && !historyStatus.getOldData().equals(historyStatus.getNewData()))
+        if (historyStatus != null && (historyStatus.getOldData() == null || !historyStatus.getOldData().equals(historyStatus.getNewData())))
             historyService.create(historyStatus);
         return client;
     }
@@ -565,7 +567,8 @@ public class OshClientServiceImpl implements OshClientService {
 //         TODO
         bishClient.setTimer(LocalDateTime.now().plusHours(24L));
         bishClient.setPrepayment(oshClient.getPrepayment());
-        bishClient.setLeavingReason(bishLeavingReasonRepo.findByNameContainingIgnoringCase(bishClient.getLeavingReason().getName()).orElse(null));
+        if (oshClient.getLeavingReason() != null)
+            bishClient.setLeavingReason(bishLeavingReasonRepo.findByNameContainingIgnoringCase(bishClient.getLeavingReason().getName()).orElse(null));
         bishClientRepo.save(bishClient);
 
 //        Second step - create all payments of oshClient

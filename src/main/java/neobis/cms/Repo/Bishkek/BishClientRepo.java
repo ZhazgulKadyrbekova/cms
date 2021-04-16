@@ -1,7 +1,6 @@
 package neobis.cms.Repo.Bishkek;
 
-import neobis.cms.Entity.Bishkek.BishClient;
-import neobis.cms.Entity.Bishkek.BishStatuses;
+import neobis.cms.Entity.Bishkek.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,6 +18,9 @@ public interface BishClientRepo extends JpaRepository<BishClient, Long>, JpaSpec
     List<BishClient> findAllBySurnameContainingIgnoringCase(String surname);
     List<BishClient> findAllByPhoneNoContaining(String phoneNo);
     List<BishClient> findAllByEmailContainingIgnoringCase(String email);
+    List<BishClient> findAllByOccupation(BishOccupation occupation);
+    List<BishClient> findAllByTarget(BishTarget target);
+    List<BishClient> findAllByCourse(BishCourses course);
 
     BishClient findByNameContainingIgnoringCase(String name);
 }
