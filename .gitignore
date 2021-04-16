@@ -1,6 +1,7 @@
 src/main/java/neobis/cms/b64.txt
 src/main/java/neobis/cms/ResponseExample.json
 src/main/java/neobis/cms/ResponseErrorExample.json
+src/test
 HELP.md
 target/
 logs/
