@@ -10,7 +10,7 @@ import java.util.TimeZone;
 public class JacksonConfiguration {
 
     @Bean
-    public Jackson2ObjectMapperBuilderCustomizer init() {
+    public Jackson2ObjectMapperBuilderCustomizer customizer() {
         return builder -> builder.timeZone(TimeZone.getTimeZone("Asia/Bishkek"));
     }
 }
