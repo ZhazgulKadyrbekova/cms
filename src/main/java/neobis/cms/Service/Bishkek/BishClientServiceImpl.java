@@ -742,7 +742,8 @@ public class BishClientServiceImpl implements BishClientService {
                     client.setPhoneNo(keyValue.get(1));
                     break;
                 case "data[client][email]" :
-                    client.setEmail(keyValue.get(1));
+                    if (keyValue.get(1) != null)
+                        client.setEmail(keyValue.get(1));
                     break;
                 case "data[form_name]" :
                     BishCourses course = coursesService.findCourseByFormName(keyValue.get(1));
