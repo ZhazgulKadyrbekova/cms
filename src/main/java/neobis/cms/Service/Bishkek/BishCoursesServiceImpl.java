@@ -29,18 +29,17 @@ public class BishCoursesServiceImpl implements BishCoursesService{
     public BishCourses findCourseByFormName(String formName) {
         if (formName.equals("Заявка с quiz") || formName.equals("Заявка на перезвон"))
             return null;
-        formName = formName.substring(7);
-        if (formName.contains("PM"))
+        if (formName.contains("PM") || formName.contains("Проектный менеджмент"))
             return coursesRepo.findByNameContainingIgnoringCase("ПМ");
         if (formName.contains("Java"))
-            return coursesRepo.findByNameContainingIgnoringCase("java");
-        if (formName.contains("JS"))
-            return coursesRepo.findByNameContainingIgnoringCase("javascript");
-        if (formName.contains("python"))
-            return coursesRepo.findByNameContainingIgnoringCase("python");
+            return coursesRepo.findByNameContainingIgnoringCase("Java");
+        if (formName.contains("JS") || formName.contains("JavaScript"))
+            return coursesRepo.findByNameContainingIgnoringCase("JavaScript");
+        if (formName.contains("Python"))
+            return coursesRepo.findByNameContainingIgnoringCase("Python");
         if (formName.contains("UX/UI"))
             return coursesRepo.findByNameContainingIgnoringCase("Design");
-        if (formName.contains("olympiad"))
+        if (formName.contains("olympiad") || formName.contains("Алгоритмы и структура данных"))
             return coursesRepo.findByNameContainingIgnoringCase("ОП");
         return null;
     }
