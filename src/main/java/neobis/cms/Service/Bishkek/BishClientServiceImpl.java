@@ -742,7 +742,7 @@ public class BishClientServiceImpl implements BishClientService {
                     client.setPhoneNo(keyValue.get(1));
                     break;
                 case "data[client][email]" :
-                    if (keyValue.get(1) != null)
+                    if (keyValue.size() != 1)
                         client.setEmail(keyValue.get(1));
                     break;
                 case "data[form_name]" :
