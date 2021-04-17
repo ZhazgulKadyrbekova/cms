@@ -17,5 +17,4 @@ public interface BishTeacherRepo extends JpaRepository<BishTeachers, Long>, JpaS
     BishTeachers findByNameContainingIgnoringCase(String name);
     List<BishTeachers> findAllByPosition(BishPosition position);
     List<BishTeachers> findAllByEmailContainingIgnoringCase(String email);
-    BishTeachers findByCourse(BishCourses course);
 }

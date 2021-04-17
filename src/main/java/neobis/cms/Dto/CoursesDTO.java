@@ -13,4 +13,5 @@ import java.math.BigDecimal;
 public class CoursesDTO {
     private String name;
     private BigDecimal price;
+    private long teacherID;
 }

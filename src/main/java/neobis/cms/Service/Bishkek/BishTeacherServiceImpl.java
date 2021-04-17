@@ -6,7 +6,6 @@ import neobis.cms.Entity.Bishkek.BishCourses;
 import neobis.cms.Entity.Bishkek.BishPosition;
 import neobis.cms.Entity.Bishkek.BishTeachers;
 import neobis.cms.Entity.Bishkek.User;
-import neobis.cms.Exception.IllegalArgumentException;
 import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Bishkek.BishPositionRepo;
 import neobis.cms.Repo.Bishkek.BishTeacherRepo;
@@ -54,7 +53,7 @@ public class BishTeacherServiceImpl implements BishTeacherService {
             BishPosition position = teacher.getPosition();
             if (position != null)
                 worker.setPosition(position.getName());
-            BishCourses course = teacher.getCourse();
+            BishCourses course = coursesService.findCourseByTeacher(teacher);
             if (course != null)
                 worker.setCourseName(course.getName());
             workers.add(worker);
@@ -95,7 +94,7 @@ public class BishTeacherServiceImpl implements BishTeacherService {
             BishPosition position = teacher.getPosition();
             if (position != null)
                 worker.setPosition(position.getName());
-            BishCourses course = teacher.getCourse();
+            BishCourses course = coursesService.findCourseByTeacher(teacher);
             if (course != null)
                 worker.setCourseName(course.getName());
             workers.add(worker);
@@ -205,28 +204,28 @@ public class BishTeacherServiceImpl implements BishTeacherService {
                             new ResourceNotFoundException("Position with ID " + teacherDTO.getPosition() + " has not found"));
             teacher.setPosition(position);
         }
-        if (teacherDTO.getCourse() != 0) {
-            BishCourses course = coursesService.findCourseById(teacherDTO.getCourse());
-            BishTeachers alreadyAssigned = teacherRepo.findByCourse(course);
-            if (alreadyAssigned != null)
-                throw new IllegalArgumentException("Course '" + course.getName() + "' with ID " + teacherDTO.getCourse()
-                        + " already has a teacher " + alreadyAssigned.getName() + " " + alreadyAssigned.getSurname());
-            teacher.setCourse(course);
-        }
         return teacher;
     }
 
     @Override
     public BishTeachers addTeacher(TeacherDTO teacherDTO) {
         BishTeachers teacher = DTOToTeacher(new BishTeachers(), teacherDTO);
-        return teacherRepo.save(teacher);
+        teacher = teacherRepo.save(teacher);
+        BishCourses courses = coursesService.findCourseById(teacherDTO.getCourse());
+        courses.setTeacher(teacher);
+        coursesService.save(courses);
+        return teacher;
     }
 
     @Override
     public BishTeachers updateTeacherInfo(long id, TeacherDTO teacherDTO) {
         BishTeachers teacher = DTOToTeacher(teacherRepo.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException("Teacher with id " + id + " has not found")), teacherDTO);
-        return teacherRepo.save(teacher);
+        teacher = teacherRepo.save(teacher);
+        BishCourses courses = coursesService.findCourseById(teacherDTO.getCourse());
+        courses.setTeacher(teacher);
+        coursesService.save(courses);
+        return teacher;
     }
 
     @Override

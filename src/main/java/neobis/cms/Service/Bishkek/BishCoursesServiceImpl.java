@@ -54,6 +54,12 @@ public class BishCoursesServiceImpl implements BishCoursesService{
         BishCourses course = new BishCourses();
         course.setName(courseDTO.getName());
         course.setPrice(courseDTO.getPrice());
+        long teacherID = courseDTO.getTeacherID();
+        if (teacherID != 0) {
+            BishTeachers teacher = teacherRepo.findById(teacherID)
+                    .orElseThrow(() -> new ResourceNotFoundException("Преподаватель с идентификатором " + teacherID + " не найден."));
+            course.setTeacher(teacher);
+        }
         return coursesRepo.save(course);
     }
 
@@ -63,6 +69,12 @@ public class BishCoursesServiceImpl implements BishCoursesService{
                 .orElseThrow(() -> new ResourceNotFoundException("Course with id " + id + " has not found"));
         course.setName(courseDTO.getName());
         course.setPrice(courseDTO.getPrice());
+        long teacherID = courseDTO.getTeacherID();
+        if (teacherID != 0) {
+            BishTeachers teacher = teacherRepo.findById(teacherID)
+                    .orElseThrow(() -> new ResourceNotFoundException("Преподаватель с идентификатором " + teacherID + " не найден."));
+            course.setTeacher(teacher);
+        }
         return coursesRepo.save(course);
     }
 
@@ -74,14 +86,21 @@ public class BishCoursesServiceImpl implements BishCoursesService{
             if (!bishClients.isEmpty())
                 throw new IllegalArgumentException("Курс " + course.getName() + "используется, не может быть удален.");
 
-            BishTeachers teacher = course.getTeacher();
-            teacher.setCourse(null);
-            teacherRepo.save(teacher);
             coursesRepo.delete(course);
         }
         if (courses.size() > 1)
             return "Courses were successfully deleted";
         else
             return "Course with ID " + courses.get(0) + " was successfully deleted";
+    }
+
+    @Override
+    public BishCourses findCourseByTeacher(BishTeachers teacher) {
+        return coursesRepo.findByTeacher(teacher);
+    }
+
+    @Override
+    public void save(BishCourses course) {
+        coursesRepo.save(course);
     }
 }

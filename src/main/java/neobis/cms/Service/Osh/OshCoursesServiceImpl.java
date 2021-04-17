@@ -74,6 +74,12 @@ public class OshCoursesServiceImpl implements OshCoursesService {
         OshCourses course = new OshCourses();
         course.setName(courseDTO.getName());
         course.setPrice(courseDTO.getPrice());
+        long teacherID = courseDTO.getTeacherID();
+        if (teacherID != 0) {
+            OshTeachers teacher = teacherRepo.findById(teacherID)
+                    .orElseThrow(() -> new ResourceNotFoundException("Преподаватель с идентификатором " + teacherID + " не найден."));
+            course.setTeacher(teacher);
+        }
         return coursesRepo.save(course);
     }
 
@@ -83,6 +89,12 @@ public class OshCoursesServiceImpl implements OshCoursesService {
                 .orElseThrow(() -> new ResourceNotFoundException("Course with id " + id + " has not found"));
         course.setName(courseDTO.getName());
         course.setPrice(courseDTO.getPrice());
+        long teacherID = courseDTO.getTeacherID();
+        if (teacherID != 0) {
+            OshTeachers teacher = teacherRepo.findById(teacherID)
+                    .orElseThrow(() -> new ResourceNotFoundException("Преподаватель с идентификатором " + teacherID + " не найден."));
+            course.setTeacher(teacher);
+        }
         return coursesRepo.save(course);
     }
 
@@ -94,14 +106,21 @@ public class OshCoursesServiceImpl implements OshCoursesService {
             if (!clients.isEmpty())
                 throw new IllegalArgumentException("Курс " + course.getName() + "используется, не может быть удален.");
 
-            OshTeachers teacher = course.getTeacher();
-            teacher.setCourse(null);
-            teacherRepo.save(teacher);
             coursesRepo.delete(course);
         }
         if (courses.size() > 1)
             return "Courses were successfully deleted";
         else
             return "Course with ID " + courses.get(0) + " was successfully deleted";
+    }
+
+    @Override
+    public OshCourses findCourseByTeacher(OshTeachers teacher) {
+        return coursesRepo.findByTeacher(teacher);
+    }
+
+    @Override
+    public void save(OshCourses course) {
+        coursesRepo.save(course);
     }
 }

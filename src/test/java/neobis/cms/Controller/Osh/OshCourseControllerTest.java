@@ -80,7 +80,7 @@ class OshCourseControllerTest {
 
     @Test
     void addNewCourse() throws Exception{
-        CoursesDTO course = new CoursesDTO("Python", BigDecimal.valueOf(1234));
+        CoursesDTO course = new CoursesDTO("Python", BigDecimal.valueOf(1234), 0);
         String jsonRequest = mapper.writeValueAsString(course);
         MvcResult result = mvc
                 .perform(post("/osh/course")
@@ -93,7 +93,7 @@ class OshCourseControllerTest {
 
     @Test
     void updateCourse() throws Exception{
-        CoursesDTO course = new CoursesDTO("Java", BigDecimal.valueOf(1234));
+        CoursesDTO course = new CoursesDTO("Java", BigDecimal.valueOf(1234), 0);
         String jsonRequest = mapper.writeValueAsString(course);
         MvcResult result = mvc
                 .perform(put("/osh/course/{id}", 1)

@@ -46,9 +46,6 @@ public class OshTeachers extends Base {
     @Column(name = "end_date")
     private LocalDate endDate;
 
-    @OneToOne
-    private OshCourses course;
-
     @Column(name = "description")
     private String description;
 }

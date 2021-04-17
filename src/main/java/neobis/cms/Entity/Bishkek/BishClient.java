@@ -90,6 +90,6 @@ public class BishClient {
     private BishLeavingReason leavingReason;
 
     @OneToMany(fetch = FetchType.EAGER)
-    @JoinColumn(name = "payment_id")
+    @JoinColumn(name = "client_id")
     private List<BishPayment> payments;
 }

@@ -1,6 +1,5 @@
 package neobis.cms.Entity.Bishkek;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -28,7 +27,6 @@ public class BishCourses extends Base {
     @Column(name = "price")
     private BigDecimal price;
 
-    @JsonIgnore
-    @OneToOne(mappedBy = "course")
+    @OneToOne
     private BishTeachers teacher;
 }

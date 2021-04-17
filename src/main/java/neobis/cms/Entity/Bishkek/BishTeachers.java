@@ -46,9 +46,6 @@ public class BishTeachers extends Base {
     @Column(name = "end_date")
     private LocalDate endDate;
 
-    @OneToOne
-    private BishCourses course;
-
     @Column(name = "description")
     private String description;
 

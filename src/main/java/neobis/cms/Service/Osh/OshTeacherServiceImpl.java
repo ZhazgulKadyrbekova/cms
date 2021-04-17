@@ -7,7 +7,6 @@ import neobis.cms.Entity.Bishkek.User;
 import neobis.cms.Entity.Osh.OshCourses;
 import neobis.cms.Entity.Osh.OshPosition;
 import neobis.cms.Entity.Osh.OshTeachers;
-import neobis.cms.Exception.IllegalArgumentException;
 import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Bishkek.BishPositionRepo;
 import neobis.cms.Repo.Osh.OshPositionRepo;
@@ -59,7 +58,7 @@ public class OshTeacherServiceImpl implements OshTeacherService {
             OshPosition position = teacher.getPosition();
             if (position != null)
                 worker.setPosition(position.getName());
-            OshCourses course = teacher.getCourse();
+            OshCourses course = coursesService.findCourseByTeacher(teacher);
             if (course != null)
                 worker.setCourseName(course.getName());
             workers.add(worker);
@@ -99,7 +98,7 @@ public class OshTeacherServiceImpl implements OshTeacherService {
             OshPosition position = teacher.getPosition();
             if (position != null)
                 worker.setPosition(position.getName());
-            OshCourses course = teacher.getCourse();
+            OshCourses course = coursesService.findCourseByTeacher(teacher);
             if (course != null)
                 worker.setCourseName(course.getName());
             workers.add(worker);
@@ -200,7 +199,7 @@ public class OshTeacherServiceImpl implements OshTeacherService {
         return teacher;
     }
 
-    private OshTeachers teacherToDTO(OshTeachers teacher, TeacherDTO teacherDTO) {
+    private OshTeachers DTOToTeacher(OshTeachers teacher, TeacherDTO teacherDTO) {
         teacher.setName(teacherDTO.getName());
         teacher.setSurname(teacherDTO.getSurname());
         teacher.setPatronymic(teacherDTO.getPatronymic());
@@ -215,28 +214,28 @@ public class OshTeacherServiceImpl implements OshTeacherService {
                             new ResourceNotFoundException("Position with ID " + teacherDTO.getPosition() + " has not found"));
             teacher.setPosition(position);
         }
-        if (teacherDTO.getCourse() != 0) {
-            OshCourses course = coursesService.findCourseById(teacherDTO.getCourse());
-            OshTeachers alreadyAssigned = teacherRepo.findByCourse(course);
-            if (alreadyAssigned != null)
-                throw new IllegalArgumentException("Course '" + course.getName() + "' with ID " + teacherDTO.getCourse()
-                        + " already has a teacher " + alreadyAssigned.getName() + " " + alreadyAssigned.getSurname());
-            teacher.setCourse(course);
-        }
         return teacher;
     }
 
     @Override
     public OshTeachers addTeacher(TeacherDTO teacherDTO) {
-        OshTeachers teacher = teacherToDTO(new OshTeachers(), teacherDTO);
-        return teacherRepo.save(teacher);
+        OshTeachers teacher = DTOToTeacher(new OshTeachers(), teacherDTO);
+        teacher = teacherRepo.save(teacher);
+        OshCourses courses = coursesService.findCourseById(teacherDTO.getCourse());
+        courses.setTeacher(teacher);
+        coursesService.save(courses);
+        return teacher;
     }
 
     @Override
     public OshTeachers updateTeacherInfo(long id, TeacherDTO teacherDTO) {
-        OshTeachers teacher = teacherToDTO(teacherRepo.findById(id)
+        OshTeachers teacher = DTOToTeacher(teacherRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Teacher id " + id + " was not found")), teacherDTO);
-        return teacherRepo.save(teacher);
+        teacher = teacherRepo.save(teacher);
+        OshCourses courses = coursesService.findCourseById(teacherDTO.getCourse());
+        courses.setTeacher(teacher);
+        coursesService.save(courses);
+        return teacher;
     }
 
     @Override
