@@ -7,7 +7,6 @@ import neobis.cms.Entity.Osh.OshTeachers;
 import java.util.List;
 
 public interface OshCoursesService {
-    OshCourses findCourseByFormName(String formName);
     OshCourses findCourseById(long id);
     List<OshCourses> findAll();
     OshCourses findCourseByName(String name);

@@ -26,6 +26,26 @@ public class BishCoursesServiceImpl implements BishCoursesService{
     }
 
     @Override
+    public BishCourses findCourseByFormName(String formName) {
+        if (formName.equals("Заявка с quiz") || formName.equals("Заявка на перезвон"))
+            return null;
+        formName = formName.substring(7);
+        if (formName.contains("PM"))
+            return coursesRepo.findByNameContainingIgnoringCase("ПМ");
+        if (formName.contains("Java"))
+            return coursesRepo.findByNameContainingIgnoringCase("java");
+        if (formName.contains("JS"))
+            return coursesRepo.findByNameContainingIgnoringCase("javascript");
+        if (formName.contains("python"))
+            return coursesRepo.findByNameContainingIgnoringCase("python");
+        if (formName.contains("UX/UI"))
+            return coursesRepo.findByNameContainingIgnoringCase("Design");
+        if (formName.contains("olympiad"))
+            return coursesRepo.findByNameContainingIgnoringCase("ОП");
+        return null;
+    }
+
+    @Override
     public BishCourses findCourseByName(String name) {
         return coursesRepo.findByNameContainingIgnoringCase(name);
     }

@@ -7,6 +7,7 @@ import neobis.cms.Entity.Bishkek.BishTeachers;
 import java.util.List;
 
 public interface BishCoursesService {
+    BishCourses findCourseByFormName(String formName);
     BishCourses findCourseByName(String name);
     BishCourses findCourseById(long id);
     List<BishCourses> findAll();

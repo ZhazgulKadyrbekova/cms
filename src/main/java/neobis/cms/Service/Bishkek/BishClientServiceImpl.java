@@ -103,7 +103,6 @@ public class BishClientServiceImpl implements BishClientService {
 
     @Override
     public BishClient create(BishClient client) {
-//        client.setStatus("New");
         client.setCity("Bishkek");
         client.setDateCreated(LocalDateTime.now());
         client.setTimer(LocalDateTime.now().plusHours(24L));
@@ -309,8 +308,7 @@ public class BishClientServiceImpl implements BishClientService {
             bishClientSpecification.add(new SearchCriteria("phoneNo", field, null, SearchOperation.MATCH));
             bishClientSpecification.add(new SearchCriteria("email", field, null, SearchOperation.MATCH));
         }
-        Set<BishClient> clients = new HashSet<>(bishClientRepo.findAll(bishClientSpecification));
-        return clients;
+        return new HashSet<>(bishClientRepo.findAll(bishClientSpecification));
     }
 
     @Override
@@ -607,7 +605,6 @@ public class BishClientServiceImpl implements BishClientService {
     @Override
     public Set<Object> simpleSearch(String nameOrPhone) {
         Set<Object> clients = new HashSet<>();
-//        List<Object> clients = new ArrayList<>();
         for (String item : nameOrPhone.split(" ")) {
             clients.addAll(bishClientRepo.findAllByNameContainingIgnoringCase(item));
             clients.addAll(bishClientRepo.findAllBySurnameContainingIgnoringCase(item));
@@ -619,7 +616,6 @@ public class BishClientServiceImpl implements BishClientService {
     @Override
     public Set<BishClient> search(String nameOrPhone) {
         Set<BishClient> clients = new HashSet<>();
-//        List<Object> clients = new ArrayList<>();
         for (String item : nameOrPhone.split(" ")) {
             clients.addAll(bishClientRepo.findAllByNameContainingIgnoringCase(item));
             clients.addAll(bishClientRepo.findAllBySurnameContainingIgnoringCase(item));
@@ -745,7 +741,12 @@ public class BishClientServiceImpl implements BishClientService {
                 case "data[client][phone]" :
                     client.setPhoneNo(keyValue.get(1));
                     break;
+                case "data[client][email]" :
+                    client.setEmail(keyValue.get(1));
+                    break;
                 case "data[form_name]" :
+                    BishCourses course = coursesService.findCourseByFormName(keyValue.get(1));
+                    client.setCourse(course);
                     client.setFormName(keyValue.get(1));
                     break;
                 case "data[form_data][f27b7c6e2][value]" :
@@ -799,6 +800,13 @@ public class BishClientServiceImpl implements BishClientService {
                         }
                         client.setUtm(utm);
                     }
+                    break;
+                case "data[form_data][1000][value]" :
+                    client.setName(keyValue.get(1));
+                    break;
+                case "data[form_data][481576][value]" :
+                    BishCourses courses = coursesService.findCourseByFormName(keyValue.get(1));
+                    client.setCourse(courses);
                     break;
             }
             client.setCity("Bishkek");

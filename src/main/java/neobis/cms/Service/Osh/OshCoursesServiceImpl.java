@@ -26,26 +26,6 @@ public class OshCoursesServiceImpl implements OshCoursesService {
     }
 
     @Override
-    public OshCourses findCourseByFormName(String formName) {
-        if (formName.equals("Заявка с quiz"))
-            return null;
-        formName = formName.substring(7);
-        if (formName.contains("PM"))
-            return coursesRepo.findByNameContainingIgnoringCase("project manager");
-        if (formName.contains("Java"))
-            return coursesRepo.findByNameContainingIgnoringCase("java");
-        if (formName.contains("JS"))
-            return coursesRepo.findByNameContainingIgnoringCase("javascript");
-        if (formName.contains("python"))
-            return coursesRepo.findByNameContainingIgnoringCase("python");
-        if (formName.contains("design"))
-            return coursesRepo.findByNameContainingIgnoringCase("design");
-        if (formName.contains("olympiad"))
-            return coursesRepo.findByNameContainingIgnoringCase("olympiad");
-        return null;
-    }
-
-    @Override
     public OshCourses findCourseById(long id) {
         return coursesRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Course id " + id + " was not found"));
