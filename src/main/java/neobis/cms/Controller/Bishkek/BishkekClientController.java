@@ -2,10 +2,12 @@ package neobis.cms.Controller.Bishkek;
 
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiParam;
 import neobis.cms.Dto.ClientDTO;
 import neobis.cms.Dto.PaymentDTO;
 import neobis.cms.Dto.ResponseMessage;
 import neobis.cms.Entity.Bishkek.BishClient;
+import neobis.cms.Exception.IllegalArgumentException;
 import neobis.cms.Service.Bishkek.BishClientService;
 import neobis.cms.Service.ExcelService;
 import neobis.cms.Util.ExcelUtilHelper;
@@ -25,6 +27,8 @@ import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
 import java.security.Principal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -178,4 +182,20 @@ public class BishkekClientController {
         return clientService.deletePayment(id, paymentID, principal.getName());
     }
 
+    @PutMapping("/{client_id}/timer")
+    public BishClient updateTimer(Principal principal, @PathVariable Long client_id,
+                                  @ApiParam(value = "dd-MM-yyyy HH:mm") @RequestParam String timer) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+        try {
+            LocalDateTime timerV = LocalDateTime.parse(timer, formatter);
+            return clientService.updateTimer(principal.getName(), client_id, timerV);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Дата отправлена в неправильном формате " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/timer")
+    public List<BishClient> getClientsWithExpiredTimer() {
+        return clientService.getClientsWithExpiredTimer();
+    }
 }

@@ -1,18 +1,17 @@
 package neobis.cms.Repo.Bishkek;
 
 import neobis.cms.Entity.Bishkek.*;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
 public interface BishClientRepo extends JpaRepository<BishClient, Long>, JpaSpecificationExecutor<BishClient> {
     List<BishClient> findAllByOrderByDateCreatedDesc();
-    Page<BishClient> findAll(Pageable pageable);
+//    Page<BishClient> findAll(Pageable pageable);
     List<BishClient> findAllByStatusOrderByDateCreatedDesc(BishStatuses status);
     List<BishClient> findAllByNameContainingIgnoringCase(String name);
     List<BishClient> findAllBySurnameContainingIgnoringCase(String surname);
@@ -21,6 +20,6 @@ public interface BishClientRepo extends JpaRepository<BishClient, Long>, JpaSpec
     List<BishClient> findAllByOccupation(BishOccupation occupation);
     List<BishClient> findAllByTarget(BishTarget target);
     List<BishClient> findAllByCourse(BishCourses course);
-
+    List<BishClient> findAllByTimerBefore(LocalDateTime dateTime);
     BishClient findByNameContainingIgnoringCase(String name);
 }

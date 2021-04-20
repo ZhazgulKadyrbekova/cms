@@ -727,4 +727,25 @@ public class OshClientServiceImpl implements OshClientService {
         historyService.create(history);
         return new ResponseMessage("Client with ID " + clientID + " has been deleted");
     }
+
+    @Override
+    public List<OshClient> getClientsWithExpiredTimer() {
+        return oshClientRepo.findAllByTimerBefore(LocalDateTime.now());
+    }
+
+    @Override
+    public OshClient updateTimer(String userEmail, long clientID, LocalDateTime timer) {
+        OshClient client = this.getClientByID(clientID);
+        client.setTimer(timer);
+        client = oshClientRepo.save(client);
+
+        User user = userService.findByEmail(userEmail);
+        OshHistory history = new OshHistory();
+        history.setFullName(user.getName() + " " + user.getSurname());
+        history.setClientPhone(client.getPhoneNo());
+        history.setAction("Обновление даты таймера");
+        history.setNewData(timer.toString());
+        historyService.create(history);
+        return client;
+    }
 }

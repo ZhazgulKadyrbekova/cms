@@ -8,6 +8,7 @@ import org.json.JSONObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -29,11 +30,11 @@ public interface BishClientService {
     void changeCity(long id, String userEmail);
     Set<Object> simpleSearch(String nameOrPhone);
     Set<BishClient> search(String nameOrPhone);
-//    List<BishClient> advancedSearch(List<Long> status, List<Long> course, List<Long> occupation);
-//    List<BishClient> advancedStudentSearch(List<Long> course);
-    BishClient addNewPayment(long clientID, PaymentDTO paymentDTO, String userEmail);
+BishClient addNewPayment(long clientID, PaymentDTO paymentDTO, String userEmail);
     BishClient editPayment(long clientID, PaymentDTO paymentDTO, long paymentID, String userEmail);
     ResponseMessage deletePayment(long clientID, long paymentID, String userEmail);
     ResponseMessage deleteClient(long clientID, String userEmail);
     BishClient parseClient(String data);
+    List<BishClient> getClientsWithExpiredTimer();
+    BishClient updateTimer(String userEmail, long clientID, LocalDateTime timer);
 }

@@ -817,4 +817,24 @@ public class BishClientServiceImpl implements BishClientService {
         return client;
     }
 
+    @Override
+    public List<BishClient> getClientsWithExpiredTimer() {
+        return bishClientRepo.findAllByTimerBefore(LocalDateTime.now());
+    }
+
+    @Override
+    public BishClient updateTimer(String userEmail, long clientID, LocalDateTime timer) {
+        BishClient client = getClientById(clientID);
+        client.setTimer(timer);
+        client = bishClientRepo.save(client);
+
+        User user = userService.findByEmail(userEmail);
+        BishHistory history = new BishHistory();
+        history.setFullName(user.getName() + " " + user.getSurname());
+        history.setClientPhone(client.getPhoneNo());
+        history.setAction("Обновление даты таймера");
+        history.setNewData(timer.toString());
+        bishHistoryService.create(history);
+        return client;
+    }
 }

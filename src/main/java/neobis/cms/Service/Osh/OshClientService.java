@@ -3,11 +3,13 @@ package neobis.cms.Service.Osh;
 import neobis.cms.Dto.ClientDTO;
 import neobis.cms.Dto.PaymentDTO;
 import neobis.cms.Dto.ResponseMessage;
+import neobis.cms.Entity.Bishkek.BishClient;
 import neobis.cms.Entity.Osh.OshClient;
 import org.json.JSONObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -34,4 +36,6 @@ public interface OshClientService {
     OshClient editPayment(long clientID, PaymentDTO paymentDTO, long paymentID, String userEmail);
     ResponseMessage deletePayment(long clientID, long paymentID, String userEmail);
     ResponseMessage deleteClient(long clientID, String userEmail);
+    List<OshClient> getClientsWithExpiredTimer();
+    OshClient updateTimer(String userEmail, long clientID, LocalDateTime timer);
 }
