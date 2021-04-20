@@ -6,9 +6,7 @@ import neobis.cms.Entity.Bishkek.BishHistory;
 import neobis.cms.Entity.Bishkek.BishStatuses;
 import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Bishkek.BishHistoryRepo;
-import neobis.cms.Repo.Bishkek.BishOccupationRepo;
 import neobis.cms.Repo.Bishkek.BishStatusesRepo;
-import neobis.cms.Repo.Bishkek.BishUTMRepo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -25,15 +23,11 @@ import java.util.Map;
 public class BishHistoryServiceImpl implements BishHistoryService {
     private final BishHistoryRepo bishHistoryRepo;
     private final BishStatusesRepo statusesRepo;
-    private final BishOccupationRepo occupationRepo;
-    private final BishUTMRepo utmRepo;
     private final BishCoursesService coursesService;
 
-    public BishHistoryServiceImpl(BishHistoryRepo bishHistoryRepo, BishStatusesRepo statusesRepo, BishOccupationRepo occupationRepo, BishUTMRepo utmRepo, BishCoursesService coursesService) {
+    public BishHistoryServiceImpl(BishHistoryRepo bishHistoryRepo, BishStatusesRepo statusesRepo, BishCoursesService coursesService) {
         this.bishHistoryRepo = bishHistoryRepo;
         this.statusesRepo = statusesRepo;
-        this.occupationRepo = occupationRepo;
-        this.utmRepo = utmRepo;
         this.coursesService = coursesService;
     }
 
@@ -60,18 +54,18 @@ public class BishHistoryServiceImpl implements BishHistoryService {
         List<String> courseList = new ArrayList<>();
         if (status_id == null && course_id == null) {
         	for (BishStatuses status : statusesRepo.findAll()) 
-        	        statusList.add(status.getName());
-                for (BishCourses course : coursesService.findAll()) 
-	                courseList.add(course.getName());
+                statusList.add(status.getName());
+            for (BishCourses course : coursesService.findAll())
+                courseList.add(course.getName());
         }
-        if (status_id != null) {
+        else if (status_id != null) {
             for (long id : status_id) {
                 String statusName = statusesRepo.findById(id)
-                        .orElseThrow(() -> new ResourceNotFoundException("Status with id " + id + " has not found")).getName();
+                        .orElseThrow(() -> new ResourceNotFoundException("Статус с идентификатором " + id + " не найден.")).getName();
                 statusList.add(statusName);
             }
         } 
-        if (course_id != null) {
+        else {
             for (long id : course_id) {
                 String courseName = coursesService.findCourseById(id).getName();
                 courseList.add(courseName);
@@ -81,7 +75,7 @@ public class BishHistoryServiceImpl implements BishHistoryService {
         List<StatisticResponse.Dates> datesList;
         for (String status : statusList) {
             List<BishHistory> histories = bishHistoryRepo.findAllByDateCreatedBetweenAndActionContainingAndNewDataContaining(
-                    dateAfter, dateBefore, "status", status);
+                    dateAfter, dateBefore, "Статус", status);
             datesList = new ArrayList<>();
             Map<LocalDate, Integer> dates = new HashMap<>();
             int total = histories.size();
@@ -95,7 +89,7 @@ public class BishHistoryServiceImpl implements BishHistoryService {
                 datesList.add(new StatisticResponse.Dates(map.getKey(), map.getValue()));
             }
             StatisticResponse response = new StatisticResponse();
-            response.setFilter("status");
+            response.setFilter("Статус");
             response.setName(status);
             response.setTotalValue(total);
             response.setDates(datesList);
@@ -104,7 +98,7 @@ public class BishHistoryServiceImpl implements BishHistoryService {
 
         for (String course : courseList) {
             List<BishHistory> histories = bishHistoryRepo.findAllByDateCreatedBetweenAndActionContainingAndNewDataContaining(
-                    dateAfter, dateBefore, "course", course);
+                    dateAfter, dateBefore, "Курс", course);
             datesList = new ArrayList<>();
             Map<LocalDate, Integer> dates = new HashMap<>();
             int total = histories.size();
@@ -118,7 +112,7 @@ public class BishHistoryServiceImpl implements BishHistoryService {
                 datesList.add(new StatisticResponse.Dates(map.getKey(), map.getValue()));
             }
             StatisticResponse response = new StatisticResponse();
-            response.setFilter("course");
+            response.setFilter("Курс");
             response.setName(course);
             response.setTotalValue(total);
             response.setDates(datesList);

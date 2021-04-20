@@ -56,9 +56,9 @@ public class StatusController {
     @PutMapping("/{id}")
     public BishStatuses updateStatusName(@RequestBody StatusDTO status, @PathVariable Long id) {
         OshStatuses oshStatuses = oshStatusesRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Status with id " + id + " has not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Статус с идентификатором " + id + " не найден."));
         BishStatuses bishStatuses = bishStatusesRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Status with id " + id + " has not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Статус с идентификатором " + id + " не найден."));
 
         oshStatuses.setName(status.getName());
         oshStatuses.setDoska(status.isDoska());
@@ -72,7 +72,7 @@ public class StatusController {
     public ResponseMessage deleteStatusByID(@PathVariable List<Long> id) {
         for (long status : id) {
             BishStatuses bishStatus = bishStatusesRepo.findById(status)
-                    .orElseThrow(() -> new ResourceNotFoundException("Status with id " + status + " has not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Статус с идентификатором " + status + " не найден."));
             List<BishClient> bishClients = bishClientService.getAllByStatus(status);
             if (!bishClients.isEmpty())
                 throw new IllegalArgumentException("Статус " + bishStatus.getName() + "используется, не может быть удален.");

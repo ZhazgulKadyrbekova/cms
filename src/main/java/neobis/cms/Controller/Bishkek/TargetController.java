@@ -51,9 +51,9 @@ public class TargetController {
     @PutMapping("/{id}")
     public BishTarget updateTarget(@RequestBody TargetDTO targetDTO, @PathVariable Long id) {
         OshTarget oshTarget = oshTargetRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Target with id " + id + " has not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Цель с идентификатором " + id + " не найдена."));
         BishTarget bishTarget = bishTargetRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Target with id " + id + " has not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Цель с идентификатором " + id + " не найдена."));
 
         oshTarget.setName(targetDTO.getName());
         oshTargetRepo.save(oshTarget);
@@ -65,13 +65,13 @@ public class TargetController {
     public ResponseMessage deleteTargetByID(@PathVariable List<Long> id) {
         for (long occupation : id) {
             BishTarget bishTarget = bishTargetRepo.findById(occupation)
-                    .orElseThrow(() -> new ResourceNotFoundException("Target with id " + occupation + " has not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Цель с идентификатором " + occupation + " не найдена."));
             List<BishClient> bishClients = bishClientRepo.findAllByTarget(bishTarget);
             if (!bishClients.isEmpty())
                 throw new IllegalArgumentException("Цель " + bishTarget.getName() + "используется, не может быть удалена.");
 
             OshTarget oshTarget = oshTargetRepo.findById(occupation)
-                    .orElseThrow(() -> new ResourceNotFoundException("Target with id " + occupation + " has not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Цель с идентификатором " + occupation + " не найдена."));
             List<OshClient> oshClients = oshClientRepo.findAllByTarget(oshTarget);
             if (!oshClients.isEmpty())
                 throw new IllegalArgumentException("Цель " + oshTarget.getName() + "используется, не может быть удалена.");

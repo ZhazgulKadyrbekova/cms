@@ -40,9 +40,9 @@ public class PaymentMethodController {
     @PutMapping("/{id}")
     public BishMethod updateMethodByID(@PathVariable Long id, @RequestBody MethodDTO methodDTO) {
         BishMethod bishMethod = bishMethodRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Method with id " + id + " has not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Метод с идентификатором " + id + " не найден."));
         OshMethod oshMethod = oshMethodRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Method with id " + id + " has not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Метод с идентификатором " + id + " не найден."));
 
         oshMethod.setName(methodDTO.getName());
         oshMethodRepo.save(oshMethod);
@@ -54,12 +54,12 @@ public class PaymentMethodController {
     public ResponseMessage deleteMethodByID(@PathVariable List<Long> id) {
         for (long methodID : id) {
             BishMethod bishMethod = bishMethodRepo.findById(methodID)
-                    .orElseThrow(() -> new ResourceNotFoundException("Method with id " + id + " has not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Метод с идентификатором " + methodID + " не найден."));
             List<BishPayment> bishPayments = bishPaymentRepo.findAllByMethod(bishMethod);
             if (!bishPayments.isEmpty())
                 throw new IllegalArgumentException("Метод " + bishMethod.getName() + " используется, не может быть удален.");
             OshMethod oshMethod = oshMethodRepo.findById(methodID)
-                    .orElseThrow(() -> new ResourceNotFoundException("Method with id " + id + " has not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Метод с идентификатором " + methodID + " не найден."));
             List<OshPayment> oshPayments = oshPaymentRepo.findAllByMethod(oshMethod);
             if (!oshPayments.isEmpty())
                 throw new IllegalArgumentException("Метод " + oshMethod.getName() + " используется, не может быть удален.");

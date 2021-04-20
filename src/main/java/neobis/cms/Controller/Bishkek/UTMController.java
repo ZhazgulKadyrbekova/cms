@@ -41,9 +41,9 @@ public class UTMController {
     @PutMapping("/{id}")
     public BishUTM updateUTMName(@RequestBody UtmDTO occupationDTO, @PathVariable Long id) {
         OshUTM oshUTM = oshUTMRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("UTM with id " + id + " has not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("UTM-метка с идентификатором " + id + " не найдена."));
         BishUTM bishUTM = bishUTMRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("UTM with id " + id + " has not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("UTM-метка с идентификатором " + id + " не найдена."));
 
         oshUTM.setName(occupationDTO.getName());
         oshUTMRepo.save(oshUTM);

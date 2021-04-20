@@ -44,9 +44,9 @@ public class PositionController {
     @PutMapping("/{id}")
     public BishPosition updatePosition(@RequestBody PositionDTO positionDTO, @PathVariable Long id) {
         OshPosition oshPosition = oshPositionRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Position with id " + id + " has not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Должность с идентификатором " + id + " не найдена."));
         BishPosition bishPosition = bishPositionRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Position with id " + id + " has not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Должность с идентификатором " + id + " не найдена."));
 
         oshPosition.setName(positionDTO.getName());
         oshPositionRepo.save(oshPosition);
@@ -58,13 +58,13 @@ public class PositionController {
     public ResponseMessage deletePositionByID(@PathVariable List<Long> id) {
         for (long occupation : id) {
             BishPosition bishPosition = bishPositionRepo.findById(occupation)
-                    .orElseThrow(() -> new ResourceNotFoundException("Position with id " + occupation + " has not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Должность с идентификатором " + occupation + " не найдена."));
             List<BishTeachers> bishTeachers = bishTeacherRepo.findAllByPosition(bishPosition);
             List<User> bishUsers = userRepo.findAllByPosition(bishPosition);
             if (!bishTeachers.isEmpty() || !bishUsers.isEmpty())
                 throw new IllegalArgumentException("Должность " + bishPosition.getName() + "используется, не может быть удалена.");
             OshPosition oshPosition = oshPositionRepo.findById(occupation)
-                    .orElseThrow(() -> new ResourceNotFoundException("Position with id " + occupation + " has not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Должность с идентификатором " + occupation + " не найдена."));
             List<OshTeachers> oshTeachers = oshTeacherRepo.findAllByPosition(oshPosition);
             if (!oshTeachers.isEmpty())
                 throw new IllegalArgumentException("Должность " + oshPosition.getName() + "используется, не может быть удалена.");

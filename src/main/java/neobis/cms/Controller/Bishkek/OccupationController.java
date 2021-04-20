@@ -45,9 +45,9 @@ public class OccupationController {
     @PutMapping("/{id}")
     public BishOccupation updateOccupationName(@RequestBody OccupationDTO occupationDTO, @PathVariable Long id) {
         OshOccupation oshOccupation = oshOccupationRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Occupation with id " + id + " has not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Деятельность с идентификатором " + id + " не найдена."));
         BishOccupation bishOccupation = bishOccupationRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Occupation with id " + id + " has not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Деятельность с идентификатором " + id + " не найдена."));
 
         oshOccupation.setName(occupationDTO.getName());
         oshOccupationRepo.save(oshOccupation);
@@ -59,12 +59,12 @@ public class OccupationController {
     public ResponseMessage deleteOccupationByID(@PathVariable List<Long> id) {
         for (long occupation : id) {
             BishOccupation bishOccupation = bishOccupationRepo.findById(occupation)
-                    .orElseThrow(() -> new ResourceNotFoundException("Occupation with id " + occupation + " has not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Деятельность с идентификатором " + occupation + " не найдена."));
             List<BishClient> bishClients = bishClientRepo.findAllByOccupation(bishOccupation);
             if (!bishClients.isEmpty())
                 throw new IllegalArgumentException("Тип " + bishOccupation.getName() + " содержится на карточках клиентов и не может быть удален.");
             OshOccupation oshOccupation = oshOccupationRepo.findById(occupation)
-                    .orElseThrow(() -> new ResourceNotFoundException("Occupation with id " + occupation + " has not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Деятельность с идентификатором " + occupation + " не найдена."));
             List<OshClient> oshClients = oshClientRepo.findAllByOccupation(oshOccupation);
             if (!oshClients.isEmpty())
                 throw new IllegalArgumentException("Тип " + bishOccupation.getName() + " содержится на карточках клиентов и не может быть удален.");

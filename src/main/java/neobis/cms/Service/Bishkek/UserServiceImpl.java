@@ -7,7 +7,6 @@ import neobis.cms.Dto.UserRejectDTO;
 import neobis.cms.Entity.Bishkek.BishPosition;
 import neobis.cms.Entity.Bishkek.Role;
 import neobis.cms.Entity.Bishkek.User;
-import neobis.cms.Entity.Osh.OshPosition;
 import neobis.cms.Exception.IllegalArgumentException;
 import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Bishkek.BishPositionRepo;
@@ -31,7 +30,6 @@ public class UserServiceImpl implements UserService {
     private final MailService mailService;
     private final PasswordEncoder encoder;
     private final BishPositionRepo bishPositionRepo;
-    private final OshPositionRepo oshPositionRepo;
 
     public UserServiceImpl(UserRepo userRepo, RoleRepo roleRepo, MailService mailService, PasswordEncoder encoder, BishPositionRepo bishPositionRepo, OshPositionRepo oshPositionRepo) {
         this.userRepo = userRepo;
@@ -39,7 +37,6 @@ public class UserServiceImpl implements UserService {
         this.mailService = mailService;
         this.encoder = encoder;
         this.bishPositionRepo = bishPositionRepo;
-        this.oshPositionRepo = oshPositionRepo;
     }
 
     @Override
@@ -50,7 +47,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User findById(long id) {
         return userRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User id " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь с идентификатором " + id + " не найден."));
     }
 
     @Override
@@ -96,7 +93,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getUsersByCity(String city) {
-        return userRepo.findAllByCityContainingIgnoringCase(city);
+        return userRepo.findAllByCityContainingIgnoringCaseOrderByIDAsc(city);
     }
 
     @Override
@@ -105,7 +102,7 @@ public class UserServiceImpl implements UserService {
         String city = userDTO.getCity();
         String positionName = userDTO.getPosition();
         if (user != null)
-            throw new IllegalArgumentException("User with email " + userDTO.getEmail() + " already exists");
+            throw new IllegalArgumentException("Пользователь с электронной почтой " + userDTO.getEmail() + " уже имеется.");
         if (!city.equalsIgnoreCase("bishkek") && !city.equalsIgnoreCase("osh")) {
             throw new IllegalArgumentException("Invalid city");
         }
@@ -123,8 +120,6 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Invalid email address");
         if (userDTO.getPassword().length() < 8)
             throw new IllegalArgumentException("Password is too short");
-        if (!isLetter(userDTO.getName()) && isLetter(userDTO.getSurname()))
-            throw new IllegalArgumentException("Name and surname can only contain letters");
 
         user = new User();
         user.setEmail(email);
@@ -148,21 +143,12 @@ public class UserServiceImpl implements UserService {
         return "The profile information has been saved. After confirmation by the administrator, you will receive a link to activate your account to your email.";
     }
 
-    private boolean isLetter(String text) {
-        for (char character : text.toLowerCase().toCharArray()) {
-            if (!(character >= 'a' && character <= 'z'))
-                return false;
-        }
-        return true;
-    }
-
     @Override
     public String confirm(Long id) {
-        User user = userRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User id " + id + " not found"));
+        User user = findById(id);
         List<User> usersWaitingForConfirm = this.getListOfUserToConfirm();
         if (!usersWaitingForConfirm.contains(user))
-            throw new ResourceNotFoundException("User ID " + id + " is not on the waitlist");
+            throw new ResourceNotFoundException("Пользователь с идентификатором " + id + " не ожидает подтверждения в данное время.");
 
         user.setConfirmed(true);
         user.setActivationCode(UUID.randomUUID().toString());
@@ -192,9 +178,9 @@ public class UserServiceImpl implements UserService {
     public String changePassword(String email, UserPasswordsDTO userPasswordDTO) {
         User user = userRepo.findByEmailIgnoringCaseAndActive(email, true);
         if (user == null)
-            throw new ResourceNotFoundException("User with email " + email + " not found");
+            throw new ResourceNotFoundException("Пользователь с электронной почтой " + email + " не найден.");
         if (!encoder.matches(userPasswordDTO.getOldPassword(), user.getPassword()))
-            return "Old password did not match with your current password";
+            return "Старый пароль не совпадает с нынешним";
         user.setPassword(encoder.encode(userPasswordDTO.getNewPassword()));
         userRepo.save(user);
         return "You have successfully changed your password";
@@ -207,7 +193,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(null);
         user.setActivationCode(UUID.randomUUID().toString());
 
-        String message = "To restore your account visit link: http://cms4.herokuapp.com/authorization/setPassword/" + user.getActivationCode();
+        String message = "To restore your account visit link: https://cms4.herokuapp.com/authorization/setPassword/" + user.getActivationCode();
         if (mailService.send(user.getEmail(), "Account recovery", message)) {
             userRepo.save(user);
             return "Recovery code successfully sent to email " + user.getEmail();
@@ -219,9 +205,9 @@ public class UserServiceImpl implements UserService {
     public String setPassword(UserAuthDTO userAuthDTO) {
         User user = userRepo.findByEmailIgnoringCaseAndActive(userAuthDTO.getEmail(), true);
         if (user == null)
-            throw new ResourceNotFoundException("User with email " + userAuthDTO.getEmail() + " not found");
+            throw new ResourceNotFoundException("Пользователь с электронной почтой " + userAuthDTO.getEmail() + " не найден.");
         if (user.getPassword() != null)
-            throw new IllegalArgumentException("Please, enter your own credentials!");
+            throw new IllegalArgumentException("Введите данные, относящиеся к вам!");
         user.setPassword(encoder.encode(userAuthDTO.getPassword()));
         userRepo.save(user);
         return "You have successfully changed your password";
@@ -232,9 +218,11 @@ public class UserServiceImpl implements UserService {
     public String reject(UserRejectDTO userRejectDTO) {
         List<User> usersWaitingForConfirm = this.getListOfUserToConfirm();
         if (!usersWaitingForConfirm.contains(userRepo.findByEmailIgnoringCase(userRejectDTO.getEmail())))
-            throw new ResourceNotFoundException("User with email " + userRejectDTO.getEmail() + " is not contained in waiting list");
+            throw new ResourceNotFoundException("Пользователь с электронной почтой " + userRejectDTO.getEmail() +
+                    " не ожидает подтверждения в данное время.");
         userRepo.deleteByEmail(userRejectDTO.getEmail());
-        String message = "Your registration request via email " + userRejectDTO.getEmail() + " was rejected by the admin.\n Comment from admin: " + userRejectDTO.getDescription();
+        String message = "Your registration request via email " + userRejectDTO.getEmail() +
+                " was rejected by the admin.\n Comment from admin: " + userRejectDTO.getDescription();
         if (mailService.send(userRejectDTO.getEmail(), "Rejected registration request", message)) {
             return "Rejected registration request has been successfully sent to email " + userRejectDTO.getEmail();
         }

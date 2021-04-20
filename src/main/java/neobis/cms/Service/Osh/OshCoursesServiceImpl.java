@@ -40,7 +40,7 @@ public class OshCoursesServiceImpl implements OshCoursesService {
     public OshCourses findCourseByName(String name) {
         OshCourses course = coursesRepo.findByNameContainingIgnoringCase(name);
         if (course == null)
-            throw new ResourceNotFoundException("Course with name " + name + " has not found");
+            throw new ResourceNotFoundException("Курс с названием " + name + " не найден.");
         return course;
     }
 
@@ -65,8 +65,7 @@ public class OshCoursesServiceImpl implements OshCoursesService {
 
     @Override
     public OshCourses updateCourse(long id, CoursesDTO courseDTO) {
-        OshCourses course = coursesRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Course with id " + id + " has not found"));
+        OshCourses course = findCourseById(id);
         course.setName(courseDTO.getName());
         course.setPrice(courseDTO.getPrice());
         long teacherID = courseDTO.getTeacherID();
@@ -84,7 +83,7 @@ public class OshCoursesServiceImpl implements OshCoursesService {
             OshCourses course = this.findCourseById(courseID);
             List<OshClient> clients = clientRepo.findAllByCourse(course);
             if (!clients.isEmpty())
-                throw new IllegalArgumentException("Курс " + course.getName() + "используется, не может быть удален.");
+                throw new IllegalArgumentException("На курс " + course.getName() + " записаны студенты. Курс не может быть удален.");
 
             coursesRepo.delete(course);
         }

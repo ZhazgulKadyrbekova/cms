@@ -6,6 +6,7 @@ import neobis.cms.Entity.Bishkek.BishCourses;
 import neobis.cms.Entity.Bishkek.BishPosition;
 import neobis.cms.Entity.Bishkek.BishTeachers;
 import neobis.cms.Entity.Bishkek.User;
+import neobis.cms.Exception.IllegalArgumentException;
 import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Bishkek.BishPositionRepo;
 import neobis.cms.Repo.Bishkek.BishTeacherRepo;
@@ -151,7 +152,7 @@ public class BishTeacherServiceImpl implements BishTeacherService {
         } else if (positionID != null) {
             for (long position : positionID) {
                 BishPosition bishPosition = positionRepo.findById(position).orElseThrow(() ->
-                        new ResourceNotFoundException("Position with ID " + position + " has not found"));
+                        new ResourceNotFoundException("Должность с идентификатором " + position + " не найдена."));
                 teachers.addAll(teacherRepo.findAllByPosition(bishPosition));
                 users.addAll(userService.getAllByPositionAndCity(bishPosition, "bishkek"));
             }
@@ -162,7 +163,7 @@ public class BishTeacherServiceImpl implements BishTeacherService {
 
     @Override
     public Page<WorkerDTO> getAllWorkers(Pageable pageable) {
-        List<BishTeachers> teachers = teacherRepo.findAll();
+        List<BishTeachers> teachers = teacherRepo.findAllByOrderByIDAsc();
         List<User> users = userService.getUsersByCity("bishkek");
         List<WorkerDTO> workers = toWorkers(teachers, users);
 
@@ -179,7 +180,7 @@ public class BishTeacherServiceImpl implements BishTeacherService {
     @Override
     public BishTeachers getTeacherById(long id) {
         return teacherRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Teacher id " + id + " was not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Преподаватель с идентификатором " + id + " не найден."));
     }
 
     @Override
@@ -193,6 +194,9 @@ public class BishTeacherServiceImpl implements BishTeacherService {
         teacher.setName(teacherDTO.getName());
         teacher.setSurname(teacherDTO.getSurname());
         teacher.setPatronymic(teacherDTO.getPatronymic());
+        if (!teacherRepo.findAllByEmailIgnoringCase(teacherDTO.getEmail()).isEmpty()) {
+            throw new IllegalArgumentException("Преподаватель с электронной почтой " + teacherDTO.getEmail() + " уже имеется.");
+        }
         teacher.setEmail(teacherDTO.getEmail());
         teacher.setPhoneNo(teacherDTO.getPhoneNo());
         teacher.setPatent(teacherDTO.getPatent());
@@ -201,7 +205,7 @@ public class BishTeacherServiceImpl implements BishTeacherService {
         teacher.setDescription(teacherDTO.getDescription());
         if (teacherDTO.getPosition() != 0) {
             BishPosition position = positionRepo.findById(teacherDTO.getPosition()).orElseThrow(() ->
-                            new ResourceNotFoundException("Position with ID " + teacherDTO.getPosition() + " has not found"));
+                            new ResourceNotFoundException("Должность с идентификатором " + teacherDTO.getPosition() + " не найдена."));
             teacher.setPosition(position);
         }
         return teacher;
@@ -219,8 +223,7 @@ public class BishTeacherServiceImpl implements BishTeacherService {
 
     @Override
     public BishTeachers updateTeacherInfo(long id, TeacherDTO teacherDTO) {
-        BishTeachers teacher = DTOToTeacher(teacherRepo.findById(id).orElseThrow(() ->
-                new ResourceNotFoundException("Teacher with id " + id + " has not found")), teacherDTO);
+        BishTeachers teacher = DTOToTeacher(getTeacherById(id), teacherDTO);
         teacher = teacherRepo.save(teacher);
         BishCourses courses = coursesService.findCourseById(teacherDTO.getCourse());
         courses.setTeacher(teacher);
@@ -230,8 +233,7 @@ public class BishTeacherServiceImpl implements BishTeacherService {
 
     @Override
     public String deleteTeacherById(long id) {
-        BishTeachers teacher = teacherRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Teacher id " + id + " has not found"));
+        BishTeachers teacher = getTeacherById(id);
         teacherRepo.delete(teacher);
         return "Teacher with id " + id + " has successfully deleted";
     }

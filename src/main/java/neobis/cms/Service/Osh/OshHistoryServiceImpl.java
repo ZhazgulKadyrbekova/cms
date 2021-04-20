@@ -6,9 +6,7 @@ import neobis.cms.Entity.Osh.OshHistory;
 import neobis.cms.Entity.Osh.OshStatuses;
 import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Osh.OshHistoryRepo;
-import neobis.cms.Repo.Osh.OshOccupationRepo;
 import neobis.cms.Repo.Osh.OshStatusesRepo;
-import neobis.cms.Repo.Osh.OshUTMRepo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -25,15 +23,11 @@ import java.util.Map;
 public class OshHistoryServiceImpl implements OshHistoryService {
     private final OshHistoryRepo historyRepo;
     private final OshStatusesRepo statusesRepo;
-    private final OshOccupationRepo occupationRepo;
-    private final OshUTMRepo utmRepo;
     private final OshCoursesService coursesService;
 
-    public OshHistoryServiceImpl(OshHistoryRepo historyRepo, OshStatusesRepo statusesRepo, OshOccupationRepo occupationRepo, OshUTMRepo utmRepo, OshCoursesService coursesService) {
+    public OshHistoryServiceImpl(OshHistoryRepo historyRepo, OshStatusesRepo statusesRepo, OshCoursesService coursesService) {
         this.historyRepo = historyRepo;
         this.statusesRepo = statusesRepo;
-        this.occupationRepo = occupationRepo;
-        this.utmRepo = utmRepo;
         this.coursesService = coursesService;
     }
 
@@ -58,32 +52,30 @@ public class OshHistoryServiceImpl implements OshHistoryService {
         List<StatisticResponse> responses = new ArrayList<>();
         List<String> statusList = new ArrayList<>();
         List<String> courseList = new ArrayList<>();
-        if (status_id != null) {
+        if (status_id == null && course_id == null) {
+            for (OshStatuses status : statusesRepo.findAll())
+                statusList.add(status.getName());
+            for (OshCourses course : coursesService.findAll())
+                courseList.add(course.getName());
+        }
+        else if (status_id != null) {
             for (long id : status_id) {
                 String statusName = statusesRepo.findById(id)
-                        .orElseThrow(() -> new ResourceNotFoundException("Status with id " + id + " has not found")).getName();
+                        .orElseThrow(() -> new ResourceNotFoundException("Статус с идентификатором " + id + " не найден.")).getName();
                 statusList.add(statusName);
             }
-        } else {
-            for (OshStatuses status : statusesRepo.findAll()) {
-                statusList.add(status.getName());
-            }
         }
-        if (course_id != null) {
+        else {
             for (long id : course_id) {
                 String courseName = coursesService.findCourseById(id).getName();
                 courseList.add(courseName);
-            }
-        } else {
-            for (OshCourses course : coursesService.findAll()) {
-                courseList.add(course.getName());
             }
         }
 
         List<StatisticResponse.Dates> datesList;
         for (String status : statusList) {
             List<OshHistory> histories = historyRepo.findAllByDateCreatedBetweenAndActionContainingAndNewDataContaining(
-                    dateAfter, dateBefore, "status", status);
+                    dateAfter, dateBefore, "Статус", status);
             datesList = new ArrayList<>();
             Map<LocalDate, Integer> dates = new HashMap<>();
             int total = histories.size();
@@ -97,7 +89,7 @@ public class OshHistoryServiceImpl implements OshHistoryService {
                 datesList.add(new StatisticResponse.Dates(map.getKey(), map.getValue()));
             }
             StatisticResponse response = new StatisticResponse();
-            response.setFilter("status");
+            response.setFilter("Статус");
             response.setName(status);
             response.setTotalValue(total);
             response.setDates(datesList);
@@ -106,7 +98,7 @@ public class OshHistoryServiceImpl implements OshHistoryService {
 
         for (String course : courseList) {
             List<OshHistory> histories = historyRepo.findAllByDateCreatedBetweenAndActionContainingAndNewDataContaining(
-                    dateAfter, dateBefore, "course", course);
+                    dateAfter, dateBefore, "Курс", course);
             datesList = new ArrayList<>();
             Map<LocalDate, Integer> dates = new HashMap<>();
             int total = histories.size();
@@ -120,7 +112,7 @@ public class OshHistoryServiceImpl implements OshHistoryService {
                 datesList.add(new StatisticResponse.Dates(map.getKey(), map.getValue()));
             }
             StatisticResponse response = new StatisticResponse();
-            response.setFilter("course");
+            response.setFilter("Курс");
             response.setName(course);
             response.setTotalValue(total);
             response.setDates(datesList);

@@ -7,6 +7,7 @@ import neobis.cms.Entity.Bishkek.User;
 import neobis.cms.Entity.Osh.OshCourses;
 import neobis.cms.Entity.Osh.OshPosition;
 import neobis.cms.Entity.Osh.OshTeachers;
+import neobis.cms.Exception.IllegalArgumentException;
 import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Bishkek.BishPositionRepo;
 import neobis.cms.Repo.Osh.OshPositionRepo;
@@ -154,7 +155,7 @@ public class OshTeacherServiceImpl implements OshTeacherService {
         } else if (positionID != null) {
             for (long position : positionID) {
                 OshPosition oshPosition = oshPositionRepo.findById(position).orElseThrow(() ->
-                                new ResourceNotFoundException("Position with ID " + position + " has not found"));
+                                new ResourceNotFoundException("Должность с идентификатором " + position + " не найдена."));
                 teachers.addAll(teacherRepo.findAllByPosition(oshPosition));
 
                 users.addAll(userService.getAllByPositionAndCity(bishPositionRepo
@@ -166,7 +167,7 @@ public class OshTeacherServiceImpl implements OshTeacherService {
 
     @Override
     public Page<WorkerDTO> getAllWorkers(Pageable pageable) {
-        List<OshTeachers> teachers = teacherRepo.findAll();
+        List<OshTeachers> teachers = teacherRepo.findAllByOrderByIDAsc();
         List<User> users = userService.getUsersByCity("osh");
         List<WorkerDTO> workers = toWorkers(teachers, users);
 
@@ -183,7 +184,7 @@ public class OshTeacherServiceImpl implements OshTeacherService {
     @Override
     public OshTeachers getTeacherById(long id) {
         return teacherRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Teacher id " + id + " was not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Преподаватель с идентификатором " + id + " не найден."));
     }
 
     @Override
@@ -203,6 +204,9 @@ public class OshTeacherServiceImpl implements OshTeacherService {
         teacher.setName(teacherDTO.getName());
         teacher.setSurname(teacherDTO.getSurname());
         teacher.setPatronymic(teacherDTO.getPatronymic());
+        if (!teacherRepo.findAllByEmailIgnoringCase(teacherDTO.getEmail()).isEmpty()) {
+            throw new IllegalArgumentException("Преподаватель с электронной почтой " + teacherDTO.getEmail() + " уже имеется.");
+        }
         teacher.setEmail(teacherDTO.getEmail());
         teacher.setPhoneNo(teacherDTO.getPhoneNo());
         teacher.setPatent(teacherDTO.getPatent());
@@ -211,7 +215,7 @@ public class OshTeacherServiceImpl implements OshTeacherService {
         teacher.setDescription(teacherDTO.getDescription());
         if (teacherDTO.getPosition() != 0) {
             OshPosition position = oshPositionRepo.findById(teacherDTO.getPosition()).orElseThrow(() ->
-                            new ResourceNotFoundException("Position with ID " + teacherDTO.getPosition() + " has not found"));
+                            new ResourceNotFoundException("Должность с идентификатором " + teacherDTO.getPosition() + " не найдена."));
             teacher.setPosition(position);
         }
         return teacher;
@@ -229,8 +233,7 @@ public class OshTeacherServiceImpl implements OshTeacherService {
 
     @Override
     public OshTeachers updateTeacherInfo(long id, TeacherDTO teacherDTO) {
-        OshTeachers teacher = DTOToTeacher(teacherRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Teacher id " + id + " was not found")), teacherDTO);
+        OshTeachers teacher = DTOToTeacher(getTeacherById(id), teacherDTO);
         teacher = teacherRepo.save(teacher);
         OshCourses courses = coursesService.findCourseById(teacherDTO.getCourse());
         courses.setTeacher(teacher);
@@ -240,8 +243,7 @@ public class OshTeacherServiceImpl implements OshTeacherService {
 
     @Override
     public String deleteTeacherById(long id) {
-        OshTeachers teacher = teacherRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Teacher id " + id + " was not found"));
+        OshTeachers teacher = getTeacherById(id);
         teacherRepo.delete(teacher);
         return "Teacher with id " + id + " has successfully deleted";
     }

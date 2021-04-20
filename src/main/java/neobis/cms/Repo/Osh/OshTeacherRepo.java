@@ -16,4 +16,6 @@ public interface OshTeacherRepo extends JpaRepository<OshTeachers, Long>, JpaSpe
     List<OshTeachers> findAllByNameContainingIgnoringCase(String name);
     List<OshTeachers> findAllBySurnameContainingIgnoringCase(String name);
     List<OshTeachers> findAllByPhoneNoContaining(String phoneNo);
+    List<OshTeachers> findAllByOrderByIDAsc();
+    List<OshTeachers> findAllByEmailIgnoringCase(String email);
 }

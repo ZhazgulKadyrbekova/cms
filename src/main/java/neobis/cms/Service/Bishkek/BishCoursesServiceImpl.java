@@ -52,7 +52,7 @@ public class BishCoursesServiceImpl implements BishCoursesService{
     @Override
     public BishCourses findCourseById(long id) {
         return coursesRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Course id " + id + " was not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Курс с идентификатором " + id + " не найден."));
     }
 
     @Override
@@ -64,7 +64,7 @@ public class BishCoursesServiceImpl implements BishCoursesService{
     public List<BishCourses> findCoursesByName(String name) {
         List<BishCourses> courses = coursesRepo.findAllByNameContainingIgnoringCase(name);
         if (courses.isEmpty())
-            throw new ResourceNotFoundException("Course with name " + name + " has not found");
+            throw new ResourceNotFoundException("Курс с названием " + name + " не найден.");
         return courses;
     }
 
@@ -84,8 +84,7 @@ public class BishCoursesServiceImpl implements BishCoursesService{
 
     @Override
     public BishCourses updateCourse(long id, CoursesDTO courseDTO) {
-        BishCourses course = coursesRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Course with id " + id + " has not found"));
+        BishCourses course = findCourseById(id);
         course.setName(courseDTO.getName());
         course.setPrice(courseDTO.getPrice());
         long teacherID = courseDTO.getTeacherID();
@@ -103,7 +102,7 @@ public class BishCoursesServiceImpl implements BishCoursesService{
             BishCourses course = this.findCourseById(courseID);
             List<BishClient> bishClients = clientRepo.findAllByCourse(course);
             if (!bishClients.isEmpty())
-                throw new IllegalArgumentException("Курс " + course.getName() + "используется, не может быть удален.");
+                throw new IllegalArgumentException("На курс " + course.getName() + " записаны студенты. Курс не может быть удален.");
 
             coursesRepo.delete(course);
         }
