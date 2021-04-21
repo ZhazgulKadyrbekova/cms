@@ -182,8 +182,8 @@ public class OshClientController {
 
     @PutMapping("/{client_id}/timer")
     public OshClient updateTimer(Principal principal, @PathVariable Long client_id,
-                                  @ApiParam(value = "dd-MM-yyyy HH:mm") @RequestParam String timer) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+                                  @ApiParam(value = "dd-MM-yyyy-HH:mm") @RequestParam String timer) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy-HH:mm");
         try {
             LocalDateTime timerV = LocalDateTime.parse(timer, formatter);
             return clientService.updateTimer(principal.getName(), client_id, timerV);
