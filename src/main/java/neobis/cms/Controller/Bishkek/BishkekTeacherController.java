@@ -78,6 +78,11 @@ public class BishkekTeacherController {
          return new PageImpl<>(workers.subList(start, end), pageable, workers.size());
     }
 
+    @GetMapping("/teachers")
+    public List<BishTeachers> getAllTeachers() {
+        return teacherService.getAllTeachers();
+    }
+
     @PostMapping
     public BishTeachers addNewTeacher(@RequestBody TeacherDTO teacherDTO) {
         logger.info("In Bishkek created new teacher {}", teacherDTO.toString());

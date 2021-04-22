@@ -12,16 +12,16 @@ import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Bishkek.BishPositionRepo;
 import neobis.cms.Repo.Bishkek.RoleRepo;
 import neobis.cms.Repo.Bishkek.UserRepo;
-import neobis.cms.Repo.Osh.OshPositionRepo;
 import neobis.cms.Service.MailService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
+//import javax.transaction.Transactional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -31,7 +31,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder encoder;
     private final BishPositionRepo bishPositionRepo;
 
-    public UserServiceImpl(UserRepo userRepo, RoleRepo roleRepo, MailService mailService, PasswordEncoder encoder, BishPositionRepo bishPositionRepo, OshPositionRepo oshPositionRepo) {
+    public UserServiceImpl(UserRepo userRepo, RoleRepo roleRepo, MailService mailService, PasswordEncoder encoder, BishPositionRepo bishPositionRepo) {
         this.userRepo = userRepo;
         this.roleRepo = roleRepo;
         this.mailService = mailService;
@@ -93,7 +93,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getUsersByCity(String city) {
-        return userRepo.findAllByCityContainingIgnoringCaseOrderByIDAsc(city);
+        return userRepo.findAllByCityContainingIgnoringCaseAndActiveOrderByIDAsc(city, true);
     }
 
     @Override
@@ -213,7 +213,6 @@ public class UserServiceImpl implements UserService {
         return "You have successfully changed your password";
     }
 
-    @Transactional
     @Override
     public String reject(UserRejectDTO userRejectDTO) {
         List<User> usersWaitingForConfirm = this.getListOfUserToConfirm();

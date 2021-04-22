@@ -94,7 +94,7 @@ public class BishClientServiceImpl implements BishClientService {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MediaType.APPLICATION_OCTET_STREAM));
-        String dataResourceUrl = "https://neolabs.dev/mod/api/?api_key=e539509b630b27e47ac594d0dbba4e69&method=getLeads&start=0&count=150";
+        String dataResourceUrl = "https://neolabs.dev/mod/api/?api_key=e539509b630b27e47ac594d0dbba4e69&method=getLeads&start=0&count=100";
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(dataResourceUrl);
         HttpEntity<String> httpEntity = new HttpEntity<>("", httpHeaders);
         ResponseEntity<String> response = restTemplate.exchange(builder.build().toUri(), HttpMethod.GET, httpEntity, String.class);
@@ -106,6 +106,7 @@ public class BishClientServiceImpl implements BishClientService {
         client.setCity("Bishkek");
         client.setDateCreated(LocalDateTime.now());
         client.setTimer(LocalDateTime.now().plusHours(24L));
+        client.setStatus(bishStatusesRepo.findById(1L).orElse(null));
         return bishClientRepo.save(client);
     }
 
@@ -630,6 +631,11 @@ public class BishClientServiceImpl implements BishClientService {
         BishClient client = this.getClientById(clientID);
         List<BishPayment> payments = client.getPayments();
         BishPayment payment = new BishPayment();
+        for (BishPayment payment1 : payments) {
+            if (payment1.getMonth().equals(paymentDTO.getMonth()))
+                throw new IllegalArgumentException("За месяц " + paymentDTO.getMonth() +
+                        " оплата уже существует. Воспользуйтесь методом для изменения данных платежа.");
+        }
         payment.setMonth(paymentDTO.getMonth());
         payment.setPrice(paymentDTO.getPrice());
         payment.setDone(paymentDTO.isDone());
@@ -818,7 +824,7 @@ public class BishClientServiceImpl implements BishClientService {
 
     @Override
     public List<BishClient> getClientsWithExpiredTimer() {
-        return bishClientRepo.findAllByTimerBefore(LocalDateTime.now());
+        return bishClientRepo.findAllByTimerBeforeOrderByTimerAsc(LocalDateTime.now());
     }
 
     @Override

@@ -78,6 +78,11 @@ public class OshTeacherController {
         return new PageImpl<>(workers.subList(start, end), pageable, workers.size());
     }
 
+    @GetMapping("/teachers")
+    public List<OshTeachers> getAllTeachers() {
+        return teacherService.getAllTeachers();
+    }
+
     @PostMapping
     public OshTeachers addNewTeacher(@RequestBody TeacherDTO teacherDTO) {
         logger.info("In Bishkek created new teacher {}", teacherDTO.toString());

@@ -38,7 +38,7 @@ public class BishHistoryServiceImpl implements BishHistoryService {
 
     @Override
     public Page<BishHistory> getAll(Pageable pageable) {
-        List<BishHistory> histories = bishHistoryRepo.findAllByDateCreatedAfter(LocalDateTime.now().minusDays(3L));
+        List<BishHistory> histories = bishHistoryRepo.findAllByDateCreatedAfterOrderByDateCreatedDesc(LocalDateTime.now().minusDays(3L));
 
         final int start = (int)pageable.getOffset();
         final int end = Math.min((start + pageable.getPageSize()), histories.size());

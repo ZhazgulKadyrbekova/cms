@@ -9,6 +9,7 @@ import java.util.List;
 
 @Repository
 public interface OshHistoryRepo extends JpaRepository<OshHistory, Long> {
-    List<OshHistory> findAllByDateCreatedAfter(LocalDateTime dateTime);
-    List<OshHistory> findAllByDateCreatedBetweenAndActionContainingAndNewDataContaining(LocalDateTime dateAfter, LocalDateTime dateBefore, String action, String newData);
+    List<OshHistory> findAllByDateCreatedAfterOrderByDateCreatedDesc(LocalDateTime dateTime);
+    List<OshHistory> findAllByDateCreatedBetweenAndActionContainingAndNewDataContaining(LocalDateTime dateAfter,
+                                                            LocalDateTime dateBefore, String action, String newData);
 }

@@ -19,6 +19,6 @@ public interface OshClientRepo extends JpaRepository<OshClient, Long>, JpaSpecif
     List<OshClient> findAllByOccupation(OshOccupation occupation);
     List<OshClient> findAllByTarget(OshTarget target);
     List<OshClient> findAllByCourse(OshCourses course);
-    List<OshClient> findAllByTimerBefore(LocalDateTime timer);
+    List<OshClient> findAllByTimerBeforeOrderByTimerAsc(LocalDateTime timer);
     OshClient findByNameContainingIgnoringCase(String name);
 }

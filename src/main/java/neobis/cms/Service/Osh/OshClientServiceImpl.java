@@ -5,6 +5,7 @@ import neobis.cms.Dto.PaymentDTO;
 import neobis.cms.Dto.ResponseMessage;
 import neobis.cms.Entity.Bishkek.*;
 import neobis.cms.Entity.Osh.*;
+import neobis.cms.Exception.IllegalArgumentException;
 import neobis.cms.Exception.ResourceNotFoundException;
 import neobis.cms.Repo.Bishkek.*;
 import neobis.cms.Repo.Osh.*;
@@ -93,7 +94,7 @@ public class OshClientServiceImpl implements OshClientService {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MediaType.APPLICATION_OCTET_STREAM));
-        String dataResourceUrl = "https://neolabs.dev/mod/api/?api_key=e539509b630b27e47ac594d0dbba4e69&method=getLeads&start=0&count=150";
+        String dataResourceUrl = "https://neolabs.dev/mod/api/?api_key=e539509b630b27e47ac594d0dbba4e69&method=getLeads&start=0&count=100";
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(dataResourceUrl);
         HttpEntity<String> httpEntity = new HttpEntity<>("", httpHeaders);
         ResponseEntity<String> response = restTemplate.exchange(builder.build().toUri(), HttpMethod.GET, httpEntity, String.class);
@@ -105,6 +106,7 @@ public class OshClientServiceImpl implements OshClientService {
         client.setCity("Osh");
         client.setDateCreated(LocalDateTime.now());
         client.setTimer(LocalDateTime.now().plusHours(24L));
+        client.setStatus(oshStatusesRepo.findById(1L).orElse(null));
         return oshClientRepo.save(client);
     }
 
@@ -628,6 +630,11 @@ public class OshClientServiceImpl implements OshClientService {
         OshClient client = this.getClientByID(clientID);
         List<OshPayment> payments = client.getPayments();
         OshPayment payment = new OshPayment();
+        for (OshPayment payment1 : payments) {
+            if (payment1.getMonth().equals(paymentDTO.getMonth()))
+                throw new IllegalArgumentException("За месяц " + paymentDTO.getMonth() +
+                        " оплата уже существует. Воспользуйтесь методом для изменения данных платежа.");
+        }
         payment.setMonth(paymentDTO.getMonth());
         payment.setPrice(paymentDTO.getPrice());
         payment.setDone(paymentDTO.isDone());
@@ -728,7 +735,7 @@ public class OshClientServiceImpl implements OshClientService {
 
     @Override
     public List<OshClient> getClientsWithExpiredTimer() {
-        return oshClientRepo.findAllByTimerBefore(LocalDateTime.now());
+        return oshClientRepo.findAllByTimerBeforeOrderByTimerAsc(LocalDateTime.now());
     }
 
     @Override

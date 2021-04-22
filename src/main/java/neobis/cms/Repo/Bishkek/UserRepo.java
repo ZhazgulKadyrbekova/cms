@@ -16,7 +16,7 @@ public interface UserRepo extends JpaRepository<User, Long> {
     List<User> findAllByNameContainingIgnoringCaseAndActiveAndConfirmed(String name, boolean active, boolean confirmed);
     List<User> findAllBySurnameContainingIgnoringCaseAndActiveAndConfirmed(String surname, boolean active, boolean confirmed);
     List<User> findAllByPhoneNoContainingAndActiveAndConfirmed(String phoneNo, boolean active, boolean confirmed);
-    List<User> findAllByCityContainingIgnoringCaseOrderByIDAsc(String city);
+    List<User> findAllByCityContainingIgnoringCaseAndActiveOrderByIDAsc(String city, boolean active);
     List<User> findAllByPositionAndCityContainingIgnoringCaseAndActiveAndConfirmed(BishPosition position,
                                                                                    String city, boolean active, boolean confirmed);
     List<User> findAllByEmailContainingIgnoringCaseAndActiveAndConfirmed(String email, boolean active, boolean confirmed);

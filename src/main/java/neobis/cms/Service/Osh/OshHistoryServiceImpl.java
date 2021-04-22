@@ -38,7 +38,7 @@ public class OshHistoryServiceImpl implements OshHistoryService {
 
     @Override
     public Page<OshHistory> getAll(Pageable pageable) {
-        List<OshHistory> histories = historyRepo.findAllByDateCreatedAfter(LocalDateTime.now().minusDays(3L));
+        List<OshHistory> histories = historyRepo.findAllByDateCreatedAfterOrderByDateCreatedDesc(LocalDateTime.now().minusDays(3L));
 
         final int start = (int)pageable.getOffset();
         final int end = Math.min((start + pageable.getPageSize()), histories.size());
