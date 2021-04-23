@@ -25,7 +25,8 @@ public class PaymentMethodController {
     private final BishPaymentRepo bishPaymentRepo;
     private final OshPaymentRepo oshPaymentRepo;
 
-    public PaymentMethodController(BishMethodRepo bishMethodRepo, OshMethodRepo oshMethodRepo, OshPaymentRepo oshPaymentRepo, BishPaymentRepo bishPaymentRepo) {
+    public PaymentMethodController(BishMethodRepo bishMethodRepo, OshMethodRepo oshMethodRepo,
+                                   OshPaymentRepo oshPaymentRepo, BishPaymentRepo bishPaymentRepo) {
         this.bishMethodRepo = bishMethodRepo;
         this.oshMethodRepo = oshMethodRepo;
         this.oshPaymentRepo = oshPaymentRepo;
@@ -35,6 +36,13 @@ public class PaymentMethodController {
     @GetMapping
     public List<BishMethod> getAllMethods() {
         return bishMethodRepo.findAll();
+    }
+
+    @PostMapping
+    public BishMethod createNewMethod(@RequestBody MethodDTO methodDTO) {
+        BishMethod method = new BishMethod(methodDTO.getName());
+        oshMethodRepo.save(new OshMethod(method.getName()));
+        return method;
     }
 
     @PutMapping("/{id}")

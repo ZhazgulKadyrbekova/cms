@@ -25,7 +25,8 @@ public class OccupationController {
     private final BishClientRepo bishClientRepo;
     private final OshClientRepo oshClientRepo;
 
-    public OccupationController(BishOccupationRepo bishOccupationRepo, OshOccupationRepo oshOccupationRepo, BishClientRepo bishClientRepo, OshClientRepo oshClientRepo) {
+    public OccupationController(BishOccupationRepo bishOccupationRepo, OshOccupationRepo oshOccupationRepo,
+                                BishClientRepo bishClientRepo, OshClientRepo oshClientRepo) {
         this.bishOccupationRepo = bishOccupationRepo;
         this.oshOccupationRepo = oshOccupationRepo;
         this.bishClientRepo = bishClientRepo;
@@ -40,6 +41,13 @@ public class OccupationController {
     @GetMapping("/name/{name}")
     public List<BishOccupation> getAllByName(@PathVariable String name) {
         return bishOccupationRepo.findAllByNameContainingIgnoringCase(name);
+    }
+
+    @PostMapping
+    public BishOccupation createOccupation(@RequestBody OccupationDTO occupationDTO) {
+        BishOccupation occupation = new BishOccupation(occupationDTO.getName());
+        oshOccupationRepo.save(new OshOccupation(occupationDTO.getName()));
+        return occupation;
     }
 
     @PutMapping("/{id}")
