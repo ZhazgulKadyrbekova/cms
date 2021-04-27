@@ -94,7 +94,7 @@ public class BishClientServiceImpl implements BishClientService {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MediaType.APPLICATION_OCTET_STREAM));
-        String dataResourceUrl = "https://neolabs.dev/mod/api/?api_key=e539509b630b27e47ac594d0dbba4e69&method=getLeads&start=0&count=100";
+        String dataResourceUrl = "https://neolabs.dev/mod/api/?api_key=e539509b630b27e47ac594d0dbba4e69&method=getLeads&start=0&count=80";
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(dataResourceUrl);
         HttpEntity<String> httpEntity = new HttpEntity<>("", httpHeaders);
         ResponseEntity<String> response = restTemplate.exchange(builder.build().toUri(), HttpMethod.GET, httpEntity, String.class);
@@ -809,6 +809,7 @@ public class BishClientServiceImpl implements BishClientService {
                     break;
                 case "data[form_data][1000][value]" :
                     client.setName(keyValue.get(1));
+                    client.setSurname("");
                     break;
                 case "data[form_data][481576][value]" :
                     BishCourses courses = coursesService.findCourseByFormName(keyValue.get(1));
